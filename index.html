@@ -1175,7 +1175,7 @@
             }
         ];
 
-        const CACHE_VERSION = 2;
+        const CACHE_VERSION = 3;
         const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
         // Clear old cache on version change
@@ -1296,8 +1296,9 @@
             }
         }
 
-        // Fetch videos for all channels
-        channels.forEach(channel => fetchLatestVideo(channel));
+        // Fetch videos - stagger requests to avoid rate limiting
+        fetchLatestVideo(channels[0]);
+        setTimeout(() => fetchLatestVideo(channels[1]), 500);
     </script>
 <!-- Vercel Analytics -->
     <script defer src="/_vercel/insights/script.js"></script>
