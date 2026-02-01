@@ -1156,7 +1156,7 @@
         const channels = [
             {
                 id: 'jm',
-                channelId: 'UCv1Hl79Z_OSFUY-9BdS0X8w',
+                channelId: 'UC9JaJVprqmFUN2iwAcwinjg',
                 cardEl: document.getElementById('jmVideoCard'),
                 linkEl: document.getElementById('jmVideoLink'),
                 thumbEl: document.getElementById('jmVideoThumb'),
@@ -1165,7 +1165,7 @@
             },
             {
                 id: 'classy',
-                channelId: 'UCi7xHBpZoqdA6naYzOzO1Vg',
+                channelId: 'UCqC5cIj_RNTRr-0EBcZ6YyA',
                 cardEl: document.getElementById('classyVideoCard'),
                 linkEl: document.getElementById('classyVideoLink'),
                 thumbEl: document.getElementById('classyVideoThumb'),
@@ -1185,22 +1185,22 @@
                 if (!response.ok) throw new Error('Feed fetch failed');
 
                 const xmlText = await response.text();
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
 
-                const entry = xmlDoc.querySelector('entry');
-                if (!entry) throw new Error('No videos found');
+                // Parse video ID from XML (handles namespaced elements)
+                const videoIdMatch = xmlText.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
+                const titleMatch = xmlText.match(/<media:title>([^<]+)<\/media:title>/);
+                const thumbMatch = xmlText.match(/<media:thumbnail url="([^"]+)"/);
 
-                const videoId = entry.querySelector('videoId')?.textContent;
-                const title = entry.querySelector('title')?.textContent;
-                const thumbnail = entry.querySelector('group thumbnail')?.getAttribute('url');
+                if (!videoIdMatch) throw new Error('No video ID found');
 
-                if (!videoId) throw new Error('No video ID');
+                const videoId = videoIdMatch[1];
+                const title = titleMatch ? titleMatch[1] : 'Latest video';
+                const thumbnail = thumbMatch ? thumbMatch[1] : `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
                 channel.linkEl.href = `https://www.youtube.com/watch?v=${videoId}`;
-                channel.thumbEl.src = thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                channel.thumbEl.alt = title || 'Latest video';
-                channel.titleEl.textContent = title || 'Watch latest video';
+                channel.thumbEl.src = thumbnail;
+                channel.thumbEl.alt = title;
+                channel.titleEl.textContent = title;
 
                 channel.cardEl.classList.remove('loading');
             } catch (err) {
