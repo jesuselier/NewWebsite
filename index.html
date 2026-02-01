@@ -1193,6 +1193,12 @@
             } catch {}
         }
 
+        function decodeHtml(html) {
+            const txt = document.createElement('textarea');
+            txt.innerHTML = html;
+            return txt.value;
+        }
+
         function applyVideoData(channel, data) {
             channel.linkEl.href = `https://www.youtube.com/watch?v=${data.videoId}`;
             channel.thumbEl.src = data.thumbnail;
@@ -1201,7 +1207,20 @@
             channel.cardEl.classList.remove('loading');
         }
 
-        async function fetchLatestVideo(channel) {
+        async function fetchWithTimeout(url, timeout = 8000) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(id);
+                return response;
+            } catch (err) {
+                clearTimeout(id);
+                throw err;
+            }
+        }
+
+        async function fetchLatestVideo(channel, retryCount = 0) {
             const cacheKey = `yt_${channel.id}`;
             const cached = getCached(cacheKey);
 
@@ -1214,7 +1233,7 @@
             const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channel.channelId}`;
 
             try {
-                const response = await fetch(corsProxy + encodeURIComponent(feedUrl));
+                const response = await fetchWithTimeout(corsProxy + encodeURIComponent(feedUrl));
                 if (!response.ok) throw new Error('Feed fetch failed');
 
                 const xmlText = await response.text();
@@ -1232,7 +1251,7 @@
                         videoId = idMatch[1];
                         const titleMatch = entry.match(/<media:title>([^<]+)<\/media:title>/);
                         const thumbMatch = entry.match(/<media:thumbnail url="([^"]+)"/);
-                        title = titleMatch ? titleMatch[1] : 'Latest video';
+                        title = titleMatch ? decodeHtml(titleMatch[1]) : 'Latest video';
                         thumbnail = thumbMatch ? thumbMatch[1] : `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                         break;
                     }
@@ -1244,8 +1263,12 @@
                 setCache(cacheKey, data);
                 applyVideoData(channel, data);
             } catch (err) {
-                console.log(`Failed to fetch ${channel.id} video:`, err);
-                showFallback(channel);
+                console.log(`Failed to fetch ${channel.id} video (attempt ${retryCount + 1}):`, err);
+                if (retryCount < 2) {
+                    setTimeout(() => fetchLatestVideo(channel, retryCount + 1), 1000);
+                } else {
+                    showFallback(channel);
+                }
             }
         }
 
