@@ -32,6 +32,7 @@
     <link rel="preload" href="Happy-560.webp" as="image" fetchpriority="high" media="(min-width: 641px)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://api.allorigins.win">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
     <style>
@@ -1174,11 +1175,43 @@
             }
         ];
 
+        const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
+        function getCached(key) {
+            try {
+                const cached = localStorage.getItem(key);
+                if (!cached) return null;
+                const { data, timestamp } = JSON.parse(cached);
+                if (Date.now() - timestamp > CACHE_DURATION) return null;
+                return data;
+            } catch { return null; }
+        }
+
+        function setCache(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+            } catch {}
+        }
+
+        function applyVideoData(channel, data) {
+            channel.linkEl.href = `https://www.youtube.com/watch?v=${data.videoId}`;
+            channel.thumbEl.src = data.thumbnail;
+            channel.thumbEl.alt = data.title;
+            channel.titleEl.textContent = data.title;
+            channel.cardEl.classList.remove('loading');
+        }
+
         async function fetchLatestVideo(channel) {
+            const cacheKey = `yt_${channel.id}`;
+            const cached = getCached(cacheKey);
+
+            if (cached) {
+                applyVideoData(channel, cached);
+                return;
+            }
+
             const corsProxy = 'https://api.allorigins.win/raw?url=';
             const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channel.channelId}`;
-
-            channel.cardEl.classList.add('loading');
 
             try {
                 const response = await fetch(corsProxy + encodeURIComponent(feedUrl));
@@ -1207,12 +1240,9 @@
 
                 if (!videoId) throw new Error('No long-form video found');
 
-                channel.linkEl.href = `https://www.youtube.com/watch?v=${videoId}`;
-                channel.thumbEl.src = thumbnail;
-                channel.thumbEl.alt = title;
-                channel.titleEl.textContent = title;
-
-                channel.cardEl.classList.remove('loading');
+                const data = { videoId, title, thumbnail };
+                setCache(cacheKey, data);
+                applyVideoData(channel, data);
             } catch (err) {
                 console.log(`Failed to fetch ${channel.id} video:`, err);
                 showFallback(channel);
