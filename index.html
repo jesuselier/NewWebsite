@@ -28,7 +28,8 @@
     <meta name="theme-color" content="#0A0A0F">
 
     <!-- Preload critical assets -->
-    <link rel="preload" href="Happy-560.webp" as="image" fetchpriority="high">
+    <link rel="preload" href="Happy-480.webp" as="image" fetchpriority="high" media="(max-width: 640px)">
+    <link rel="preload" href="Happy-560.webp" as="image" fetchpriority="high" media="(min-width: 641px)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -716,7 +717,7 @@
             srcset="Happy-280.webp 280w, Happy-480.webp 480w, Happy-560.webp 560w, Happy-800.webp 800w"
             sizes="(max-width: 640px) 220px, 280px"
             alt="Jesus Martinez"
-            class="hero-photo fade-in"
+            class="hero-photo"
             fetchpriority="high"
             width="280"
             height="280">
