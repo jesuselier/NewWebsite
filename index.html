@@ -1175,7 +1175,15 @@
             }
         ];
 
+        const CACHE_VERSION = 2;
         const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
+        // Clear old cache on version change
+        if (localStorage.getItem('yt_cache_version') !== String(CACHE_VERSION)) {
+            localStorage.removeItem('yt_jm');
+            localStorage.removeItem('yt_classy');
+            localStorage.setItem('yt_cache_version', CACHE_VERSION);
+        }
 
         function getCached(key) {
             try {
