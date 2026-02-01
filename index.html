@@ -390,6 +390,20 @@
             margin-bottom: 12px;
         }
 
+        .channel-subs {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .channel-subs.jm-subs {
+            color: rgba(212, 175, 55, 0.7);
+        }
+
+        .channel-subs.classy-subs {
+            color: rgba(192, 192, 192, 0.7);
+        }
+
         .channel-desc {
             color: var(--text-muted);
             margin-bottom: 24px;
@@ -426,6 +440,150 @@
         .channel-card.classy-crypto .channel-btn:hover {
             background: var(--silver-dark);
             transform: scale(1.05);
+        }
+
+        /* Latest Videos Section */
+        .latest-videos {
+            padding: 80px 24px;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .video-card {
+            background: var(--dark-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .video-card.jm-video:hover {
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.15);
+        }
+
+        .video-card.classy-video:hover {
+            box-shadow: 0 20px 60px rgba(192, 192, 192, 0.15);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            display: block;
+            aspect-ratio: 16 / 9;
+            background: var(--dark-lighter);
+            overflow: hidden;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .video-card:hover .video-thumbnail img {
+            transform: scale(1.05);
+        }
+
+        .video-play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .video-card:hover .video-play-overlay {
+            opacity: 1;
+        }
+
+        .video-play-overlay svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+            margin-left: 4px;
+        }
+
+        .video-channel-badge {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .video-channel-badge.jm-badge {
+            background: var(--gold);
+            color: var(--dark);
+        }
+
+        .video-channel-badge.classy-badge {
+            background: var(--silver);
+            color: var(--dark);
+        }
+
+        .video-title {
+            padding: 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.4;
+            color: var(--text);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-card.loading .video-thumbnail {
+            animation: pulse-loading 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-loading {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .video-card.error .video-thumbnail {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .fallback-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .video-card.error:hover .fallback-text {
+            color: var(--text);
         }
 
         /* Socials Section */
@@ -651,6 +809,21 @@
                 padding: 32px 24px;
             }
 
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .video-play-overlay {
+                width: 56px;
+                height: 56px;
+                opacity: 1;
+            }
+
+            .video-play-overlay svg {
+                width: 28px;
+                height: 28px;
+            }
+
             .socials-wrapper {
                 gap: 16px;
             }
@@ -747,6 +920,7 @@
                     </svg>
                 </div>
                 <h3 class="channel-name">JM Crypto</h3>
+                <p class="channel-subs jm-subs">34K subscribers</p>
                 <p class="channel-desc">HBAR & XRP content</p>
                 <a href="https://www.youtube.com/@jm_crypto" target="_blank" rel="noopener noreferrer" class="channel-btn" aria-label="Watch JM Crypto on YouTube">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -764,6 +938,7 @@
                     </svg>
                 </div>
                 <h3 class="channel-name">Classy Crypto</h3>
+                <p class="channel-subs classy-subs">36K subscribers</p>
                 <p class="channel-desc">Altcoins & Tier Lists</p>
                 <a href="https://www.youtube.com/@ClassyCryptoYT" target="_blank" rel="noopener noreferrer" class="channel-btn" aria-label="Watch Classy Crypto on YouTube">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -771,6 +946,40 @@
                     </svg>
                     Watch
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Videos Section -->
+    <section class="latest-videos">
+        <h2 class="section-title scroll-animate">Latest Videos</h2>
+        <div class="videos-grid scroll-animate" id="videosGrid">
+            <!-- JM Crypto Latest Video -->
+            <div class="video-card jm-video" id="jmVideoCard">
+                <a href="#" class="video-thumbnail" id="jmVideoLink" target="_blank" rel="noopener noreferrer">
+                    <img src="" alt="" id="jmVideoThumb" loading="lazy">
+                    <div class="video-play-overlay">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                    <div class="video-channel-badge jm-badge">JM Crypto</div>
+                </a>
+                <h3 class="video-title" id="jmVideoTitle">Loading...</h3>
+            </div>
+
+            <!-- Classy Crypto Latest Video -->
+            <div class="video-card classy-video" id="classyVideoCard">
+                <a href="#" class="video-thumbnail" id="classyVideoLink" target="_blank" rel="noopener noreferrer">
+                    <img src="" alt="" id="classyVideoThumb" loading="lazy">
+                    <div class="video-play-overlay">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                    <div class="video-channel-badge classy-badge">Classy Crypto</div>
+                </a>
+                <h3 class="video-title" id="classyVideoTitle">Loading...</h3>
             </div>
         </div>
     </section>
@@ -942,6 +1151,82 @@
                 behavior: 'smooth'
             });
         });
+
+        // YouTube Latest Videos - Fetch from RSS feeds
+        const channels = [
+            {
+                id: 'jm',
+                channelId: 'UCv1Hl79Z_OSFUY-9BdS0X8w',
+                cardEl: document.getElementById('jmVideoCard'),
+                linkEl: document.getElementById('jmVideoLink'),
+                thumbEl: document.getElementById('jmVideoThumb'),
+                titleEl: document.getElementById('jmVideoTitle'),
+                fallbackUrl: 'https://www.youtube.com/@jm_crypto'
+            },
+            {
+                id: 'classy',
+                channelId: 'UCi7xHBpZoqdA6naYzOzO1Vg',
+                cardEl: document.getElementById('classyVideoCard'),
+                linkEl: document.getElementById('classyVideoLink'),
+                thumbEl: document.getElementById('classyVideoThumb'),
+                titleEl: document.getElementById('classyVideoTitle'),
+                fallbackUrl: 'https://www.youtube.com/@ClassyCryptoYT'
+            }
+        ];
+
+        async function fetchLatestVideo(channel) {
+            const corsProxy = 'https://api.allorigins.win/raw?url=';
+            const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channel.channelId}`;
+
+            channel.cardEl.classList.add('loading');
+
+            try {
+                const response = await fetch(corsProxy + encodeURIComponent(feedUrl));
+                if (!response.ok) throw new Error('Feed fetch failed');
+
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                const entry = xmlDoc.querySelector('entry');
+                if (!entry) throw new Error('No videos found');
+
+                const videoId = entry.querySelector('videoId')?.textContent;
+                const title = entry.querySelector('title')?.textContent;
+                const thumbnail = entry.querySelector('group thumbnail')?.getAttribute('url');
+
+                if (!videoId) throw new Error('No video ID');
+
+                channel.linkEl.href = `https://www.youtube.com/watch?v=${videoId}`;
+                channel.thumbEl.src = thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                channel.thumbEl.alt = title || 'Latest video';
+                channel.titleEl.textContent = title || 'Watch latest video';
+
+                channel.cardEl.classList.remove('loading');
+            } catch (err) {
+                console.log(`Failed to fetch ${channel.id} video:`, err);
+                showFallback(channel);
+            }
+        }
+
+        function showFallback(channel) {
+            channel.cardEl.classList.remove('loading');
+            channel.cardEl.classList.add('error');
+            channel.linkEl.href = channel.fallbackUrl;
+            channel.thumbEl.style.display = 'none';
+            channel.titleEl.textContent = 'Visit channel →';
+
+            const thumbContainer = channel.linkEl;
+            if (!thumbContainer.querySelector('.fallback-text')) {
+                const fallbackText = document.createElement('span');
+                fallbackText.className = 'fallback-text';
+                fallbackText.textContent = 'View on YouTube';
+                thumbContainer.appendChild(fallbackText);
+            }
+        }
+
+        // Fetch videos for all channels
+        channels.forEach(channel => fetchLatestVideo(channel));
     </script>
 <!-- Vercel Analytics -->
     <script defer src="/_vercel/insights/script.js"></script>
