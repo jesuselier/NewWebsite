@@ -38,11 +38,12 @@
             --gold: #D4AF37;
             --gold-light: #F4D03F;
             --gold-dark: #B8860B;
+            --silver: #C0C0C0;
+            --silver-light: #E8E8E8;
+            --silver-dark: #A0A0A0;
             --dark: #0A0A0F;
             --dark-lighter: #141420;
             --dark-card: #1A1A28;
-            --teal: #0EA5E9;
-            --teal-dark: #0284C7;
             --text: #FFFFFF;
             --text-muted: #A0A0B0;
         }
@@ -337,19 +338,19 @@
         }
 
         .channel-card.jm-crypto::before {
-            background: linear-gradient(90deg, var(--teal), var(--teal-dark));
-        }
-
-        .channel-card.jm-crypto:hover {
-            box-shadow: 0 20px 60px rgba(14, 165, 233, 0.2);
-        }
-
-        .channel-card.classy-crypto::before {
             background: linear-gradient(90deg, var(--gold-light), var(--gold-dark));
         }
 
-        .channel-card.classy-crypto:hover {
+        .channel-card.jm-crypto:hover {
             box-shadow: 0 20px 60px rgba(212, 175, 55, 0.2);
+        }
+
+        .channel-card.classy-crypto::before {
+            background: linear-gradient(90deg, var(--silver-light), var(--silver-dark));
+        }
+
+        .channel-card.classy-crypto:hover {
+            box-shadow: 0 20px 60px rgba(192, 192, 192, 0.2);
         }
 
         .channel-icon {
@@ -367,11 +368,11 @@
         }
 
         .channel-card.jm-crypto .channel-icon svg {
-            fill: var(--teal);
+            fill: var(--gold);
         }
 
         .channel-card.classy-crypto .channel-icon svg {
-            fill: var(--gold);
+            fill: var(--silver);
         }
 
         .channel-name {
@@ -400,22 +401,22 @@
         }
 
         .channel-card.jm-crypto .channel-btn {
-            background: var(--teal);
-            color: white;
-        }
-
-        .channel-card.jm-crypto .channel-btn:hover {
-            background: var(--teal-dark);
-            transform: scale(1.05);
-        }
-
-        .channel-card.classy-crypto .channel-btn {
             background: var(--gold);
             color: var(--dark);
         }
 
-        .channel-card.classy-crypto .channel-btn:hover {
+        .channel-card.jm-crypto .channel-btn:hover {
             background: var(--gold-dark);
+            transform: scale(1.05);
+        }
+
+        .channel-card.classy-crypto .channel-btn {
+            background: var(--silver);
+            color: var(--dark);
+        }
+
+        .channel-card.classy-crypto .channel-btn:hover {
+            background: var(--silver-dark);
             transform: scale(1.05);
         }
 
