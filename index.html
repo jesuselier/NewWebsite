@@ -1186,16 +1186,26 @@
 
                 const xmlText = await response.text();
 
-                // Parse video ID from XML (handles namespaced elements)
-                const videoIdMatch = xmlText.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
-                const titleMatch = xmlText.match(/<media:title>([^<]+)<\/media:title>/);
-                const thumbMatch = xmlText.match(/<media:thumbnail url="([^"]+)"/);
+                // Parse all entries and find first non-Shorts video
+                const entries = xmlText.split('<entry>').slice(1);
+                let videoId = null, title = null, thumbnail = null;
 
-                if (!videoIdMatch) throw new Error('No video ID found');
+                for (const entry of entries) {
+                    // Skip Shorts (they have /shorts/ in the link)
+                    if (entry.includes('/shorts/')) continue;
 
-                const videoId = videoIdMatch[1];
-                const title = titleMatch ? titleMatch[1] : 'Latest video';
-                const thumbnail = thumbMatch ? thumbMatch[1] : `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                    const idMatch = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
+                    if (idMatch) {
+                        videoId = idMatch[1];
+                        const titleMatch = entry.match(/<media:title>([^<]+)<\/media:title>/);
+                        const thumbMatch = entry.match(/<media:thumbnail url="([^"]+)"/);
+                        title = titleMatch ? titleMatch[1] : 'Latest video';
+                        thumbnail = thumbMatch ? thumbMatch[1] : `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                        break;
+                    }
+                }
+
+                if (!videoId) throw new Error('No long-form video found');
 
                 channel.linkEl.href = `https://www.youtube.com/watch?v=${videoId}`;
                 channel.thumbEl.src = thumbnail;
