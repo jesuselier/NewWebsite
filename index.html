@@ -24,6 +24,9 @@
     <meta name="twitter:description" content="Find Jesus Martinez across YouTube, X, and social media. Home of JM Crypto and Classy Crypto.">
     <meta name="twitter:image" content="https://martinezaccess.com/Happy.png">
 
+    <!-- Theme color for mobile browser chrome -->
+    <meta name="theme-color" content="#0A0A0F">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -264,6 +267,7 @@
             gap: 8px;
             opacity: 0;
             animation: fadeIn 0.8s ease forwards 1.2s;
+            transition: opacity 0.3s ease;
         }
 
         .scroll-indicator span {
@@ -703,7 +707,7 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <img src="Happy.png" alt="Jesus Martinez" class="hero-photo fade-in">
+        <img src="Happy.png" alt="Jesus Martinez" class="hero-photo fade-in" decoding="async">
         <h1 class="hero-name fade-in fade-in-delay-1">Jesus Martinez</h1>
         <p class="hero-story fade-in fade-in-delay-2">
             JM Crypto was created to be a source of news information in a sea of misinformation. Back in 2021, my brother lost his life savings & I was able to help him through cryptocurrency. This was my beginning & I've been full-time since then plunging into the space deeper every day.
@@ -898,14 +902,22 @@
             }
         });
 
-        // Back to Top Button
+        // Back to Top Button & Hide Scroll Indicator
         const backToTop = document.getElementById('backToTop');
+        const scrollIndicator = document.querySelector('.scroll-indicator');
 
         window.addEventListener('scroll', () => {
             if (window.scrollY > 500) {
                 backToTop.classList.add('visible');
             } else {
                 backToTop.classList.remove('visible');
+            }
+
+            // Hide scroll indicator after scrolling
+            if (window.scrollY > 100) {
+                scrollIndicator.style.opacity = '0';
+            } else {
+                scrollIndicator.style.opacity = '1';
             }
         });
 
