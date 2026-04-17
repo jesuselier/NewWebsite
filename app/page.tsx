@@ -51,7 +51,7 @@ export default async function Home() {
       <SectionHead num="§ 02" title="Latest" id="videos" />
       <LatestPinned videos={latest} />
 
-      <SectionHead num="§ 03" title="Partners" id="partners" />
+      <SectionHead num="§ 03" title="Deals" id="partners" />
       <Reveal>
         <div style={{ maxWidth: 680, padding: "0 0 48px" }}>
           <p
