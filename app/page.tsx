@@ -30,7 +30,7 @@ export default async function Home() {
           title="JM Crypto"
           handle="@jm_crypto · youtube.com/@jm_crypto"
           tagline="News, macro, and the AI layer reshaping crypto."
-          stats={{ num: "38K", label: "Subscribers", rate: "2 videos\nper weekday" }}
+          stats={{ num: "38K", label: "Subscribers", rate: "Daily\nepisodes" }}
           ctaHref="https://youtube.com/@jm_crypto"
           ctaText="Subscribe on YouTube"
           goldTop
