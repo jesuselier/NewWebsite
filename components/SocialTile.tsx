@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import CountUp from "./CountUp";
 
 type Props = {
   name: string;
@@ -55,7 +56,17 @@ export default function SocialTile({
         className="font-mono text-ink-mute"
         style={{ fontSize: 12, letterSpacing: "0.05em" }}
       >
-        {handle}
+        {(() => {
+          const m = /^(\d+)(K?)(.*)$/.exec(handle);
+          if (!m) return handle;
+          return (
+            <>
+              <CountUp end={Number(m[1])} />
+              {m[2]}
+              {m[3]}
+            </>
+          );
+        })()}
       </span>
       <span
         className="font-mono text-ink-mute uppercase"

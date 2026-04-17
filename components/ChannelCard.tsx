@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CountUp from "./CountUp";
 
 type Props = {
   kicker: string;
@@ -109,7 +110,16 @@ export default function ChannelCard({
           className={`font-serif ${goldTop ? "text-gold" : "text-ink"}`}
           style={{ fontSize: 36, fontWeight: 400, letterSpacing: "-0.015em" }}
         >
-          {stats.num}
+          {(() => {
+            const m = /^(\d+)(.*)$/.exec(stats.num);
+            if (!m) return stats.num;
+            return (
+              <>
+                <CountUp end={Number(m[1])} />
+                {m[2]}
+              </>
+            );
+          })()}
         </span>
         <span
           className="font-serif text-ink-dim"

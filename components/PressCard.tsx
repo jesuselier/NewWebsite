@@ -1,7 +1,21 @@
-import CopyButton from "./CopyButton";
+"use client";
+
+import { useState } from "react";
 
 export default function PressCard() {
   const email = "jmcryptobusiness@gmail.com";
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard unavailable — no-op
+    }
+  };
+
   return (
     <div
       className="rule-strong-all"
@@ -35,16 +49,45 @@ export default function PressCard() {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "14px 0 0",
+          gap: 16,
         }}
       >
-        <a
-          href={`mailto:${email}`}
+        <button
+          type="button"
+          onClick={onCopy}
           className="font-mono text-gold hover:text-ink transition-colors"
-          style={{ fontSize: 15, letterSpacing: "0.02em" }}
+          style={{ fontSize: 15, letterSpacing: "0.02em", textAlign: "left" }}
+          aria-label={`Copy email ${email}`}
         >
           {email}
-        </a>
-        <CopyButton value={email} />
+        </button>
+        <span
+          className="font-mono text-ink-mute uppercase"
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.14em",
+            whiteSpace: "nowrap",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+          aria-live="polite"
+        >
+          {copied ? (
+            "Copied ✓"
+          ) : (
+            <>
+              <span
+                aria-hidden
+                className="font-serif"
+                style={{ color: "var(--gold)", fontSize: 16, letterSpacing: 0 }}
+              >
+                ←
+              </span>
+              Click to copy
+            </>
+          )}
+        </span>
       </div>
     </div>
   );

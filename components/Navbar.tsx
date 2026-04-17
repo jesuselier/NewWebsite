@@ -3,10 +3,10 @@ import Link from "next/link";
 const MEDIA_KIT_URL =
   "https://drive.google.com/drive/folders/1de7ZvffYIKPNZH1LDwBUsi4ii9O7yxrK";
 
-const LINKS = [
+const LINKS: { href: string; label: string; sub?: string }[] = [
   { href: "/#channels", label: "Channels" },
   { href: "/#videos", label: "Latest" },
-  { href: "/#partners", label: "Partners" },
+  { href: "/#partners", label: "Partners", sub: "Deals for you" },
   { href: "/#connect", label: "Connect" },
 ];
 
@@ -65,12 +65,31 @@ export default function Navbar() {
         }}
       >
         {LINKS.map((l) => (
-          <li key={l.href}>
+          <li key={l.href} style={{ lineHeight: 1 }}>
             <Link
               href={l.href}
               className="hover:text-ink transition-colors"
+              style={{
+                display: "inline-flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 2,
+              }}
             >
-              {l.label}
+              <span>{l.label}</span>
+              {l.sub && (
+                <span
+                  className="font-mono text-gold uppercase"
+                  style={{
+                    fontSize: 8,
+                    letterSpacing: "0.18em",
+                    fontWeight: 500,
+                    marginTop: -2,
+                  }}
+                >
+                  {l.sub}
+                </span>
+              )}
             </Link>
           </li>
         ))}

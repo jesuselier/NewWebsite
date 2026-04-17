@@ -3,24 +3,25 @@ import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import SectionHead from "@/components/SectionHead";
 import ChannelCard from "@/components/ChannelCard";
-import VideoCard from "@/components/VideoCard";
 import PartnerCard from "@/components/PartnerCard";
 import SocialTile from "@/components/SocialTile";
 import PressCard from "@/components/PressCard";
 import MediaKitCard from "@/components/MediaKitCard";
-import { getLandingLatest } from "@/lib/youtube";
+import Reveal from "@/components/Reveal";
+import LatestPinned from "@/components/LatestPinned";
+import { getFullLatest } from "@/lib/youtube";
 
 export const revalidate = 1800;
 
 export default async function Home() {
-  const latest = await getLandingLatest();
+  const latest = await getFullLatest(10);
   return (
     <div className="container-page">
       <Navbar />
       <Hero />
 
       <SectionHead num="§ 01" title="The channels" id="channels" />
-      <section
+      <Reveal as="section"
         className="rule-top row-2"
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
       >
@@ -45,63 +46,72 @@ export default async function Home() {
           ctaText="Listen to the show"
           external
         />
-      </section>
+      </Reveal>
 
       <SectionHead num="§ 02" title="Latest" id="videos" />
-      <section
-        className="row-3"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 40,
-        }}
-      >
-        {latest.map((v) => (
-          <VideoCard
-            key={v.id}
-            channel={v.channel}
-            channelGold={v.gold}
-            date={v.publishedLabel}
-            title={v.title}
-            href={v.watchUrl}
-            thumbSrc={v.thumbSrc}
-          />
-        ))}
-      </section>
+      <LatestPinned videos={latest} />
 
       <SectionHead num="§ 03" title="Partners" id="partners" />
-      <section
-        className="rule-top row-2"
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
-      >
-        <PartnerCard
-          logo="BTCC"
-          logoEm="exchange"
-          pill="Live campaign"
-          desc="10% cashback on your first deposit, plus VIP3 status for one month — 30% off trading fees."
-          details={[
-            { label: "Trading bonus", value: "Up to +$5,000 USDT" },
-            { label: "Window", value: "Mar 31 – Apr 30" },
-          ]}
-          ctaHref="https://www.btcc.com/market-promotion/bonus2/kol?name=JMCryptoTrading"
-          ctaText="Join BTCC"
-        />
-        <PartnerCard
-          logo="iTrustCapital"
-          logoEm="IRA"
-          pill="Retirement"
-          desc="Make your retirement money work for you — save up to 37% on crypto taxes."
-          details={[
-            { label: "Structure", value: "Traditional · Roth" },
-            { label: "Capital gains", value: "Deferred or $0" },
-          ]}
-          ctaHref="https://bit.ly/JesusMartinez-iTrustCapital"
-          ctaText="Open an IRA"
-        />
-      </section>
+      <Reveal>
+        <div style={{ maxWidth: 680, padding: "0 0 48px" }}>
+          <p
+            className="font-serif text-ink"
+            style={{
+              fontSize: 24,
+              fontStyle: "italic",
+              lineHeight: 1.35,
+              margin: 0,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            BTCC and iTrustCapital chose JM Crypto.
+          </p>
+          <p
+            className="font-mono text-gold uppercase"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.16em",
+              marginTop: 12,
+              marginBottom: 0,
+            }}
+          >
+            Deals for you, below.
+          </p>
+        </div>
+
+        <section
+          className="rule-top row-2"
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
+        >
+          <PartnerCard
+            logo="BTCC"
+            logoEm="exchange"
+            pill="Live campaign"
+            desc="10% cashback on your first deposit, plus VIP3 status for one month — 30% off trading fees."
+            details={[
+              { label: "Trading bonus", value: "Up to +$5,000 USDT" },
+              { label: "Window", value: "Mar 31 – Apr 30" },
+            ]}
+            ctaHref="https://www.btcc.com/market-promotion/bonus2/kol?name=JMCryptoTrading"
+            ctaText="Join BTCC"
+          />
+          <PartnerCard
+            logo="iTrustCapital"
+            logoEm="IRA"
+            pill="Retirement"
+            desc="Make your retirement money work for you — save up to 37% on crypto taxes."
+            details={[
+              { label: "Structure", value: "Traditional · Roth" },
+              { label: "Capital gains", value: "Deferred or $0" },
+            ]}
+            ctaHref="https://bit.ly/JesusMartinez-iTrustCapital"
+            ctaText="Open an IRA"
+          />
+        </section>
+      </Reveal>
 
       <SectionHead num="§ 04" title="Connect" id="connect" />
-      <section
+      <Reveal as="section"
         className="rule-top rule-bottom row-4"
         style={{
           display: "grid",
@@ -147,9 +157,9 @@ export default async function Home() {
         />
         <SocialTile
           name="Podcast"
-          handle="All platforms"
+          handle="@JesusMartinezCrypto · 37K"
           tag="Long-form interviews"
-          href="/channels"
+          href="https://www.youtube.com/@JesusMartinezCrypto"
           icon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <rect x="9" y="2" width="6" height="12" rx="3" />
@@ -157,10 +167,10 @@ export default async function Home() {
             </svg>
           }
         />
-      </section>
+      </Reveal>
 
       <SectionHead num="§ 05" title="Press" id="press" />
-      <section
+      <Reveal as="section"
         className="press-row"
         style={{
           display: "grid",
@@ -170,7 +180,7 @@ export default async function Home() {
       >
         <PressCard />
         <MediaKitCard />
-      </section>
+      </Reveal>
 
       <Footer />
     </div>

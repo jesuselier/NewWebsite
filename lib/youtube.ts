@@ -56,7 +56,7 @@ async function fetchChannelFeed(key: ChannelKey): Promise<YTVideo[]> {
   if (!res.ok) return [];
   const xml = await res.text();
   const entries = xml.split("<entry>").slice(1);
-  return entries
+  const candidates = entries
     .map((chunk): YTVideo | null => {
       const id = /<yt:videoId>([^<]+)<\/yt:videoId>/.exec(chunk)?.[1];
       const title = /<title>([^<]+)<\/title>/.exec(chunk)?.[1];
@@ -76,6 +76,27 @@ async function fetchChannelFeed(key: ChannelKey): Promise<YTVideo[]> {
       };
     })
     .filter((v): v is YTVideo => v !== null);
+
+  const shortFlags = await Promise.all(candidates.map((v) => isShort(v.id)));
+  return candidates.filter((_, i) => !shortFlags[i]);
+}
+
+/**
+ * Probe `/shorts/{id}` — YouTube returns 200 for actual shorts and a 3xx
+ * redirect to `/watch?v=id` for long-form videos. Treat unexpected failures
+ * as "not a short" so we never silently drop regular videos.
+ */
+async function isShort(videoId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`https://www.youtube.com/shorts/${videoId}`, {
+      method: "HEAD",
+      redirect: "manual",
+      next: { revalidate: 1800 },
+    });
+    return res.status === 200;
+  } catch {
+    return false;
+  }
 }
 
 /**

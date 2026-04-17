@@ -13,16 +13,6 @@ export default function MediaKitCard() {
         minHeight: 220,
       }}
     >
-      <div
-        className="font-mono text-ink-mute uppercase"
-        style={{ fontSize: 10, letterSpacing: "0.14em", display: "flex", gap: 10 }}
-      >
-        <span>PDF</span>
-        <span style={{ color: "var(--gold)" }}>·</span>
-        <span>4.2 MB</span>
-        <span style={{ color: "var(--gold)" }}>·</span>
-        <span>Updated Apr 2026</span>
-      </div>
       <h3
         className="font-serif text-ink"
         style={{ fontSize: 32, fontWeight: 400, letterSpacing: "-0.015em", margin: 0 }}
