@@ -90,7 +90,7 @@ export default async function Home() {
           logo="iTrustCapital"
           logoEm="IRA"
           pill="Retirement"
-          desc="Save money while you build your crypto IRA — long-term positioning without the short-term tax drag."
+          desc="Make your retirement money work for you — save up to 37% on crypto taxes."
           details={[
             { label: "Structure", value: "Traditional · Roth" },
             { label: "Capital gains", value: "Deferred or $0" },
