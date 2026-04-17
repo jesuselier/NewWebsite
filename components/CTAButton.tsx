@@ -19,7 +19,7 @@ export default function CTAButton({
   external = false,
 }: Props) {
   const base =
-    "inline-flex items-center gap-[10px] transition-colors duration-150";
+    "cta-btn inline-flex items-center gap-[10px] transition-colors duration-150";
   const style: React.CSSProperties = {
     padding: "15px 22px",
     fontFamily: "var(--font-inter), sans-serif",
@@ -44,7 +44,15 @@ export default function CTAButton({
     <>
       {children}
       {arrow && (
-        <span className="font-serif" style={{ fontSize: 16 }}>
+        <span
+          className="cta-arrow font-serif"
+          style={{
+            fontSize: 16,
+            display: "inline-block",
+            transition: "transform 180ms ease-out",
+            willChange: "transform",
+          }}
+        >
           {arrow}
         </span>
       )}

@@ -1,3 +1,5 @@
+import CTAButton from "./CTAButton";
+
 type Detail = { label: string; value: string };
 
 type Props = {
@@ -90,21 +92,11 @@ export default function PartnerCard({
         ))}
       </div>
 
-      <a
-        href={ctaHref}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-gold hover:text-ink transition-colors"
-        style={{
-          fontFamily: "var(--font-inter)",
-          fontSize: 14,
-          fontWeight: 500,
-          marginTop: "auto",
-        }}
-      >
-        {ctaText}
-        <span className="font-serif" style={{ fontSize: 16 }}>→</span>
-      </a>
+      <div style={{ marginTop: "auto", display: "flex" }}>
+        <CTAButton variant="primary" href={ctaHref} arrow={null} external>
+          {ctaText}
+        </CTAButton>
+      </div>
     </article>
   );
 }
