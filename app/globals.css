@@ -119,7 +119,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   .row-2,
   .row-3,
   .row-4,
-  .press-row {
+  .press-row,
+  .hero-portraits {
     grid-template-columns: 1fr !important;
     gap: 24px !important;
   }

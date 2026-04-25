@@ -22,40 +22,40 @@ export default function Navbar() {
         gap: 32,
       }}
     >
-      <Link href="/" className="flex items-center">
+      <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
         <span
-          className="font-serif text-ink"
-          style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.01em" }}
-        >
+          style={{
+            display: "inline-block",
+            width: 6,
+            height: 6,
+            background: "var(--gold)",
+            borderRadius: "50%",
+          }}
+        />
+        <span style={{ display: "inline-flex", flexDirection: "column", lineHeight: 1.05 }}>
           <span
-            style={{
-              display: "inline-block",
-              width: 6,
-              height: 6,
-              background: "var(--gold)",
-              borderRadius: "50%",
-              transform: "translateY(-2px)",
-              marginRight: 10,
-            }}
-          />
-          Jesus Martinez
-          <em
-            style={{
-              fontStyle: "italic",
-              fontWeight: 400,
-              fontSize: 14,
-              color: "var(--ink-mute)",
-              marginLeft: 8,
-            }}
+            className="font-serif text-ink"
+            style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.01em" }}
           >
-            — JM Crypto
-          </em>
+            Martinez{" "}
+            <span style={{ fontStyle: "italic", fontWeight: 400, color: "var(--ink-dim)" }}>
+              Access
+            </span>
+          </span>
+          <span
+            className="font-mono text-ink-mute uppercase"
+            style={{ fontSize: 9, letterSpacing: "0.18em", marginTop: 4 }}
+          >
+            Jesus Martinez{" "}
+            <span style={{ color: "var(--gold)" }}>·</span> Jennifer Martinez
+          </span>
         </span>
       </Link>
 
       <ul
-        className="hidden md:flex"
+        className="nav-links"
         style={{
+          display: "flex",
           listStyle: "none",
           gap: 32,
           fontSize: 13,

@@ -25,14 +25,14 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jesus Martinez — JM Crypto",
+  title: "Martinez Access — Jesus & Jennifer Martinez",
   description:
-    "Creator, host, analyst. News, macro, and the AI layer reshaping crypto.",
+    "Crypto, AI, and the future of money — explained by Jesus Martinez and Jennifer Martinez.",
   metadataBase: new URL("https://martinezaccess.com"),
   openGraph: {
-    title: "Jesus Martinez — JM Crypto",
+    title: "Martinez Access — Jesus & Jennifer Martinez",
     description:
-      "Creator, host, analyst. News, macro, and the AI layer reshaping crypto.",
+      "Crypto, AI, and the future of money — explained by Jesus Martinez and Jennifer Martinez.",
     images: ["/Happy.webp"],
   },
 };

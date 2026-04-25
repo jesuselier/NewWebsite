@@ -15,7 +15,7 @@ export default function Footer() {
         className="font-serif text-ink-mute"
         style={{ fontSize: 14, fontStyle: "italic" }}
       >
-        © 2026 Jesus Martinez. All rights reserved.
+        © 2026 Martinez Access. All rights reserved.
       </span>
       <span className="font-mono text-ink-mute" style={{ fontSize: 12, letterSpacing: "0.3em" }}>
         · <span style={{ color: "var(--gold)" }}>·</span> ·

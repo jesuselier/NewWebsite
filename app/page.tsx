@@ -4,9 +4,8 @@ import Hero from "@/components/Hero";
 import SectionHead from "@/components/SectionHead";
 import ChannelCard from "@/components/ChannelCard";
 import PartnerCard from "@/components/PartnerCard";
-import SocialTile from "@/components/SocialTile";
-import PressCard from "@/components/PressCard";
-import MediaKitCard from "@/components/MediaKitCard";
+import EmailTile from "@/components/EmailTile";
+import MediaKitTile from "@/components/MediaKitTile";
 import Reveal from "@/components/Reveal";
 import LatestPinned from "@/components/LatestPinned";
 import { getFullLatest } from "@/lib/youtube";
@@ -20,15 +19,37 @@ export default async function Home() {
       <Navbar />
       <Hero />
 
-      <SectionHead num="§ 01" title="The channels" id="channels" />
+      <SectionHead num="§ 01" title="The creators" id="creators" />
       <Reveal as="section"
         className="rule-top row-2"
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
       >
+        <CreatorCard
+          monogram="JM"
+          kicker="Founder · Host · Analyst"
+          name="Jesus Martinez"
+          role="Crypto markets & industry analysis"
+          bio="Founder of JM Crypto and the Jesus Martinez podcast — covering markets, macro, AI's impact on the space, and long-form interviews with the people building it."
+          goldTop
+        />
+        <CreatorCard
+          monogram="J"
+          kicker="Educator · Future tech"
+          name="Jennifer Martinez"
+          role="Crypto + AI explained simply"
+          bio="Beginner-friendly education on crypto, AI, digital money, and the future of technology — bringing clarity to the next wave of the internet."
+        />
+      </Reveal>
+
+      <SectionHead num="§ 02" title="The channels" id="channels" />
+      <Reveal as="section"
+        className="rule-top row-3"
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}
+      >
         <ChannelCard
           kicker="Daily videos"
           title="JM Crypto"
-          handle="@jm_crypto · youtube.com/@jm_crypto"
+          handle="@jm_crypto · youtube"
           tagline="News, macro, and the AI layer reshaping crypto."
           stats={{ num: "38K", label: "Subscribers", rate: "Daily\nepisodes" }}
           ctaHref="https://youtube.com/@jm_crypto"
@@ -46,12 +67,22 @@ export default async function Home() {
           ctaText="Listen to the show"
           external
         />
+        <ChannelCard
+          kicker="New · Crypto + AI"
+          title="Jennifer Martinez"
+          handle="@JenniferMartinezCrypto · youtube"
+          tagline="Beginner-friendly takes on crypto, AI, and the future of money."
+          stats={{ num: "New", label: "Channel", rate: "Launching\n2026" }}
+          ctaHref="https://youtube.com/@JenniferMartinezCrypto"
+          ctaText="Subscribe on YouTube"
+          external
+        />
       </Reveal>
 
-      <SectionHead num="§ 02" title="Latest" id="videos" />
+      <SectionHead num="§ 03" title="Latest" id="videos" />
       <LatestPinned videos={latest} />
 
-      <SectionHead num="§ 03" title="Deals" id="partners" />
+      <SectionHead num="§ 04" title="Partner offers" id="partners" />
       <Reveal>
         <div style={{ maxWidth: 680, padding: "0 0 48px" }}>
           <p
@@ -64,7 +95,7 @@ export default async function Home() {
               letterSpacing: "-0.01em",
             }}
           >
-            BTCC and iTrustCapital chose JM Crypto.
+            Curated tools and platforms we trust and use.
           </p>
           <p
             className="font-mono text-gold uppercase"
@@ -110,79 +141,158 @@ export default async function Home() {
         </section>
       </Reveal>
 
-      <SectionHead num="§ 04" title="Connect" id="connect" />
+      <SectionHead num="§ 05" title="Connect" id="connect" />
       <Reveal as="section"
-        className="rule-top rule-bottom row-4"
+        className="rule-top rule-bottom row-3"
         style={{
           display: "grid",
-          gridTemplateColumns: "1.4fr 1fr 1fr 1fr",
+          gridTemplateColumns: "1.2fr 1.4fr 1fr",
         }}
       >
-        <SocialTile
-          name="X · @JesusMartinez"
-          handle="310K followers · featured platform"
-          tag="Real-time market takes"
-          featured
-          featuredTag="★ Breaking news, threads, daily signal"
-          href="https://twitter.com/JesusMartinez"
-          icon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.656l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25h6.826l4.713 6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117Z" />
-            </svg>
-          }
-        />
-        <SocialTile
-          name="Instagram"
-          handle="@jesusmartinezez"
-          tag="Photo · reels"
-          href="https://instagram.com/jesusmartinezez"
-          icon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="3" y="3" width="18" height="18" rx="5" />
-              <circle cx="12" cy="12" r="4" />
-              <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" />
-            </svg>
-          }
-        />
-        <SocialTile
-          name="YouTube"
-          handle="@jm_crypto · 38K"
-          tag="Daily videos"
-          href="https://youtube.com/@jm_crypto"
-          icon={
-            <svg width="20" height="14" viewBox="0 0 24 17" fill="currentColor">
-              <path d="M23.5 2.6c-.3-1-1-1.8-2-2C19.5 0 12 0 12 0S4.5 0 2.5.6c-1 .2-1.7 1-2 2C0 4.6 0 8.5 0 8.5s0 3.9.5 5.9c.3 1 1 1.8 2 2C4.5 17 12 17 12 17s7.5 0 9.5-.6c1-.2 1.7-1 2-2 .5-2 .5-5.9.5-5.9s0-3.9-.5-5.9ZM9.6 12.3V4.7l6.2 3.8-6.2 3.8Z" />
-            </svg>
-          }
-        />
-        <SocialTile
-          name="Podcast"
-          handle="@JesusMartinezCrypto · 37K"
-          tag="Long-form interviews"
-          href="https://www.youtube.com/@JesusMartinezCrypto"
-          icon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="9" y="2" width="6" height="12" rx="3" />
-              <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3" />
-            </svg>
-          }
-        />
-      </Reveal>
-
-      <SectionHead num="§ 05" title="Press" id="press" />
-      <Reveal as="section"
-        className="press-row"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.3fr 1fr",
-          gap: 40,
-        }}
-      >
-        <PressCard />
-        <MediaKitCard />
+        <FollowUsTile />
+        <EmailTile />
+        <MediaKitTile />
       </Reveal>
 
       <Footer />
+    </div>
+  );
+}
+
+type CreatorCardProps = {
+  monogram: string;
+  kicker: string;
+  name: string;
+  role: string;
+  bio: string;
+  goldTop?: boolean;
+};
+
+function CreatorCard({ monogram, kicker, name, role, bio, goldTop = false }: CreatorCardProps) {
+  const borderTop = goldTop
+    ? { borderTop: "1px solid var(--gold)", marginTop: "-0.5px" }
+    : {};
+  return (
+    <article
+      className="rule-right"
+      style={{
+        padding: 48,
+        minHeight: 360,
+        display: "grid",
+        gridTemplateColumns: "auto 1fr",
+        columnGap: 36,
+        alignItems: "start",
+        ...borderTop,
+      }}
+    >
+      <div
+        className="diag-stripes"
+        style={{
+          width: 120,
+          height: 120,
+          border: "0.5px solid var(--rule-strong)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <span
+          className={`font-serif ${goldTop ? "text-gold" : "text-ink"}`}
+          style={{ fontSize: 56, fontWeight: 400, letterSpacing: "-0.025em", lineHeight: 1 }}
+        >
+          {monogram}
+        </span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <span
+          className={`font-mono uppercase ${goldTop ? "text-gold" : "text-ink-mute"}`}
+          style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.14em" }}
+        >
+          {kicker}
+        </span>
+        <h3
+          className="font-serif text-ink"
+          style={{ fontSize: 36, fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1, margin: 0 }}
+        >
+          {name}
+        </h3>
+        <span
+          className="font-serif text-ink-dim"
+          style={{ fontSize: 16, fontStyle: "italic", letterSpacing: "-0.005em" }}
+        >
+          {role}
+        </span>
+        <p
+          className="font-serif text-ink-dim"
+          style={{ fontSize: 17, lineHeight: 1.5, margin: "10px 0 0" }}
+        >
+          {bio}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+function FollowUsTile() {
+  const rows: { label: string; handle: string; href: string }[] = [
+    { label: "X", handle: "@JesusMartinez", href: "https://twitter.com/JesusMartinez" },
+    { label: "Instagram", handle: "@jesusmartinezez", href: "https://instagram.com/jesusmartinezez" },
+  ];
+  return (
+    <div
+      style={{
+        padding: "40px 32px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+        border: "0.5px solid var(--gold)",
+        margin: "-0.5px",
+        background: "var(--gold-soft)",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <span
+          className="font-serif text-ink"
+          style={{ fontSize: 22, fontWeight: 400, letterSpacing: "-0.01em" }}
+        >
+          Follow us
+        </span>
+        <span className="font-mono text-gold uppercase" style={{ fontSize: 9, letterSpacing: "0.16em" }}>
+          ★ Daily takes
+        </span>
+      </div>
+      <ul style={{ listStyle: "none", padding: 0, margin: "8px 0 0", display: "flex", flexDirection: "column", gap: 8 }}>
+        {rows.map((r) => (
+          <li key={`${r.label}-${r.handle}`}>
+            <a
+              href={r.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-ink transition-colors"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "80px 1fr auto",
+                alignItems: "baseline",
+                gap: 12,
+                color: "var(--ink-dim)",
+                padding: "8px 0",
+                borderTop: "0.5px solid var(--rule)",
+              }}
+            >
+              <span
+                className="font-mono uppercase"
+                style={{ fontSize: 10, letterSpacing: "0.14em", color: "var(--ink-mute)" }}
+              >
+                {r.label}
+              </span>
+              <span className="font-serif" style={{ fontSize: 15, letterSpacing: "-0.005em" }}>
+                {r.handle}
+              </span>
+              <span className="font-serif text-gold" style={{ fontSize: 14 }}>↗</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

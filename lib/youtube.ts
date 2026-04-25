@@ -11,6 +11,12 @@ export const CHANNELS = {
     label: "Podcast",
     gold: false,
   },
+  jennifer: {
+    id: "UCGSQDljU6UrG-44PL0zAAxg",
+    handle: "@JenniferMartinezCrypto",
+    label: "Jennifer Martinez",
+    gold: false,
+  },
 } as const;
 
 export type ChannelKey = keyof typeof CHANNELS;
@@ -100,41 +106,41 @@ async function isShort(videoId: string): Promise<boolean> {
 }
 
 /**
- * Landing Latest strip: [JM #1, Podcast #1, JM #2].
- * Middle slot always podcast; other two are JM Crypto's most recent.
+ * Landing Latest strip: [JM #1, Podcast #1, Jennifer #1, JM #2].
+ * Falls through gracefully when a channel has no videos yet.
  */
 export async function getLandingLatest(): Promise<YTVideo[]> {
-  const [jm, pod] = await Promise.all([
+  const [jm, pod, jen] = await Promise.all([
     fetchChannelFeed("jm_crypto"),
     fetchChannelFeed("podcast"),
+    fetchChannelFeed("jennifer"),
   ]);
   const result: YTVideo[] = [];
   if (jm[0]) result.push(jm[0]);
   if (pod[0]) result.push(pod[0]);
+  if (jen[0]) result.push(jen[0]);
   if (jm[1]) result.push(jm[1]);
   return result;
 }
 
 /**
- * /latest page: larger feed — interleave but always keep podcast episodes
- * between JM Crypto videos. Returns up to `limit` items.
+ * Full Latest feed: round-robin across the three channels (JM → Pod → Jen → ...),
+ * skipping channels that have run dry. Returns up to `limit` items.
  */
 export async function getFullLatest(limit = 12): Promise<YTVideo[]> {
-  const [jm, pod] = await Promise.all([
+  const [jm, pod, jen] = await Promise.all([
     fetchChannelFeed("jm_crypto"),
     fetchChannelFeed("podcast"),
+    fetchChannelFeed("jennifer"),
   ]);
+  const queues: YTVideo[][] = [jm.slice(), pod.slice(), jen.slice()];
   const result: YTVideo[] = [];
-  let ji = 0;
-  let pi = 0;
-  // Pattern: JM, Podcast, JM, JM, Podcast, JM, JM, Podcast, ...
-  // Guarantees podcasts sit between JM slots, without requiring alternation.
-  while (result.length < limit && (ji < jm.length || pi < pod.length)) {
-    if (jm[ji]) result.push(jm[ji++]);
-    if (result.length >= limit) break;
-    if (pod[pi]) result.push(pod[pi++]);
-    if (result.length >= limit) break;
-    if (jm[ji]) result.push(jm[ji++]);
+  while (result.length < limit && queues.some((q) => q.length)) {
+    for (const q of queues) {
+      if (!q.length) continue;
+      result.push(q.shift()!);
+      if (result.length >= limit) break;
+    }
   }
   return result.slice(0, limit);
 }

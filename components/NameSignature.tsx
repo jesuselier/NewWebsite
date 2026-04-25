@@ -10,7 +10,7 @@ export default function NameSignature({ size = "hero", className = "" }: Props) 
         className={`font-serif text-ink ${className}`}
         style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.01em" }}
       >
-        Jesus <span style={{ fontStyle: "italic", fontWeight: 400, color: "var(--ink-dim)" }}>Martinez</span>
+        Martinez <span style={{ fontStyle: "italic", fontWeight: 400, color: "var(--ink-dim)" }}>Access</span>
       </span>
     );
   }
@@ -25,10 +25,10 @@ export default function NameSignature({ size = "hero", className = "" }: Props) 
         margin: 0,
       }}
     >
-      Jesus
+      Martinez
       <br />
       <span style={{ fontStyle: "italic", fontWeight: 300, color: "var(--ink-dim)" }}>
-        Martinez
+        Access
       </span>
     </h1>
   );
