@@ -1,16 +1,26 @@
 type Props = {
   size?: "hero" | "inline";
   className?: string;
+  text?: { primary: string; secondary: string };
 };
 
-export default function NameSignature({ size = "hero", className = "" }: Props) {
+const DEFAULT_TEXT = { primary: "Martinez", secondary: "Access" };
+
+export default function NameSignature({
+  size = "hero",
+  className = "",
+  text = DEFAULT_TEXT,
+}: Props) {
   if (size === "inline") {
     return (
       <span
         className={`font-serif text-ink ${className}`}
         style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.01em" }}
       >
-        Martinez <span style={{ fontStyle: "italic", fontWeight: 400, color: "var(--ink-dim)" }}>Access</span>
+        {text.primary}{" "}
+        <span style={{ fontStyle: "italic", fontWeight: 400, color: "var(--ink-dim)" }}>
+          {text.secondary}
+        </span>
       </span>
     );
   }
@@ -25,10 +35,10 @@ export default function NameSignature({ size = "hero", className = "" }: Props) 
         margin: 0,
       }}
     >
-      Martinez
+      {text.primary}
       <br />
       <span style={{ fontStyle: "italic", fontWeight: 300, color: "var(--ink-dim)" }}>
-        Access
+        {text.secondary}
       </span>
     </h1>
   );

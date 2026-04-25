@@ -124,16 +124,15 @@ export async function getLandingLatest(): Promise<YTVideo[]> {
 }
 
 /**
- * Full Latest feed: round-robin across the three channels (JM → Pod → Jen → ...),
+ * Full Latest feed: round-robin across the requested channels (default: all three),
  * skipping channels that have run dry. Returns up to `limit` items.
  */
-export async function getFullLatest(limit = 12): Promise<YTVideo[]> {
-  const [jm, pod, jen] = await Promise.all([
-    fetchChannelFeed("jm_crypto"),
-    fetchChannelFeed("podcast"),
-    fetchChannelFeed("jennifer"),
-  ]);
-  const queues: YTVideo[][] = [jm.slice(), pod.slice(), jen.slice()];
+export async function getFullLatest(
+  limit = 12,
+  channels: ChannelKey[] = ["jm_crypto", "podcast", "jennifer"],
+): Promise<YTVideo[]> {
+  const feeds = await Promise.all(channels.map((k) => fetchChannelFeed(k)));
+  const queues = feeds.map((f) => f.slice());
   const result: YTVideo[] = [];
   while (result.length < limit && queues.some((q) => q.length)) {
     for (const q of queues) {
