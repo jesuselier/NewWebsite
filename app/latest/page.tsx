@@ -5,7 +5,7 @@ import VideoCard from "@/components/VideoCard";
 import { getFullLatest } from "@/lib/youtube";
 
 export const metadata = {
-  title: "Latest — Jesus Martinez",
+  title: "Latest - Jesus Martinez",
   description:
     "Most recent videos from JM Crypto and the Jesus Martinez podcast, live from YouTube.",
 };
@@ -14,11 +14,22 @@ export const revalidate = 1800;
 
 export default async function LatestPage() {
   const videos = await getFullLatest(12);
+  const usingFallback = videos.some((v) => v.id.endsWith("-fallback"));
 
   return (
     <div className="container-page">
       <Navbar />
-      <SectionHead num="§ 02" title="Latest" />
+      <SectionHead num="02" title="Latest" />
+
+      {usingFallback && (
+        <section className="premium-panel" style={{ padding: 28, marginBottom: 34 }}>
+          <p className="font-serif text-ink" style={{ fontSize: 22, fontStyle: "italic", margin: 0 }}>
+            The live YouTube feed is slow right now, so these links take you straight
+            to the newest uploads on each channel.
+          </p>
+        </section>
+      )}
+
       <section
         className="row-3"
         style={{
@@ -40,14 +51,7 @@ export default async function LatestPage() {
           />
         ))}
       </section>
-      {videos.length === 0 && (
-        <p
-          className="font-serif text-ink-mute"
-          style={{ fontSize: 18, fontStyle: "italic" }}
-        >
-          Feed is loading — check back in a moment.
-        </p>
-      )}
+
       <Footer />
     </div>
   );

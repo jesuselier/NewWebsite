@@ -118,8 +118,10 @@ export default function CreatorHero({
           style={{
             position: "relative",
             aspectRatio: "3 / 4",
-            border: "0.5px solid var(--rule)",
+            border: "0.5px solid var(--rule-strong)",
             overflow: "hidden",
+            background: "linear-gradient(135deg, rgba(217,167,91,0.12), rgba(255,255,255,0.02))",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.38)",
             transformStyle: "preserve-3d",
             transition: "transform 220ms ease-out",
             willChange: "transform",
@@ -131,7 +133,7 @@ export default function CreatorHero({
             fill
             priority
             sizes="(max-width: 900px) 100vw, 45vw"
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: "cover", filter: "contrast(1.03) saturate(0.96)" }}
           />
         </div>
         <span

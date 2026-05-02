@@ -5,7 +5,7 @@ type Props = {
   variant?: "primary" | "ghost";
   href: string;
   children: ReactNode;
-  arrow?: "→" | "↓" | null;
+  arrow?: string | null;
   className?: string;
   external?: boolean;
 };
@@ -14,7 +14,7 @@ export default function CTAButton({
   variant = "primary",
   href,
   children,
-  arrow = "→",
+  arrow = "->",
   className = "",
   external = false,
 }: Props) {
@@ -25,10 +25,10 @@ export default function CTAButton({
     fontFamily: "var(--font-inter), sans-serif",
     fontSize: 14,
     fontWeight: 500,
-    letterSpacing: "-0.005em",
     border: "0.5px solid transparent",
   };
   let variantClass = "";
+
   if (variant === "primary") {
     style.background = "var(--gold)";
     style.color = "#0A0A0A";
@@ -72,6 +72,7 @@ export default function CTAButton({
       </a>
     );
   }
+
   return (
     <Link href={href} className={`${base} ${variantClass} ${className}`} style={style}>
       {inner}

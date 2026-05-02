@@ -7,7 +7,7 @@ export default function MediaKitTile() {
       href={MEDIA_KIT_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="transition-colors hover:bg-white/[.02]"
+      className="transition-colors hover:bg-white/[.02] premium-hover"
       style={{
         padding: "40px 32px",
         display: "flex",

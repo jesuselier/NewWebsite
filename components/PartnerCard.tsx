@@ -23,7 +23,7 @@ export default function PartnerCard({
 }: Props) {
   return (
     <article
-      className="rule-right"
+      className="rule-right premium-hover"
       style={{
         padding: 44,
         minHeight: 320,

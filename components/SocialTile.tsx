@@ -40,7 +40,7 @@ export default function SocialTile({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="transition-colors hover:bg-white/[.02]"
+      className="transition-colors hover:bg-white/[.02] premium-hover"
       style={{ ...base, ...featuredStyle }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>

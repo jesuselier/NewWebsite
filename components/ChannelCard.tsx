@@ -36,13 +36,14 @@ export default function ChannelCard({
 
   return (
     <article
-      className="rule-right"
+      className="rule-right premium-hover"
       style={{
         padding: 48,
         minHeight: 460,
         display: "flex",
         flexDirection: "column",
         gap: 24,
+        borderColor: "var(--rule)",
         ...borderTop,
       }}
     >

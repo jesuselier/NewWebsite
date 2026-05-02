@@ -25,16 +25,65 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Martinez Access — Jesus & Jennifer Martinez",
-  description:
-    "Crypto, AI, and the future of money — explained by Jesus Martinez and Jennifer Martinez.",
-  metadataBase: new URL("https://martinezaccess.com"),
-  openGraph: {
-    title: "Martinez Access — Jesus & Jennifer Martinez",
-    description:
-      "Crypto, AI, and the future of money — explained by Jesus Martinez and Jennifer Martinez.",
-    images: ["/Happy.webp"],
+  title: {
+    default: "Jesus Martinez - Martinez Access",
+    template: "%s | Martinez Access",
   },
+  description:
+    "Crypto markets, macro, and the AI layer reshaping money by Jesus Martinez.",
+  keywords: [
+    "Jesus Martinez",
+    "JM Crypto",
+    "Martinez Access",
+    "crypto news",
+    "crypto podcast",
+    "AI and crypto",
+    "macro markets",
+  ],
+  authors: [{ name: "Jesus Martinez", url: "https://martinezaccess.com" }],
+  creator: "Jesus Martinez",
+  publisher: "Martinez Access",
+  metadataBase: new URL("https://martinezaccess.com"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Jesus Martinez - Martinez Access",
+    description:
+      "Crypto markets, macro, and the AI layer reshaping money by Jesus Martinez.",
+    url: "https://martinezaccess.com",
+    siteName: "Martinez Access",
+    images: ["/opengraph-image"],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Jesus Martinez - Martinez Access",
+    description:
+      "Crypto markets, macro, and the AI layer reshaping money by Jesus Martinez.",
+    images: ["/opengraph-image"],
+  },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Jesus Martinez",
+  url: "https://martinezaccess.com",
+  image: "https://martinezaccess.com/Happy.webp",
+  jobTitle: "Creator, host, and crypto market analyst",
+  brand: {
+    "@type": "Brand",
+    name: "Martinez Access",
+  },
+  sameAs: [
+    "https://youtube.com/@jm_crypto",
+    "https://www.youtube.com/@JesusMartinezCrypto",
+    "https://twitter.com/JesusMartinez",
+    "https://instagram.com/jesusmartinezez",
+  ],
+  knowsAbout: ["cryptocurrency", "macro markets", "artificial intelligence", "digital assets"],
 };
 
 export default function RootLayout({
@@ -45,7 +94,13 @@ export default function RootLayout({
       lang="en"
       className={`${sourceSerif.variable} ${inter.variable} ${jetbrains.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

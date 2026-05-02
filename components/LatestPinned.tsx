@@ -74,6 +74,7 @@ function VideoTile({ v }: { v: YTVideo }) {
       style={{ display: "flex", flexDirection: "column", gap: 14 }}
     >
       <div
+        className={v.thumbSrc ? undefined : "diag-stripes-thumb"}
         style={{
           position: "relative",
           aspectRatio: "16 / 9",
@@ -81,14 +82,30 @@ function VideoTile({ v }: { v: YTVideo }) {
           overflow: "hidden",
         }}
       >
-        <Image
-          src={v.thumbSrc}
-          alt={v.title}
-          fill
-          sizes="(max-width: 900px) 100vw, 40vw"
-          style={{ objectFit: "cover" }}
-          unoptimized
-        />
+        {v.thumbSrc ? (
+          <Image
+            src={v.thumbSrc}
+            alt={v.title}
+            fill
+            sizes="(max-width: 900px) 100vw, 40vw"
+            style={{ objectFit: "cover" }}
+            unoptimized
+          />
+        ) : (
+          <span
+            className="font-mono text-ink-mute uppercase"
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "grid",
+              placeItems: "center",
+              fontSize: 10,
+              letterSpacing: "0.14em",
+            }}
+          >
+            Open channel
+          </span>
+        )}
       </div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
         <span

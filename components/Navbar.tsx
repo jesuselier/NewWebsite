@@ -33,10 +33,7 @@ export default function Navbar() {
           }}
         />
         <span style={{ display: "inline-flex", flexDirection: "column", lineHeight: 1.05 }}>
-          <span
-            className="font-serif text-ink"
-            style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.01em" }}
-          >
+          <span className="font-serif text-ink" style={{ fontSize: 20, fontWeight: 500 }}>
             Martinez{" "}
             <span style={{ fontStyle: "italic", fontWeight: 400, color: "var(--ink-dim)" }}>
               Access
@@ -46,8 +43,7 @@ export default function Navbar() {
             className="font-mono text-ink-mute uppercase"
             style={{ fontSize: 9, letterSpacing: "0.18em", marginTop: 4 }}
           >
-            Jesus Martinez{" "}
-            <span style={{ color: "var(--gold)" }}>·</span> Jennifer Martinez
+            Crypto / Macro / AI
           </span>
         </span>
       </Link>

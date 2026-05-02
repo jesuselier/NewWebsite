@@ -22,7 +22,7 @@ export default function EmailTile() {
       type="button"
       onClick={onCopy}
       aria-label={`Copy email ${EMAIL}`}
-      className="transition-colors hover:bg-white/[.02]"
+      className="transition-colors hover:bg-white/[.02] premium-hover"
       style={{
         padding: "40px 32px",
         display: "flex",

@@ -24,6 +24,7 @@ export default function VideoCard({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      className="premium-hover"
       style={{ display: "flex", flexDirection: "column", gap: 14 }}
     >
       <div
