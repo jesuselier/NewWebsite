@@ -31,7 +31,7 @@ export default function OpenGraphImage() {
           <div style={{ fontSize: 104, lineHeight: 0.92, color: "#D9A75B" }}>Martinez</div>
         </div>
         <div style={{ fontSize: 30, color: "#CCC2B1", maxWidth: 820 }}>
-          Crypto markets, macro, and the AI layer reshaping money.
+          Markets, macro, and the AI that now trades them.
         </div>
       </div>
     ),

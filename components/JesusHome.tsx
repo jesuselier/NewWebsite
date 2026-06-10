@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import CreatorHero from "@/components/CreatorHero";
 import SectionHead from "@/components/SectionHead";
 import ChannelCard from "@/components/ChannelCard";
-import PartnerCard from "@/components/PartnerCard";
 import EmailTile from "@/components/EmailTile";
 import MediaKitTile from "@/components/MediaKitTile";
 import CTAButton from "@/components/CTAButton";
@@ -12,7 +11,7 @@ import LatestPinned from "@/components/LatestPinned";
 import { getFullLatest } from "@/lib/youtube";
 
 export default async function JesusHome() {
-  const latest = await getFullLatest(10, ["jm_crypto", "podcast"]);
+  const latest = await getFullLatest(10, ["jm_crypto", "trades"]);
 
   return (
     <div className="container-page">
@@ -29,7 +28,7 @@ export default async function JesusHome() {
         portraitSrc="/Happy.webp"
         portraitAlt="Jesus Martinez"
         pillLabel="JM / 2026"
-        stat={{ num: 385, suffix: "K", label: "across platforms" }}
+        stat={{ num: 394, suffix: "K+", label: "across platforms" }}
         role={
           <>
             Creator{" "}
@@ -41,10 +40,10 @@ export default async function JesusHome() {
         }
         paragraph={
           <>
-            JM Crypto turns fast-moving crypto, macro, and AI narratives into clear
-            signal for serious retail investors. The work began in 2021 after helping
-            my brother recover from a devastating loss. Since then, I have covered the
-            markets full-time with one standard: clarity before hype.
+            Two desks, one discipline. JM Crypto tracks crypto and macro every day;
+            Jesus Martinez Trades covers AI stocks and the agentic systems starting to
+            trade them. The work began in 2021, after helping my brother recover from a
+            devastating loss — and the standard has never changed: clarity before hype.
           </>
         }
         ctas={
@@ -54,26 +53,26 @@ export default async function JesusHome() {
             </CTAButton>
             <CTAButton
               variant="ghost"
-              href="https://www.youtube.com/@JesusMartinezCrypto"
+              href="https://www.youtube.com/@JesusMartinezTrades"
               arrow="->"
               external
             >
-              Listen to the podcast
+              Open the AI trading desk
             </CTAButton>
           </>
         }
         meta={[
-          { label: "Primary platform", value: "X / 310K followers" },
-          { label: "Focus", value: "Crypto, macro, and AI" },
+          { label: "Primary platform", value: "X / 318K followers" },
+          { label: "Focus", value: "Crypto, macro, and AI trading" },
         ]}
       />
 
       <div className="signal-tape rule-top rule-bottom" aria-label="Coverage areas">
         <div>
-          Crypto market signal / AI infrastructure / Macro liquidity / Founder interviews / Risk-first retail strategy /{" "}
+          Crypto market signal / AI stocks / Macro liquidity / Agentic trading / Risk-first retail strategy /{" "}
         </div>
         <div aria-hidden>
-          Crypto market signal / AI infrastructure / Macro liquidity / Founder interviews / Risk-first retail strategy /{" "}
+          Crypto market signal / AI stocks / Macro liquidity / Agentic trading / Risk-first retail strategy /{" "}
         </div>
       </div>
 
@@ -87,21 +86,21 @@ export default async function JesusHome() {
           kicker="Daily videos"
           title="JM Crypto"
           handle="@jm_crypto / youtube.com/@jm_crypto"
-          tagline="Daily crypto news, macro context, and AI market narratives without the noise."
-          stats={{ num: "38K", label: "Subscribers", rate: "Daily\nepisodes" }}
+          tagline="Daily crypto news and macro context for serious retail investors — without the noise."
+          stats={{ num: "39K", label: "Subscribers", rate: "Daily\nvideos" }}
           ctaHref="https://youtube.com/@jm_crypto"
           ctaText="Subscribe on YouTube"
           goldTop
           external
         />
         <ChannelCard
-          kicker="Podcast"
+          kicker="AI trading desk"
           title="Jesus Martinez"
-          handle="@JesusMartinezCrypto / podcast"
-          tagline="Long-form conversations with founders, investors, and operators moving the space."
-          stats={{ num: "37K", label: "Subscribers", rate: "Weekly\nepisodes" }}
-          ctaHref="https://www.youtube.com/@JesusMartinezCrypto"
-          ctaText="Listen to the show"
+          handle="@JesusMartinezTrades / YouTube"
+          tagline="AI stocks, semis, and agentic trading — what happens when the machines start managing the money."
+          stats={{ num: "37K", label: "Subscribers", rate: "2-3x\nweekly" }}
+          ctaHref="https://www.youtube.com/@JesusMartinezTrades"
+          ctaText="Watch JM Trades"
           external
         />
       </Reveal>
@@ -109,60 +108,7 @@ export default async function JesusHome() {
       <SectionHead num="02" title="Latest" id="videos" />
       <LatestPinned videos={latest} />
 
-      <SectionHead num="03" title="Partner offers" id="partners" />
-      <Reveal>
-        <div style={{ maxWidth: 720, padding: "0 0 48px" }}>
-          <p
-            className="font-serif text-ink"
-            style={{
-              fontSize: 24,
-              fontStyle: "italic",
-              lineHeight: 1.35,
-              margin: 0,
-            }}
-          >
-            Curated platforms, tools, and campaigns I trust enough to put my name on.
-          </p>
-          <p
-            className="font-mono text-gold uppercase"
-            style={{ fontSize: 11, letterSpacing: "0.16em", marginTop: 12, marginBottom: 0 }}
-          >
-            Current partner offers
-          </p>
-        </div>
-
-        <section
-          className="rule-top row-2"
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
-        >
-          <PartnerCard
-            logo="BTCC"
-            logoEm="exchange"
-            pill="Live campaign"
-            desc="10% cashback on your first deposit, plus VIP3 status for one month and 30% off trading fees."
-            details={[
-              { label: "Trading bonus", value: "Up to +$5,000 USDT" },
-              { label: "Status", value: "Current campaign" },
-            ]}
-            ctaHref="https://www.btcc.com/market-promotion/bonus2/kol?name=JMCryptoTrading"
-            ctaText="Join BTCC"
-          />
-          <PartnerCard
-            logo="iTrustCapital"
-            logoEm="IRA"
-            pill="Retirement"
-            desc="Make your retirement money work for you with tax-advantaged crypto IRA options."
-            details={[
-              { label: "Structure", value: "Traditional / Roth" },
-              { label: "Tax profile", value: "Deferred or $0 gains" },
-            ]}
-            ctaHref="https://bit.ly/JesusMartinez-iTrustCapital"
-            ctaText="Open an IRA"
-          />
-        </section>
-      </Reveal>
-
-      <SectionHead num="04" title="Connect" id="connect" />
+      <SectionHead num="03" title="Connect" id="connect" />
       <Reveal
         as="section"
         className="rule-top rule-bottom row-3"
@@ -180,7 +126,9 @@ export default async function JesusHome() {
 
 function FollowUsTile() {
   const rows: { label: string; handle: string; href: string }[] = [
-    { label: "X", handle: "@JesusMartinez", href: "https://twitter.com/JesusMartinez" },
+    { label: "X", handle: "@JesusMartinez", href: "https://x.com/JesusMartinez" },
+    { label: "YouTube", handle: "@jm_crypto", href: "https://youtube.com/@jm_crypto" },
+    { label: "YouTube", handle: "@JesusMartinezTrades", href: "https://www.youtube.com/@JesusMartinezTrades" },
     { label: "Instagram", handle: "@jesusmartinezez", href: "https://instagram.com/jesusmartinezez" },
   ];
 

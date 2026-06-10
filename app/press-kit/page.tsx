@@ -8,15 +8,15 @@ const MEDIA_KIT_URL =
   "https://drive.google.com/drive/folders/1de7ZvffYIKPNZH1LDwBUsi4ii9O7yxrK";
 
 const stats = [
-  { value: "385K+", label: "combined reach" },
-  { value: "310K", label: "X followers" },
-  { value: "75K+", label: "YouTube subscribers" },
-  { value: "2021", label: "full-time crypto coverage" },
+  { value: "394K+", label: "combined reach" },
+  { value: "318K", label: "X followers" },
+  { value: "76K+", label: "YouTube subscribers" },
+  { value: "2021", label: "full-time market coverage" },
 ];
 
 const formats = [
   "Dedicated YouTube integrations",
-  "Podcast interviews",
+  "Dedicated video deep-dives",
   "X campaign support",
   "Partner landing-page traffic",
   "Founder and product education",
@@ -26,14 +26,14 @@ const formats = [
 export const metadata = {
   title: "Press Kit - Jesus Martinez",
   description:
-    "Audience stats, creator bio, sponsorship fit, and media assets for Jesus Martinez and JM Crypto.",
+    "Audience stats, creator bio, sponsorship fit, and media assets for Jesus Martinez, JM Crypto, and Jesus Martinez Trades.",
 };
 
 export default function PressKitPage() {
   return (
     <div className="container-page">
       <Navbar />
-      <SectionHead num="05" title="Press kit" />
+      <SectionHead num="04" title="Press kit" />
 
       <Reveal
         as="section"
@@ -56,8 +56,8 @@ export default function PressKitPage() {
             Jesus Martinez
           </h1>
           <p className="font-serif text-ink-dim" style={{ fontSize: 22, lineHeight: 1.45, margin: "22px 0 0", fontStyle: "italic" }}>
-            Creator, host, and analyst covering crypto markets, macro, and the AI layer
-            reshaping money.
+            Creator and analyst covering crypto, macro, and the AI that now trades the
+            markets.
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "end", justifyContent: "flex-end" }}>

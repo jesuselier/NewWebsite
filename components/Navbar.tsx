@@ -6,7 +6,6 @@ const MEDIA_KIT_URL =
 const LINKS: { href: string; label: string }[] = [
   { href: "/#channels", label: "Channels" },
   { href: "/#videos", label: "Latest" },
-  { href: "/#partners", label: "Deals" },
   { href: "/#connect", label: "Connect" },
 ];
 
@@ -43,7 +42,7 @@ export default function Navbar() {
             className="font-mono text-ink-mute uppercase"
             style={{ fontSize: 9, letterSpacing: "0.18em", marginTop: 4 }}
           >
-            Crypto / Macro / AI
+            Crypto / Macro / AI Trading
           </span>
         </span>
       </Link>

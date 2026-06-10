@@ -6,11 +6,11 @@ export const metadata: Metadata = {
     absolute: "Jesus Martinez - Martinez Access",
   },
   description:
-    "Crypto markets, macro, and the AI layer reshaping money by Jesus Martinez. Home of JM Crypto and the Jesus Martinez podcast.",
+    "Markets, macro, and the AI that now trades them. Home of JM Crypto and Jesus Martinez Trades.",
   openGraph: {
     title: "Jesus Martinez - Martinez Access",
     description:
-      "Crypto markets, macro, and the AI layer reshaping money by Jesus Martinez.",
+      "Markets, macro, and the AI that now trades them — by Jesus Martinez.",
     images: ["/opengraph-image"],
   },
 };

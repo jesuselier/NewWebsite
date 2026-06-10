@@ -30,13 +30,15 @@ export const metadata: Metadata = {
     template: "%s | Martinez Access",
   },
   description:
-    "Crypto markets, macro, and the AI layer reshaping money by Jesus Martinez.",
+    "Markets, macro, and the AI that now trades them — two desks from Jesus Martinez: JM Crypto and Jesus Martinez Trades.",
   keywords: [
     "Jesus Martinez",
     "JM Crypto",
+    "Jesus Martinez Trades",
     "Martinez Access",
     "crypto news",
-    "crypto podcast",
+    "AI stocks",
+    "agentic trading",
     "AI and crypto",
     "macro markets",
   ],
@@ -50,7 +52,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Jesus Martinez - Martinez Access",
     description:
-      "Crypto markets, macro, and the AI layer reshaping money by Jesus Martinez.",
+      "Markets, macro, and the AI that now trades them — by Jesus Martinez.",
     url: "https://martinezaccess.com",
     siteName: "Martinez Access",
     images: ["/opengraph-image"],
@@ -61,7 +63,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Jesus Martinez - Martinez Access",
     description:
-      "Crypto markets, macro, and the AI layer reshaping money by Jesus Martinez.",
+      "Markets, macro, and the AI that now trades them — by Jesus Martinez.",
     images: ["/opengraph-image"],
   },
 };
@@ -72,18 +74,25 @@ const structuredData = {
   name: "Jesus Martinez",
   url: "https://martinezaccess.com",
   image: "https://martinezaccess.com/Happy.webp",
-  jobTitle: "Creator, host, and crypto market analyst",
+  jobTitle: "Creator and market analyst",
   brand: {
     "@type": "Brand",
     name: "Martinez Access",
   },
   sameAs: [
     "https://youtube.com/@jm_crypto",
-    "https://www.youtube.com/@JesusMartinezCrypto",
-    "https://twitter.com/JesusMartinez",
+    "https://www.youtube.com/@JesusMartinezTrades",
+    "https://x.com/JesusMartinez",
     "https://instagram.com/jesusmartinezez",
   ],
-  knowsAbout: ["cryptocurrency", "macro markets", "artificial intelligence", "digital assets"],
+  knowsAbout: [
+    "cryptocurrency",
+    "macro markets",
+    "artificial intelligence",
+    "AI stocks",
+    "agentic trading",
+    "digital assets",
+  ],
 };
 
 export default function RootLayout({

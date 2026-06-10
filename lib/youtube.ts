@@ -5,10 +5,10 @@ export const CHANNELS = {
     label: "JM Crypto",
     gold: true,
   },
-  podcast: {
+  trades: {
     id: "UCqC5cIj_RNTRr-0EBcZ6YyA",
-    handle: "@JesusMartinezCrypto",
-    label: "Podcast",
+    handle: "@JesusMartinezTrades",
+    label: "JM Trades",
     gold: false,
   },
 } as const;
@@ -41,14 +41,14 @@ export const FALLBACK_VIDEOS: YTVideo[] = [
     gold: CHANNELS.jm_crypto.gold,
   },
   {
-    id: "podcast-fallback",
-    title: "Browse the latest Jesus Martinez podcast episodes",
+    id: "trades-fallback",
+    title: "Browse the latest Jesus Martinez Trades videos",
     published: new Date(0).toISOString(),
     publishedLabel: "Live feed fallback",
-    watchUrl: "https://www.youtube.com/@JesusMartinezCrypto/videos",
-    channel: CHANNELS.podcast.label,
-    channelKey: "podcast",
-    gold: CHANNELS.podcast.gold,
+    watchUrl: "https://www.youtube.com/@JesusMartinezTrades/videos",
+    channel: CHANNELS.trades.label,
+    channelKey: "trades",
+    gold: CHANNELS.trades.gold,
   },
 ];
 
@@ -132,29 +132,12 @@ async function isShort(videoId: string): Promise<boolean> {
 }
 
 /**
- * Landing Latest strip: [JM #1, Podcast #1, JM #2, Podcast #2].
- * Falls through gracefully when a channel has no videos yet.
- */
-export async function getLandingLatest(): Promise<YTVideo[]> {
-  const [jm, pod] = await Promise.all([
-    fetchChannelFeed("jm_crypto"),
-    fetchChannelFeed("podcast"),
-  ]);
-  const result: YTVideo[] = [];
-  if (jm[0]) result.push(jm[0]);
-  if (pod[0]) result.push(pod[0]);
-  if (jm[1]) result.push(jm[1]);
-  if (pod[1]) result.push(pod[1]);
-  return result.length ? result : FALLBACK_VIDEOS;
-}
-
-/**
  * Full Latest feed: round-robin across the requested channels,
  * skipping channels that have run dry. Returns up to `limit` items.
  */
 export async function getFullLatest(
   limit = 12,
-  channels: ChannelKey[] = ["jm_crypto", "podcast"],
+  channels: ChannelKey[] = ["jm_crypto", "trades"],
 ): Promise<YTVideo[]> {
   const feeds = await Promise.all(channels.map((k) => fetchChannelFeed(k)));
   const queues = feeds.map((f) => f.slice());

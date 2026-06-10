@@ -8,7 +8,7 @@ import Reveal from "@/components/Reveal";
 export const metadata = {
   title: "Channels - Jesus Martinez",
   description:
-    "JM Crypto daily market coverage and the Jesus Martinez podcast for long-form crypto, macro, and AI conversations.",
+    "JM Crypto for daily crypto and macro coverage, and Jesus Martinez Trades for AI stocks and agentic trading.",
 };
 
 export default function ChannelsPage() {
@@ -26,21 +26,21 @@ export default function ChannelsPage() {
           kicker="Daily market desk"
           title="JM Crypto"
           handle="@jm_crypto / YouTube"
-          tagline="Fast, focused coverage of crypto news, macro liquidity, policy shifts, and AI narratives moving digital assets."
-          stats={{ num: "38K", label: "Subscribers", rate: "Daily\nvideos" }}
+          tagline="Fast, focused coverage of crypto news, macro liquidity, and policy shifts moving digital assets."
+          stats={{ num: "39K", label: "Subscribers", rate: "Daily\nvideos" }}
           ctaHref="https://youtube.com/@jm_crypto"
           ctaText="Watch JM Crypto"
           goldTop
           external
         />
         <ChannelCard
-          kicker="Long-form show"
+          kicker="AI stocks desk"
           title="Jesus Martinez"
-          handle="@JesusMartinezCrypto / Podcast"
-          tagline="Founder, investor, and operator conversations for people who want the context behind the headlines."
-          stats={{ num: "37K", label: "Subscribers", rate: "Weekly\nepisodes" }}
-          ctaHref="https://www.youtube.com/@JesusMartinezCrypto"
-          ctaText="Open the podcast"
+          handle="@JesusMartinezTrades / YouTube"
+          tagline="Coverage of AI stocks, semiconductors, and the agentic systems beginning to trade real money."
+          stats={{ num: "37K", label: "Subscribers", rate: "2-3x\nweekly" }}
+          ctaHref="https://www.youtube.com/@JesusMartinezTrades"
+          ctaText="Watch JM Trades"
           external
         />
       </Reveal>
@@ -65,13 +65,14 @@ export default function ChannelsPage() {
             Built for viewers who want the signal before the market narrative becomes obvious.
           </p>
           <p className="text-ink-dim" style={{ margin: "16px 0 0", maxWidth: "58ch" }}>
-            The two channels work together: daily episodes keep the audience current, while
-            long-form interviews deepen trust with builders and investors across the space.
+            The two desks work together: JM Crypto keeps the audience current on crypto and
+            macro every day, while Jesus Martinez Trades tracks the AI names and agentic
+            systems changing how trades get made.
           </p>
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "flex-end" }}>
           <CTAButton href="/latest" variant="ghost">Latest videos</CTAButton>
-          <CTAButton href="/partners">Partner with Jesus</CTAButton>
+          <CTAButton href="/connect">Work with Jesus</CTAButton>
         </div>
       </Reveal>
 

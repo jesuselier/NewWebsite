@@ -7,7 +7,7 @@ import { getFullLatest } from "@/lib/youtube";
 export const metadata = {
   title: "Latest - Jesus Martinez",
   description:
-    "Most recent videos from JM Crypto and the Jesus Martinez podcast, live from YouTube.",
+    "Most recent videos from JM Crypto and Jesus Martinez Trades, live from YouTube.",
 };
 
 export const revalidate = 1800;
