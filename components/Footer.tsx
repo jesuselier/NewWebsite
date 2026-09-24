@@ -1,32 +1,28 @@
 import Link from "next/link";
+import { LINKS } from "@/lib/site";
 export default function Footer() {
   return (
     <footer className="container site-footer">
       <div>
         <Link href="/" className="footer-brand">
-          Martinez Access<span className="cyan">.</span>
+          Jesus Martinez<span className="cyan">.</span>
         </Link>
-        <p>Independent curiosity. Informed perspective.</p>
+        <p>Research. Conversations. Lessons from the journey.</p>
       </div>
       <div className="footer-links">
-        <a
-          href="https://x.com/JesusMartinez"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          X ↗
+        <a href={LINKS.x} target="_blank" rel="noopener noreferrer">
+          X
         </a>
-        <a
-          href="https://www.youtube.com/@jm_crypto"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          YouTube ↗
+        <a href={LINKS.crypto} target="_blank" rel="noopener noreferrer">
+          YouTube
         </a>
-        <Link href="/press-kit">Press kit</Link>
+        <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer">
+          Instagram
+        </a>
+        <Link href="/press-kit">Media kit</Link>
       </div>
       <span className="copyright">
-        © {new Date().getFullYear()} Jesus Martinez
+        © {new Date().getFullYear()} Jesus Martinez / Martinez Access
       </span>
     </footer>
   );

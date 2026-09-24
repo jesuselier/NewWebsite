@@ -1,9 +1,9 @@
 import snapshot from "./youtube-snapshot.json";
 import {
   parseYouTubeFeed,
-  mergeVideos,
+  parseVideosTab,
+  selectLongForm,
   formatVideoDate,
-  type FeedVideo,
 } from "./youtube-feed";
 export const CHANNELS = {
   jm_crypto: {
@@ -12,47 +12,46 @@ export const CHANNELS = {
     label: "JM Crypto",
     gold: false,
   },
-  trades: {
-    id: "UCqC5cIj_RNTRr-0EBcZ6YyA",
-    handle: "@JesusMartinezTrades",
-    label: "Jesus Martinez",
-    gold: true,
-  },
 } as const;
 export type ChannelKey = keyof typeof CHANNELS;
-export type YTVideo = FeedVideo & {
+export type YTVideo = (typeof snapshot.videos)[number] & {
   publishedLabel: string;
-  channel: string;
   channelKey: ChannelKey;
-  gold: boolean;
 };
-async function fetchChannelFeed(key: ChannelKey): Promise<YTVideo[]> {
-  let live: FeedVideo[] = [];
+async function fetchText(url: string) {
   try {
-    const response = await fetch(
-      `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNELS[key].id}`,
-      { next: { revalidate: 1800 }, signal: AbortSignal.timeout(3500) },
-    );
-    if (response.ok) live = parseYouTubeFeed(await response.text());
+    const response = await fetch(url, {
+      next: { revalidate: 1800 },
+      signal: AbortSignal.timeout(5000),
+      headers: { "Accept-Language": "en-US,en;q=0.9" },
+    });
+    return response.ok ? await response.text() : "";
   } catch {
-    /* Verified uploads remain available if YouTube is unreachable. */
+    return "";
   }
-  const verified = snapshot.videos.filter((video) => video.channelKey === key);
-  return mergeVideos(live, verified, 24).map((video) => ({
-    ...video,
-    publishedLabel: formatVideoDate(video.published),
-    channel: CHANNELS[key].label,
-    channelKey: key,
-    gold: CHANNELS[key].gold,
-  }));
 }
 export async function getFullLatest(
   limit = 12,
   channels: ChannelKey[] = ["jm_crypto"],
 ): Promise<YTVideo[]> {
-  const feeds = await Promise.all([...new Set(channels)].map(fetchChannelFeed));
-  return feeds
-    .flat()
-    .sort((a, b) => Date.parse(b.published) - Date.parse(a.published))
-    .slice(0, Math.max(0, limit));
+  if (!channels.includes("jm_crypto")) return [];
+  const [xml, html] = await Promise.all([
+    fetchText(
+      `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNELS.jm_crypto.id}`,
+    ),
+    fetchText("https://www.youtube.com/@jm_crypto/videos?hl=en"),
+  ]);
+  return selectLongForm(
+    parseYouTubeFeed(xml),
+    parseVideosTab(html),
+    snapshot.videos,
+    limit,
+  ).map((video) => ({
+    ...video,
+    duration: video.duration ?? "",
+    publishedLabel: formatVideoDate(video.published),
+    channel: "JM Crypto",
+    channelKey: "jm_crypto",
+    gold: false,
+  }));
 }

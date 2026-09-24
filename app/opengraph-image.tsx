@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 export const alt =
-  "Jesus Martinez. Crypto, with context. JM Crypto and The Attention Cycle.";
+  "Jesus Martinez. Creator of JM Crypto. Crypto changed my life.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export default function Image() {
@@ -12,46 +12,41 @@ export default function Image() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        background: "#0B1018",
-        color: "#F4EEE2",
-        padding: 72,
+        background: "#F7F9FA",
+        color: "#111D29",
+        padding: 76,
         fontFamily: "sans-serif",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          fontSize: 24,
-          letterSpacing: 4,
-          color: "#00C8E0",
-        }}
-      >
-        MARTINEZ ACCESS / JESUS MARTINEZ
+      <div style={{ display: "flex", fontSize: 26, fontWeight: 700 }}>
+        Jesus Martinez
+        <span style={{ color: "#007789", marginLeft: 25, fontWeight: 400 }}>
+          Creator of JM Crypto
+        </span>
       </div>
       <div
         style={{
           display: "flex",
           flexDirection: "column",
-          fontSize: 104,
+          fontSize: 100,
           fontWeight: 700,
-          lineHeight: 1.05,
+          lineHeight: 1.04,
           letterSpacing: -5,
         }}
       >
-        <span>Crypto.</span>
-        <span style={{ color: "#A5AFBC" }}>With context.</span>
+        <span>Crypto changed</span>
+        <span>my life.</span>
       </div>
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          borderTop: "1px solid #303945",
-          paddingTop: 28,
           fontSize: 24,
+          borderTop: "2px solid #00C8E0",
+          paddingTop: 28,
+          justifyContent: "space-between",
         }}
       >
-        <span>JM Crypto</span>
-        <span style={{ color: "#C9A24B" }}>The Attention Cycle</span>
+        <span>Research. Conversations. The journey.</span>
         <span>martinezaccess.com</span>
       </div>
     </div>,

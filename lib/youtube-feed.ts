@@ -7,6 +7,121 @@ export type FeedVideo = {
   duration?: string;
 };
 
+export type ChannelVideo = { id: string; duration?: string };
+
+/** Read YouTube's data literal without evaluating any page JavaScript. */
+export function parseVideosTab(html: string): ChannelVideo[] {
+  try {
+    const marker = /(?:var\s+)?ytInitialData\s*=\s*/.exec(html);
+    if (!marker) return [];
+    const start = marker.index + marker[0].length;
+    let json = "";
+    const quote = html[start];
+    if (quote === "'" || quote === '"') {
+      let end = start + 1;
+      for (; end < html.length; end++) {
+        if (html[end] === "\\") {
+          end++;
+          continue;
+        }
+        if (html[end] === quote) break;
+      }
+      json = html
+        .slice(start + 1, end)
+        .replace(
+          /\\(x[\da-f]{2}|u[\da-f]{4}|[\\'"nrtbf/])/gi,
+          (_, escape: string) => {
+            if (/^[xu]/i.test(escape))
+              return String.fromCharCode(parseInt(escape.slice(1), 16));
+            const escapes: Record<string, string> = {
+              n: "\n",
+              r: "\r",
+              t: "\t",
+              b: "\b",
+              f: "\f",
+            };
+            return escapes[escape] ?? escape;
+          },
+        );
+    } else {
+      let depth = 0,
+        inString = false;
+      for (let end = start; end < html.length; end++) {
+        const char = html[end];
+        if (inString && char === "\\") {
+          end++;
+          continue;
+        }
+        if (char === '"') inString = !inString;
+        if (!inString) {
+          if (char === "{") depth++;
+          if (char === "}" && --depth === 0) {
+            json = html.slice(start, end + 1);
+            break;
+          }
+        }
+      }
+    }
+    const data = JSON.parse(json);
+    const tabs = (
+      data?.contents?.twoColumnBrowseResultsRenderer ??
+      data?.contents?.singleColumnBrowseResultsRenderer
+    )?.tabs;
+    const selected = Array.isArray(tabs)
+      ? tabs.find((tab) => tab.tabRenderer?.selected)?.tabRenderer
+      : undefined;
+    if (!selected || selected.title !== "Videos") return [];
+    const videos = new Map<string, ChannelVideo>();
+    function walk(node: unknown) {
+      if (!node || typeof node !== "object") return;
+      const record = node as Record<string, unknown>;
+      // Shorts use separate renderers and must never become approved video IDs.
+      if (record.reelItemRenderer || record.shortsLockupViewModel) return;
+      const video = (record.videoRenderer ?? record.compactVideoRenderer) as
+        | {
+            videoId?: string;
+            lengthText?: { simpleText?: string; runs?: { text: string }[] };
+          }
+        | undefined;
+      if (video && video.videoId && /^[\w-]{11}$/.test(video.videoId)) {
+        videos.set(video.videoId, {
+          id: video.videoId,
+          duration:
+            video.lengthText?.simpleText ??
+            video.lengthText?.runs?.map((run) => run.text).join(""),
+        });
+        return;
+      }
+      Object.values(record).forEach(walk);
+    }
+    walk(selected.content);
+    return [...videos.values()];
+  } catch {
+    return [];
+  }
+}
+
+/** Unknown uploads are withheld when classification fails; never guess from duration. */
+export function selectLongForm(
+  live: FeedVideo[],
+  approved: ChannelVideo[],
+  snapshot: FeedVideo[],
+  limit: number,
+): FeedVideo[] {
+  const ids = new Set([
+    ...approved.map((video) => video.id),
+    ...snapshot.map((video) => video.id),
+  ]);
+  const duration = new Map(approved.map((video) => [video.id, video.duration]));
+  const longForm = live
+    .filter((video) => ids.has(video.id))
+    .map((video) => ({
+      ...video,
+      ...(duration.get(video.id) ? { duration: duration.get(video.id) } : {}),
+    }));
+  return mergeVideos(longForm, snapshot, limit);
+}
+
 function decodeEntities(value: string) {
   const named: Record<string, string> = {
     amp: "&",

@@ -3,25 +3,28 @@ import { getFullLatest } from "@/lib/youtube";
 import { LINKS, pageMetadata } from "@/lib/site";
 export const revalidate = 1800;
 export const metadata = pageMetadata(
-  "Recent Videos",
-  "Watch recent JM Crypto research, market coverage, and conversations with Jesus Martinez.",
+  "JM Crypto Videos",
+  "Long-form crypto research, interviews, and market coverage from Jesus Martinez on JM Crypto.",
   "/latest",
 );
 export default async function LatestPage() {
-  const videos = await getFullLatest(12, ["jm_crypto"]);
+  const videos = await getFullLatest(12);
   return (
     <div className="container page-body">
       <header className="page-heading">
-        <span className="eyebrow">JM Crypto / On YouTube</span>
-        <h1>A closer look at crypto.</h1>
-        <p>Research, interviews, and the stories behind the moves.</p>
+        <span className="section-label">JM Crypto</span>
+        <h1>Go beyond the headline.</h1>
+        <p>
+          Full-length interviews, project deep dives, and the stories behind the
+          moves.
+        </p>
         <a
           className="text-link"
           href={LINKS.crypto + "/videos"}
           target="_blank"
           rel="noopener noreferrer"
         >
-          Open the channel for every upload <span aria-hidden="true">↗</span>
+          Watch on YouTube <span aria-hidden="true">↗</span>
         </a>
       </header>
       <div className="video-grid video-grid-full">
@@ -38,14 +41,14 @@ export default async function LatestPage() {
         ))}
       </div>
       <div className="archive-note">
-        <span>Looking for the bigger picture?</span>
+        <span>New research and conversations on JM Crypto.</span>
         <a
           className="text-link"
-          href={LINKS.attention}
+          href={LINKS.crypto + "?sub_confirmation=1"}
           target="_blank"
           rel="noopener noreferrer"
         >
-          Explore The Attention Cycle <span aria-hidden="true">↗</span>
+          Subscribe to the channel <span aria-hidden="true">↗</span>
         </a>
       </div>
     </div>

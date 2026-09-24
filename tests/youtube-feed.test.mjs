@@ -4,6 +4,8 @@ import {
   parseYouTubeFeed,
   mergeVideos,
   formatVideoDate,
+  parseVideosTab,
+  selectLongForm,
 } from "../lib/youtube-feed.ts";
 const entry = (id, title, date) =>
   `<entry><yt:videoId>${id}</yt:videoId><title>${title}</title><published>${date}</published></entry>`;
@@ -69,4 +71,116 @@ test("refreshes titles, deduplicates, and retains known duration", () => {
 });
 test("formats dates in the creator timezone independent of server locale", () => {
   assert.equal(formatVideoDate("2026-09-24T01:00:00Z"), "Sep 23, 2026");
+});
+
+function channelData(content, mobile = false, title = "Videos") {
+  return {
+    contents: {
+      [mobile
+        ? "singleColumnBrowseResultsRenderer"
+        : "twoColumnBrowseResultsRenderer"]: {
+        tabs: [
+          {
+            tabRenderer: {
+              title: "Shorts",
+              content: { videoRenderer: { videoId: "RLn3YbiGL0k" } },
+            },
+          },
+          { tabRenderer: { title, selected: true, content } },
+        ],
+      },
+    },
+  };
+}
+
+test("reads only the selected Videos tab and excludes Shorts renderers", () => {
+  const data = channelData({
+    items: [
+      {
+        videoRenderer: {
+          videoId: "h4JwMVLQGMc",
+          title: 'A } brace and a "quote"',
+          lengthText: { simpleText: "1:03:17" },
+        },
+      },
+      {
+        videoRenderer: {
+          videoId: "h4JwMVLQGMc",
+          lengthText: { simpleText: "1:03:17" },
+        },
+      },
+      {
+        reelItemRenderer: {
+          videoId: "Bp5VKIUWnYc",
+          videoRenderer: { videoId: "Bp5VKIUWnYc" },
+        },
+      },
+      { shortsLockupViewModel: { videoRenderer: { videoId: "RLn3YbiGL0k" } } },
+      { videoRenderer: { videoId: "invalid" } },
+    ],
+  });
+  assert.deepEqual(
+    parseVideosTab(
+      `<script>var ytInitialData = ${JSON.stringify(data)};</script>`,
+    ),
+    [{ id: "h4JwMVLQGMc", duration: "1:03:17" }],
+  );
+});
+
+test("supports YouTube's mobile encoded data and duration runs", () => {
+  const data = channelData(
+    {
+      compactVideoRenderer: {
+        videoId: "WmtLSJ0k7t8",
+        lengthText: { runs: [{ text: "41:11" }] },
+      },
+    },
+    true,
+  );
+  const encoded = JSON.stringify(data).replace(/"/g, "\\x22");
+  assert.deepEqual(
+    parseVideosTab(`<script>var ytInitialData = '${encoded}';</script>`),
+    [{ id: "WmtLSJ0k7t8", duration: "41:11" }],
+  );
+});
+
+test("fails closed on upstream errors, malformed data, or the wrong selected tab", () => {
+  const content = { videoRenderer: { videoId: "RLn3YbiGL0k" } };
+  for (const html of [
+    "Access denied",
+    "var ytInitialData = {bad",
+    "var ytInitialData = {};",
+    `var ytInitialData = ${JSON.stringify(channelData(content, false, "Shorts"))};`,
+  ]) {
+    assert.deepEqual(parseVideosTab(html), []);
+  }
+});
+
+test("excludes unclassified feed entries but accepts a short-duration regular video", () => {
+  const live = parseYouTubeFeed(
+    entry("RLn3YbiGL0k", "Short", date) +
+      entry("WmtLSJ0k7t8", "Regular two-minute upload", date),
+  );
+  assert.deepEqual(
+    selectLongForm(live, [{ id: "WmtLSJ0k7t8", duration: "2:00" }], [], 12).map(
+      (v) => [v.id, v.duration],
+    ),
+    [["WmtLSJ0k7t8", "2:00"]],
+  );
+});
+
+test("keeps verified long-form uploads when classification or both upstreams fail", () => {
+  const known = {
+    ...parseYouTubeFeed(entry("h4JwMVLQGMc", "Known long-form", date))[0],
+    duration: "1:03:17",
+  };
+  const live = parseYouTubeFeed(
+    entry("h4JwMVLQGMc", "Updated title", date) +
+      entry("RLn3YbiGL0k", "Unknown Short", date),
+  );
+  const selected = selectLongForm(live, [], [known], 12);
+  assert.equal(selected.length, 1);
+  assert.equal(selected[0].title, "Updated title");
+  assert.equal(selected[0].duration, "1:03:17");
+  assert.deepEqual(selectLongForm([], [], [known], 12), [known]);
 });

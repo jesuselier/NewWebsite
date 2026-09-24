@@ -3,22 +3,18 @@ import EmailTile from "@/components/EmailTile";
 import { LINKS, pageMetadata } from "@/lib/site";
 export const metadata = pageMetadata(
   "Get in Touch",
-  "Contact Jesus Martinez for interviews, collaborations, sponsorships, and press. Find JM Crypto and The Attention Cycle.",
+  "Contact Jesus Martinez for JM Crypto interviews, collaborations, sponsorships, and press.",
   "/connect",
 );
 export default function ConnectPage() {
   return (
     <div className="container page-body">
       <header className="page-heading">
-        <span className="eyebrow">Let’s connect</span>
-        <h1>
-          Good conversations
-          <br />
-          start somewhere.
-        </h1>
+        <span className="section-label">Get in touch</span>
+        <h1>Let’s talk.</h1>
         <p>
-          Have a story, a product, or a perspective my audience should hear?
-          Send a little context and let’s talk.
+          Have a story, a project, or a perspective my audience should hear?
+          Send a little context.
         </p>
       </header>
       <EmailTile />
@@ -29,7 +25,7 @@ export default function ConnectPage() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span className="eyebrow">The daily conversation</span>
+          <span className="section-label">The daily conversation</span>
           <h2>
             Find me on X <span aria-hidden="true">↗</span>
           </h2>
@@ -41,23 +37,22 @@ export default function ConnectPage() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span className="eyebrow">Behind the scenes</span>
+          <span className="section-label">Behind the scenes</span>
           <h2>
             Instagram <span aria-hidden="true">↗</span>
           </h2>
-          <p>@jesusmartinezez</p>
+          <p>@jesusmartinezbuilds</p>
         </a>
         <Link className="contact-card" href="/press-kit">
-          <span className="eyebrow">For partners & press</span>
+          <span className="section-label">For partners & press</span>
           <h2>
-            Press kit <span aria-hidden="true">↗</span>
+            Media kit <span aria-hidden="true">↗</span>
           </h2>
-          <p>Bio, collaboration formats, and media assets.</p>
+          <p>My bio, audience numbers, and a downloadable portrait.</p>
         </Link>
       </div>
       <p className="contact-help">
-        For a faster conversation, include your project, the format you have in
-        mind, and your timeline.
+        Include your project, the format you have in mind, and your timeline.
       </p>
     </div>
   );

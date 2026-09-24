@@ -1,85 +1,35 @@
-import Image from "next/image";
 import Link from "next/link";
-import { LINKS } from "@/lib/site";
-export function Channels({ standalone = false }: { standalone?: boolean }) {
+export function StoryFeature() {
   return (
-    <section
-      id="channels"
-      className={standalone ? "channels-standalone" : "section container"}
-    >
-      {!standalone && (
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Two perspectives. One curiosity.</span>
-            <h2>Go deeper.</h2>
-          </div>
-          <Link className="text-link" href="/channels">
-            Explore the channels <span aria-hidden="true">↗</span>
+    <section className="story-feature" id="story">
+      <div className="container story-inner">
+        <div>
+          <span className="section-label">How it started</span>
+          <h2>
+            I got into crypto
+            <br />
+            to help my brother.
+          </h2>
+          <Link className="text-link" href="/about">
+            The full story <span aria-hidden="true">↗</span>
           </Link>
         </div>
-      )}
-      <div className="channel-grid">
-        <article className="channel-panel crypto-panel">
-          <div className="channel-top">
-            <span className="channel-symbol" aria-hidden="true">
-              JM<span>↗</span>
-            </span>
-            <span className="channel-tag">THE DAILY PERSPECTIVE</span>
-          </div>
-          <div>
-            <h3>
-              JM Crypto<span className="cyan">.</span>
-            </h3>
-            <p>
-              The moves, the narratives, and the people behind crypto. Research
-              and conversations to help you understand what matters.
-            </p>
-          </div>
-          <div className="channel-bottom">
-            <span>CRYPTO · BITTENSOR · AI</span>
-            <a
-              href={LINKS.crypto}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Watch JM Crypto on YouTube"
-            >
-              Watch JM Crypto <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </article>
-        <article className="channel-panel attention-panel">
-          <div className="channel-top">
-            <Image
-              src="/brand/attention-cycle.png"
-              alt="The Attention Cycle aperture mark"
-              width={64}
-              height={64}
-            />
-            <span className="channel-tag">THE BIGGER PICTURE</span>
-          </div>
-          <div>
-            <h3>
-              The Attention
-              <br />
-              Cycle
-            </h3>
-            <p>
-              Where attention goes, capital follows. A show about the ideas,
-              people, and forces shaping what comes next.
-            </p>
-          </div>
-          <div className="channel-bottom">
-            <span>ATTENTION · CAPITAL · CONVICTION</span>
-            <a
-              href={LINKS.attention}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Explore The Attention Cycle on Jesus Martinez's YouTube channel"
-            >
-              Explore the show <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </article>
+        <div className="story-excerpt">
+          <p>
+            In 2021, my brother lost his life savings through high-leverage
+            trading. I wanted to help him rebuild, so I started learning
+            everything I could.
+          </p>
+          <p>
+            I put $700 into Axie Infinity, half of what I had in the bank.
+            Through the game’s breeding market, I turned that into mid-five
+            figures and helped my brother recover.
+          </p>
+          <p>
+            That experience changed my direction. Today, I’m all in on growing
+            JM Crypto and sharing what I learn.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -89,20 +39,20 @@ export function TierListFeature() {
     <section className="section container" id="tools">
       <div className="tool-feature">
         <div className="tool-copy">
-          <span className="eyebrow">Put your thesis on the board</span>
+          <span className="section-label">A tool for your next thesis</span>
           <h2>
-            Your coins.
+            Where do your
             <br />
-            Your conviction.
+            coins stand?
           </h2>
           <p>
-            Build your crypto tier list. Rank the projects you follow, make it
-            your own, and share your take.
+            Rank the projects you follow, customize your labels, and share your
+            crypto tier list.
           </p>
           <a className="button button-primary" href="/tier-list">
-            Build a tier list <span aria-hidden="true">↗</span>
+            Make a tier list <span aria-hidden="true">↗</span>
           </a>
-          <span className="tool-note">Free to use. No account needed.</span>
+          <span className="tool-note">Free. No sign-up. Yours to share.</span>
         </div>
         <a
           className="tier-preview"
@@ -110,7 +60,7 @@ export function TierListFeature() {
           aria-label="Open the crypto tier-list builder"
         >
           <div className="preview-toolbar">
-            <span>YOUR CRYPTO TIER LIST</span>
+            <span>Your crypto tier list</span>
             <span aria-hidden="true">↗</span>
           </div>
           {["S", "A", "B", "C"].map((tier, index) => (
@@ -120,13 +70,11 @@ export function TierListFeature() {
               <span className="preview-slot" />
               {index % 2 === 0 && <span className="preview-slot" />}
               <span className="preview-drag">
-                {index === 1 ? "Drop your next conviction here" : ""}
+                {index === 1 ? "Your next conviction goes here" : ""}
               </span>
             </div>
           ))}
-          <span className="preview-caption">
-            A blank board. An independent point of view.
-          </span>
+          <span className="preview-caption">Your research. Your rankings.</span>
         </a>
       </div>
     </section>
@@ -136,16 +84,11 @@ export function ContactStrip() {
   return (
     <section id="connect" className="container contact-strip">
       <div>
-        <span className="eyebrow">Start a conversation</span>
-        <h2>
-          Something worth
-          <br />
-          talking about?
-        </h2>
-        <p>Interviews, collaborations, and ideas with substance.</p>
+        <h2>Let’s build something.</h2>
+        <p>Interviews, partnerships, or an idea worth a conversation.</p>
       </div>
-      <Link href="/connect" className="button button-light">
-        Let’s connect <span aria-hidden="true">↗</span>
+      <Link href="/connect" className="button button-dark">
+        Get in touch <span aria-hidden="true">↗</span>
       </Link>
     </section>
   );

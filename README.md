@@ -1,6 +1,6 @@
 # Martinez Access
 
-Personal website for Jesus Martinez, JM Crypto, and The Attention Cycle. Built with Next.js 16 App Router, React 19, and TypeScript. Production deploys from `main` to the Vercel project `new-website` at https://www.martinezaccess.com.
+Personal website for Jesus Martinez, creator of JM Crypto. Built with Next.js 16 App Router, React 19, and TypeScript. Production deploys from `main` to the Vercel project `new-website` at https://www.martinezaccess.com.
 
 ## Develop and verify
 
@@ -19,13 +19,17 @@ Browser checks should cover desktop and phone navigation, every page, video imag
 
 ## Branding and content
 
-`app/globals.css` owns the site palette and responsive layouts. Inter is the main font. The Attention Cycle keeps its own ink and gold palette, approved aperture asset, actual GFS Didot Bold headlines, and JetBrains Mono labels. GFS Didot is distributed by the Greek Font Society via CTAN; the original font and its SIL license are in `public/fonts/`. The aperture asset is copied from the approved Attention Cycle brand folder.
+`app/globals.css` owns the paper, navy, and JM cyan palette and responsive layouts. Inter is the main font. The site focuses on JM Crypto; The Attention Cycle is currently paused. `/channels` redirects to `/latest` for older bookmarks.
 
-`lib/site.ts` centralizes public channel, social, media-kit, and business-contact links. Every page has its own canonical URL and metadata. Avoid undated audience statistics. The second YouTube channel retains the legacy `@JesusMartinezTrades` handle but now describes The Attention Cycle; do not label its older trading uploads as new show episodes.
+`lib/site.ts` centralizes public links and dated audience statistics. The September 23, 2026 public profile checks returned 40,000 JM Crypto subscribers (YouTube's rounded public count) and 322,731 X followers. These are dated snapshots, not live counters. Instagram is `@jesusmartinezbuilds`. Every page has its own canonical URL and metadata.
+
+The story is grounded in Jesus's supplied video captions: his brother's leveraged-trading loss, the $700 Axie Infinity start, and mid-five figures through its breeding market. Do not imply those earnings happened in a week or generalize the personal outcome into a return promise.
+
+The original Google Drive folder was unavailable. `/press-kit` now hosts the bio, dated audience numbers, contact details, and a downloadable portrait. `public/media/jesus-martinez-studio.jpg` and `jesus-martinez-portrait.jpg` are Jesus's original 1920x1080 studio photographs from his Camera Roll; the originals are preserved and Next Image optimizes display sizes.
 
 ## YouTube feed
 
-`lib/youtube.ts` fetches one Atom feed per requested channel. `lib/youtube-feed.ts` validates and decodes entries, builds safe watch/image URLs, deduplicates uploads, and formats dates in America/New_York. Videos may include Shorts. There are no per-video HEAD probes.
+`lib/youtube.ts` fetches JM Crypto's Atom feed and its Videos tab in parallel. `lib/youtube-feed.ts` reads the Videos tab's data without executing page JavaScript, validates and decodes entries, builds safe watch/image URLs, deduplicates uploads, and formats dates in America/New_York. Only IDs verified on the Videos tab or in the long-form snapshot may appear. Shorts are excluded. If classification fails, unknown uploads are withheld; duration is never used to guess whether an upload is a Short. There are no per-video HEAD probes.
 
 `lib/youtube-snapshot.json` contains verified JM Crypto upload metadata checked on September 23, 2026, and provides a useful fallback during YouTube outages. Live entries take precedence; known durations are preserved. Refresh this snapshot periodically from the actual channel. Do not invent titles, dates, or statistics. Visitors can always open the channel directly for every upload.
 

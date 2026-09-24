@@ -1,7 +1,9 @@
+import Image from "next/image";
+import Audience from "@/components/Audience";
 import { LINKS, pageMetadata } from "@/lib/site";
 export const metadata = pageMetadata(
-  "Press & Partnerships",
-  "Jesus Martinez's creator bio, collaboration formats, and media kit for JM Crypto and The Attention Cycle.",
+  "Media Kit & Partnerships",
+  "Jesus Martinez's bio, verified public audience counts, downloadable portrait, and partnership contact for JM Crypto.",
   "/press-kit",
 );
 const formats = [
@@ -16,53 +18,69 @@ export default function PressKitPage() {
   return (
     <div className="container page-body">
       <header className="page-heading">
-        <span className="eyebrow">Press & partnerships</span>
+        <span className="section-label">Media kit & partnerships</span>
         <h1>Work with Jesus.</h1>
         <p>
-          Independent crypto coverage. Thoughtful conversations. An audience
-          that wants to understand what comes next.
+          Crypto research and conversations from a creator who’s been in it full
+          time since 2021.
         </p>
-        <a
-          className="button button-primary"
-          href={LINKS.mediaKit}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Open media assets <span aria-hidden="true">↗</span>
-        </a>
       </header>
+      <div className="media-intro">
+        <Audience />
+        <a
+          className="button button-dark"
+          href={`mailto:${LINKS.email}?subject=JM%20Crypto%20partnership`}
+        >
+          Discuss a partnership <span aria-hidden="true">↗</span>
+        </a>
+      </div>
       <div className="press-layout">
         <section className="press-bio">
-          <span className="eyebrow">Short bio</span>
           <h2>Jesus Martinez</h2>
           <p>
-            Jesus Martinez is a Miami-based creator and researcher covering
-            crypto and AI. Through JM Crypto, he explores market narratives,
-            projects, and the people building them, with a particular focus on
-            Bittensor and the intersection of AI and crypto.
+            Jesus Martinez is a Miami-based creator and the voice behind JM
+            Crypto. A first-generation Cuban American, he entered crypto in 2021
+            after his brother lost his life savings. A $700 start in Axie
+            Infinity grew into mid-five figures through the game’s breeding
+            market, helping his brother recover and setting Jesus on a new path.
           </p>
           <p>
-            He also hosts The Attention Cycle, a show about where attention and
-            speculative capital go next. A first-generation Cuban American,
-            Jesus has worked full time in crypto and finance since 2021.
+            Today, JM Crypto covers the wider crypto market through research,
+            project deep dives, and interviews, with a particular interest in
+            Bittensor and AI. Jesus is focused on growing the channel and
+            creating work that helps his audience understand the space.
           </p>
+          <figure className="press-photo">
+            <Image
+              src="/media/jesus-martinez-portrait.jpg"
+              alt="Jesus Martinez in the JM Crypto studio"
+              width={1920}
+              height={1080}
+              sizes="(max-width:760px) 92vw, 52vw"
+            />
+          </figure>
+          <a
+            className="text-link"
+            href="/media/jesus-martinez-portrait.jpg"
+            download="Jesus-Martinez-JM-Crypto.jpg"
+          >
+            Download portrait (1920 × 1080 JPG){" "}
+            <span aria-hidden="true">↓</span>
+          </a>
         </section>
         <section>
-          <span className="eyebrow">Ways to collaborate</span>
+          <h2>Ways to collaborate</h2>
           <ul className="format-list">
             {formats.map((f) => (
-              <li key={f}>
-                {f}
-                <span aria-hidden="true">↗</span>
-              </li>
+              <li key={f}>{f}</li>
             ))}
           </ul>
-          <a className="text-link" href={`mailto:${LINKS.email}`}>
-            Discuss a partnership <span aria-hidden="true">↗</span>
-          </a>
           <p className="small-note">
-            Request current audience figures and availability by email.
+            For current availability, audience details, and campaign ideas:
           </p>
+          <a className="press-email" href={`mailto:${LINKS.email}`}>
+            {LINKS.email}
+          </a>
         </section>
       </div>
     </div>

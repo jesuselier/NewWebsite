@@ -2,82 +2,63 @@ import Image from "next/image";
 import Link from "next/link";
 import { getFullLatest } from "@/lib/youtube";
 import { LINKS } from "@/lib/site";
+import Audience from "./Audience";
 import VideoCard from "./VideoCard";
-import { Channels, TierListFeature, ContactStrip } from "./SiteSections";
+import { StoryFeature, TierListFeature, ContactStrip } from "./SiteSections";
 export default async function JesusHome() {
-  const videos = await getFullLatest(3, ["jm_crypto"]);
+  const videos = await getFullLatest(3);
   return (
     <>
       <section className="container hero">
         <div className="hero-copy">
-          <span className="eyebrow">
-            <span className="status-dot" /> JESUS MARTINEZ · CREATOR &
-            RESEARCHER
-          </span>
+          <p className="hero-intro">Hey, I’m Jesus Martinez.</p>
           <h1>
-            Crypto.
+            Crypto changed
             <br />
-            <span>With context.</span>
+            my life.
           </h1>
-          <p>
-            I follow the stories moving crypto, the people building it, and the
-            ideas worth a closer look. Welcome to my corner of the internet.
+          <p className="hero-description">
+            What started as a way to help my brother became JM Crypto. Now I
+            share the research, conversations, and lessons I pick up along the
+            way.
           </p>
           <div className="hero-actions">
             <a
               className="button button-primary"
-              href={LINKS.crypto}
+              href={LINKS.crypto + "?sub_confirmation=1"}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span className="play-icon" aria-hidden="true">
-                ▶
-              </span>{" "}
-              Watch JM Crypto <span aria-hidden="true">↗</span>
+              <span aria-hidden="true">▶</span> Join me on YouTube
             </a>
             <Link href="/about" className="text-link">
-              Meet Jesus <span aria-hidden="true">↗</span>
+              Read my story
             </Link>
           </div>
-          <div className="hero-topics">
-            <span>CRYPTO</span>
-            <span>AI</span>
-            <span>THE ATTENTION ECONOMY</span>
-          </div>
+          <Audience />
         </div>
         <div className="hero-visual">
-          <div className="portrait-orbit" aria-hidden="true" />
-          <span className="portrait-coordinate" aria-hidden="true">
-            MIAMI, FL / EST. 2021
-          </span>
           <Image
-            src="/Happy.webp"
-            alt="Jesus Martinez, creator of JM Crypto and The Attention Cycle"
+            src="/media/jesus-martinez-studio.jpg"
+            alt="Jesus Martinez smiling in the JM Crypto studio"
             fill
-            sizes="(max-width: 760px) 100vw, 52vw"
+            sizes="(max-width: 760px) 92vw, 46vw"
             preload
             className="hero-portrait"
           />
-          <div className="portrait-caption">
-            <span>
-              Always asking
-              <br />
-              the next question.
-            </span>
-            <span className="portrait-cross" aria-hidden="true">
-              +
-            </span>
-          </div>
+          <span className="portrait-caption">
+            Miami, Florida. Building JM Crypto.
+          </span>
         </div>
       </section>
       <section id="videos" className="section container video-section">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">From the channel</span>
-            <h2>The conversation continues.</h2>
+            <h2>From the channel</h2>
+            <p>Full conversations. Deeper research. A little more context.</p>
           </div>
           <Link className="text-link" href="/latest">
-            All videos <span aria-hidden="true">↗</span>
+            Browse all videos <span aria-hidden="true">↗</span>
           </Link>
         </div>
         <div className="video-grid">
@@ -94,7 +75,7 @@ export default async function JesusHome() {
           ))}
         </div>
       </section>
-      <Channels />
+      <StoryFeature />
       <TierListFeature />
       <ContactStrip />
     </>
