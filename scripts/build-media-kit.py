@@ -139,7 +139,7 @@ pdf.linkURL("mailto:" + links["email"], (42, 72, 350, 91), relative=0)
 text("martinezaccess.com/press-kit", 42, 56, 10, regular, muted)
 pdf.linkURL("https://www.martinezaccess.com/press-kit", (42, 52, 280, 66), relative=0)
 text("PHOTOS / BIOS / CHANNEL ARTWORK", 363, 57, 8, bold, teal)
-text("Original photos and usage notes are available in the full kit. City portrait uses AI-assisted editing.",
+text("Photos, bios, channel artwork, and usage notes are available in the full kit.",
      42, 28, 7, regular, muted)
 pdf.showPage()
 pdf.save()
@@ -165,10 +165,8 @@ link_text = "JESUS MARTINEZ / OFFICIAL LINKS\n\n" + "\n".join(
 (out / "Jesus-Martinez-Links.txt").write_text(link_text, encoding="utf-8")
 readme = (f"JESUS MARTINEZ / JM CRYPTO MEDIA KIT\nUpdated {audience['checkedLabel']}\n\n"
           f"USING THESE ASSETS\n{kit['usage']}\n\n"
-          "PHOTOS\n" + "\n".join(f"photos/{p['filename']} - {p['treatment']}" for p in kit["photos"]) +
-          "\n\nThe three original studio/interview photographs are included unchanged. "
-          "The city portrait is the AI-assisted crop and color correction used on the website. "
-          "For editorial outlets that require unaltered images, choose an original photograph.\n\n"
+          "PHOTOS\n" + "\n".join(f"photos/{p['filename']} - {p['title']}" for p in kit["photos"]) +
+          "\n\n"
           "CHANNEL ARTWORK\nartwork/JM-Crypto-Channel-Banner.jpg - Current public YouTube channel banner, "
           f"2560 x 424 JPG. Source: {kit['banner']['source']}\n\n"
           "AUDIENCE FIGURES\nPublic snapshots as of the update date, not live counters. "

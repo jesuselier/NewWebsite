@@ -33,7 +33,7 @@ export default function PressKitPage() {
             return <article key={photo.id} className={styles.photoCard}>
               <div className={styles.photoFrame}><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 1100px) 45vw, 575px" style={{ objectPosition: photo.position }} /></div>
               <div className={styles.photoHeading}><h3>{photo.title}</h3><a className="text-link" href={photo.src} download={photo.filename} aria-label={`Download ${photo.title}`}>Download ↓</a></div>
-              <p>{photo.description}</p><small>{file.width} × {file.height} · {file.format} · {file.size}</small><small className={styles.treatment}>{photo.treatment}</small>
+              <p>{photo.description}</p><small>{file.width} × {file.height} · {file.format} · {file.size}</small>
             </article>;
           })}
         </div>
@@ -56,7 +56,7 @@ export default function PressKitPage() {
         </div>
       </section>
       <section id="using-the-kit" className={`${styles.section} ${styles.usageGrid}`}>
-        <div><h2>Using the kit</h2><p>{kit.usage}</p><p className={styles.note}>Audience figures are dated public snapshots. YouTube rounds its subscriber count. The city portrait is an AI-assisted crop and color correction; the other three photos are originals.</p></div>
+        <div><h2>Using the kit</h2><p>{kit.usage}</p><p className={styles.note}>Audience figures are dated public snapshots. YouTube rounds its subscriber count.</p></div>
         <div><h2>Let’s work together.</h2><p>Interviews, integrations, appearances, or a thoughtful collaboration.</p><a className={styles.email} href={`mailto:${LINKS.email}?subject=JM%20Crypto%20media%20inquiry`}>{LINKS.email} ↗</a><p className={styles.note}>For current availability, campaign details, and audience breakdowns, get in touch.</p></div>
       </section>
     </div>

@@ -33,7 +33,7 @@ The landing-page introduction uses `jesus-martinez-city-portrait.png`, an AI-ass
 
 ## Media kit downloads
 
-`lib/media-kit.json` owns the bios, photo descriptions, usage notes, and channel details. The public YouTube profile returned 3,817,819 lifetime views on September 23, 2026. The banner in `public/media-kit/` is the current public artwork from `@jm_crypto`, retrieved that day. The kit labels the city portrait as an AI-assisted edit and includes three unchanged original photographs. Photo metadata respects EXIF orientation; the professional portrait displays at 4000 x 6000 pixels.
+`lib/media-kit.json` owns the bios, photo descriptions, usage notes, and channel details. The public YouTube profile returned 3,817,819 lifetime views on September 23, 2026. The banner in `public/media-kit/` is the current public artwork from `@jm_crypto`, retrieved that day. At Jesus's request, the public kit omits photo-treatment labels and editing notes. Source provenance stays in the internal content data. Photo metadata respects EXIF orientation; the professional portrait displays at 4000 x 6000 pixels.
 
 After changing kit content or the public audience counts in `lib/site.ts`, regenerate the PDF, text files, ZIP, and `lib/media-kit-downloads.json` together:
 

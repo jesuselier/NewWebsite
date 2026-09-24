@@ -19,7 +19,6 @@
 .photoHeading a { white-space: nowrap; font-size: 12px; }
 .photoCard p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
 .photoCard small { display: block; font-size: 11px; color: var(--muted); line-height: 1.6; }
-.photoCard .treatment { margin-top: 3px; color: var(--cyan); }
 .bioGrid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 50px; }
 .bioHeading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 20px; }
 .bioHeading h3 { font-size: 17px; font-weight: 550; }
