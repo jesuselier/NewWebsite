@@ -1,5 +1,25 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Crypto tier lists
+
+`/tier-list` serves the standalone ClassyCrypto builder adapted for Martinez Access.
+Its HTML, styles, browser JavaScript, local coin search index, and bundled html2canvas
+1.4.1 live in `public/tier-list-assets/`. The rewrite in `next.config.ts` keeps the
+public URL clean and gives the builder its own document so its CSS cannot affect
+the homepage. The navigation uses a regular anchor for this standalone document.
+
+Rankings save in this browser under `martinezAccessTierListState`. Share links
+encode rankings in the URL fragment at `https://www.martinezaccess.com/tier-list`;
+there is no server-side portfolio database. Logo and extended search requests use
+CoinGecko, with the bundled index available for local search. Image exports carry
+Martinez Access branding. The original ClassyCrypto project is maintained separately.
+
+Validate changes with `npm run lint`, `npm run build`, and
+`node --check public/tier-list-assets/script.js`. Browser verification should cover
+search, ranking, custom labels, immediate-reload persistence, shared links, image
+export, and mobile navigation. The vendored standalone JavaScript is excluded from
+the Next.js ESLint rules.
+
 ## Getting Started
 
 First, run the development server:

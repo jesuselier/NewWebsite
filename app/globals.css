@@ -177,7 +177,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     gap: 24px !important;
   }
 
-  .nav-links { display: none !important; }
+  .site-nav { flex-wrap: wrap; gap: 20px !important; }
+  .site-nav .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    gap: 12px !important;
+  }
 
   .footer-grid {
     grid-template-columns: 1fr !important;

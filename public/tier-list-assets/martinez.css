@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,500;1,400&display=swap');
+
+/* Match Martinez Access while keeping the original tier board and interactions. */
+:root {
+    --bg-dark: #080807;
+    --bg-darker: #080807;
+    --bg-app: #080807;
+    --bg-card: #12100d;
+    --bg-elevated: #211c15;
+    --text-primary: #f7f1e6;
+    --text-secondary: #ccc2b1;
+    --text-muted: #a59a88;
+    --neon-cyan: #d9a75b;
+    --neon-cyan-soft: rgba(217, 167, 91, .25);
+}
+body { font-family: 'Inter', sans-serif; color: var(--text-primary); }
+.grid-bg, .glow-orb { display: none; }
+.container { max-width: 1240px; }
+.access-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 12px 0 24px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--border-medium);
+}
+.access-brand { font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; white-space: nowrap; }
+.access-brand em { color: var(--text-secondary); font-weight: 400; }
+.access-nav a { color: var(--text-primary); text-decoration: none; }
+.access-links { display: flex; gap: 28px; font-size: 13px; }
+.access-links a[aria-current], .access-nav a:hover { color: var(--neon-cyan); }
+.hero { padding-top: 0; margin-bottom: 36px; animation: none; }
+.hero h1 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: clamp(40px, 5vw, 68px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -.025em;
+    color: var(--text-primary);
+    margin: 18px 0;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    text-shadow: none;
+}
+.subtitle { font-family: 'Inter', sans-serif; font-size: 16px; letter-spacing: 0; text-transform: none; }
+.neon-btn, .secondary-btn, .category-tab, .degen-toggle, .coin-pool h2 {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: .02em;
+}
+.neon-btn { box-shadow: none; background: #d9a75b; color: #18120b; }
+.submit-btn, .share-btn { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-strong); }
+.category-tab.active { background: #d9a75b; border-color: #d9a75b; color: #18120b; box-shadow: none; }
+.tier-helper { background: var(--bg-card); }
+.tier-content.empty::after { color: var(--text-muted); }
+.theme-toggle, .degen-toggle { box-shadow: none; border-color: var(--border-strong); }
+.neon-btn:hover { box-shadow: 0 0 0 2px var(--neon-cyan-soft); }
+.coin-pool h2 { text-transform: none; font-size: 19px; }
+.coin-text { font-family: 'Inter', sans-serif; }
+.tier-helper, .footer { line-height: 1.6; }
+.tier-helper kbd { white-space: nowrap; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--neon-cyan); outline-offset: 4px; }
+body.mode-builder .share-btn { display: inline-flex; }
+body.light-mode {
+    --text-primary: #1a1f2e;
+    --text-secondary: #454b57;
+    --text-muted: #555e6a;
+    --bg-card: #e6e9ee;
+    --bg-elevated: #e6e9ee;
+}
+body.light-mode .access-nav a { color: var(--text-primary); }
+body.light-mode .access-links a[aria-current] { color: #765013; }
+body.light-mode .hero h1 { background: none; }
+@media (max-width: 600px) {
+    .access-nav { flex-wrap: wrap; gap: 18px; margin-bottom: 28px; }
+    .access-links { width: 100%; justify-content: space-between; gap: 16px; }
+    .hero h1 { margin: 20px 0 14px; }
+    .subtitle { font-size: 14px; line-height: 1.6; }
+    .controls { position: static; padding: 0; margin-left: 0; margin-right: 0; background: none; border: 0; }
+    .input-zone { min-width: 0; width: 100%; }
+    .input-zone .neon-btn { padding: 12px 14px; flex: none; font-size: 11px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+    .actions button { width: 100%; min-width: 0; padding: 14px 8px; font-size: 11px; }
+    .export-btn { order: -3; }
+    .copy-link-btn { order: -2; }
+    .share-btn { order: -1; }
+    .shortcut-hint { display: none !important; }
+}

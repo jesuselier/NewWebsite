@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone browser app migrated from ClassyCrypto; syntax-checked with node --check.
+    "public/tier-list-assets/**",
   ]),
 ]);
 

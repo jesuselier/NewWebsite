@@ -12,7 +12,7 @@ const LINKS: { href: string; label: string }[] = [
 export default function Navbar() {
   return (
     <nav
-      className="rule-bottom"
+      className="rule-bottom site-nav"
       style={{
         display: "flex",
         alignItems: "center",
@@ -59,6 +59,11 @@ export default function Navbar() {
           padding: 0,
         }}
       >
+        <li>
+          <a href="/tier-list" className="hover:text-ink transition-colors">
+            Tier lists
+          </a>
+        </li>
         {LINKS.map((l) => (
           <li key={l.href}>
             <Link href={l.href} className="hover:text-ink transition-colors">
