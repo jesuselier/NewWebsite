@@ -252,9 +252,7 @@ button {
 }
 .hero-portrait {
   object-fit: cover;
-  object-position: 55% center;
-  transform: scale(1.23);
-  transform-origin: 55% 60%;
+  object-position: center 12%;
 }
 .portrait-caption {
   position: absolute;
@@ -1002,10 +1000,6 @@ button {
   }
   .hero-visual {
     height: 420px;
-  }
-  .hero-portrait {
-    object-position: 54% center;
-    transform-origin: 54% 60%;
   }
   .portrait-caption {
     padding: 40px 20px 17px;
