@@ -37,7 +37,9 @@ The original Google Drive folder was unavailable. `/press-kit` now hosts the bio
 
 The homepage's `#attention-cycle` section explains Jesus's market framework with an interactive five-stage cycle and a gaming/AI pathway comparison. It is grounded in his August 7, 2026 X Article: https://x.com/JesusMartinez/status/2085797626448896297. It does not restart or promote the paused second channel.
 
-The section preserves the Attention Cycle's gold/ink palette, approved aperture image, GFS Didot Bold headings, and JetBrains Mono labels in scoped CSS and fonts. Both the round trip and the invalidation condition stay visible. The AI-crypto handoff is labeled as a thesis, and the diagrams contain no fabricated prices, measured flows, or undated market statistics.
+At Jesus's request, the website explainer uses the site's Inter typography, slate surfaces, and muted teal accents. Its central diagram uses text rather than the separate channel's gold aperture. This site-specific adaptation does not change the Attention Cycle's canonical standalone branding. Both the round trip and the invalidation condition stay visible. The AI-crypto handoff is labeled as a thesis, and the diagrams contain no fabricated prices, measured flows, or undated market statistics.
+
+The opening portrait uses a closer CSS crop without changing the original photograph. The shared footer has an oversized outlined JESUS MARTINEZ signature and a back-to-top link; check the full name at phone and wide desktop sizes when changing typography.
 
 Check all five stage buttons, keyboard activation, the next-stage wrap, responsive diagrams, article link, and footer anchor after changes.
 

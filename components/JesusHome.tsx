@@ -43,7 +43,7 @@ export default async function JesusHome() {
             src="/media/jesus-martinez-studio.jpg"
             alt="Jesus Martinez smiling in the JM Crypto studio"
             fill
-            sizes="(max-width: 760px) 92vw, 46vw"
+            sizes="(max-width: 380px) 810px, (max-width: 760px) 920px, 1250px"
             preload
             className="hero-portrait"
           />

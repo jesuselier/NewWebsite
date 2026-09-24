@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useState } from "react";
-import Image from "next/image";
 import styles from "./AttentionCycle.module.css";
 
 const stages = [
@@ -95,13 +94,10 @@ export default function AttentionCycleDiagram() {
             ))}
           </svg>
           <div className={styles.mapCenter} aria-hidden="true">
-            <Image
-              src="/brand/attention-cycle.png"
-              alt=""
-              width={76}
-              height={76}
-              sizes="76px"
-            />
+            <strong>
+              The attention<br />
+              becomes the trade.
+            </strong>
             <span>
               Follow the attention.
               <br />

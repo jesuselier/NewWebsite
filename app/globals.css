@@ -253,6 +253,8 @@ button {
 .hero-portrait {
   object-fit: cover;
   object-position: 55% center;
+  transform: scale(1.23);
+  transform-origin: 55% 60%;
 }
 .portrait-caption {
   position: absolute;
@@ -531,21 +533,11 @@ button {
 }
 .site-footer {
   border-top: 1px solid var(--rule);
-  padding-block: 30px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 20px;
-  align-items: center;
+  padding-top: 32px;
+  container-type: inline-size;
 }
-.footer-brand {
-  font-weight: 600;
-  font-size: 17px;
-  letter-spacing: -0.03em;
-}
-.site-footer p {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 6px;
+.footer-content {
+  padding-bottom: clamp(35px, 5vw, 72px);
 }
 .footer-links {
   display: flex;
@@ -554,10 +546,39 @@ button {
   font-size: 11px;
   color: var(--muted);
 }
-.copyright {
+.footer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 28px;
   font-size: 10px;
   color: var(--subtle);
-  grid-column: 1/-1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.back-to-top:hover {
+  color: var(--cyan);
+}
+.footer-signature {
+  padding: 0 1.2% 1.8%;
+  color: transparent;
+  -webkit-text-stroke: 1px #35434e;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12cqw;
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
 }
 .page-body {
   padding-block: 64px 75px;
@@ -984,6 +1005,7 @@ button {
   }
   .hero-portrait {
     object-position: 54% center;
+    transform-origin: 54% 60%;
   }
   .portrait-caption {
     padding: 40px 20px 17px;
@@ -1098,12 +1120,24 @@ button {
     font-size: 13px;
   }
   .site-footer {
-    padding-block: 27px;
-    grid-template-columns: 1fr;
-    gap: 22px;
+    padding-top: 27px;
   }
   .footer-links {
-    gap: 24px;
+    gap: 18px 24px;
+  }
+  .footer-meta {
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 22px;
+    font-size: 8px;
+  }
+  .footer-note {
+    order: 1;
+    width: 100%;
+  }
+  .footer-signature {
+    -webkit-text-stroke-width: 0.75px;
+    padding-bottom: 3vw;
   }
   .page-body {
     padding-block: 39px 50px;

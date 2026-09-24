@@ -1,17 +1,18 @@
 .section {
-  --cycle-ink: #100d0a;
-  --cycle-stone: #22201b;
-  --cycle-gold: #c9a24b;
-  --cycle-highlight: #e7cd92;
-  --cycle-cream: #f4eee2;
-  --cycle-muted: #b8b0a1;
+  --cycle-surface: var(--panel);
+  --cycle-raised: var(--raised);
+  --cycle-accent: var(--cyan);
+  --cycle-highlight: var(--cyan);
+  --cycle-text: var(--ink);
+  --cycle-muted: var(--muted);
   padding-block: 72px 12px;
   scroll-margin-top: 16px;
 }
 .surface {
-  background: var(--cycle-ink);
-  color: var(--cycle-cream);
+  background: var(--cycle-surface);
+  color: var(--cycle-text);
   padding: 48px;
+  border: 1px solid var(--rule);
   border-radius: 14px;
 }
 .header {
@@ -23,8 +24,8 @@
 .eyebrow,
 .stageCounter,
 .pathwayLabel > span {
-  font-family: var(--font-cycle-label), monospace;
   font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--cycle-highlight);
@@ -34,14 +35,13 @@
 .comparison h3,
 .grounding h3,
 .pathway h4 {
-  font-family: var(--font-cycle-display), Georgia, serif;
-  font-weight: 700;
-  line-height: 1.14;
-  letter-spacing: -0.025em;
+  font-weight: 550;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
 }
 .header h2 {
-  font-size: clamp(36px, 3.9vw, 52px);
-  color: var(--cycle-gold);
+  font-size: clamp(32px, 3.4vw, 44px);
+  color: var(--cycle-text);
   margin-top: 16px;
   text-wrap: nowrap;
 }
@@ -54,7 +54,7 @@
 .law {
   margin: 29px 0 0;
   padding-bottom: 29px;
-  border-bottom: 1px solid #c9a24b35;
+  border-bottom: 1px solid var(--rule);
   font-size: 14px;
   line-height: 1.8;
   color: var(--cycle-highlight);
@@ -76,7 +76,7 @@
   width: 100%;
   height: 100%;
   inset: 0;
-  color: var(--cycle-gold);
+  color: var(--cycle-accent);
   pointer-events: none;
 }
 .mapCenter {
@@ -88,10 +88,13 @@
   width: 165px;
   pointer-events: none;
 }
-.mapCenter img {
-  margin-inline: auto;
-  width: 68px;
-  height: 68px;
+.mapCenter strong {
+  display: block;
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: -0.04em;
+  font-weight: 550;
+  color: var(--cycle-text);
 }
 .mapCenter span {
   display: block;
@@ -107,7 +110,7 @@
   min-height: 76px;
   padding: 4px;
   border: 0;
-  background: var(--cycle-ink);
+  background: var(--cycle-surface);
   color: var(--cycle-muted);
   cursor: pointer;
   display: flex;
@@ -124,21 +127,21 @@
   place-items: center;
   width: 40px;
   height: 40px;
-  border: 1px solid #c9a24b80;
+  border: 1px solid #4b6e79;
   border-radius: 50%;
-  font-family: var(--font-cycle-label), monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   color: var(--cycle-highlight);
-  background: var(--cycle-stone);
+  background: var(--cycle-raised);
 }
 .stageButton[aria-pressed="true"] {
-  color: var(--cycle-cream);
+  color: var(--cycle-text);
 }
 .stageButton[aria-pressed="true"] .stageNumber {
-  background: var(--cycle-gold);
-  border-color: var(--cycle-gold);
-  color: var(--cycle-ink);
-  box-shadow: 0 0 0 5px #c9a24b20;
+  background: var(--accent);
+  border-color: var(--cycle-accent);
+  color: var(--cycle-text);
+  box-shadow: 0 0 0 5px #79bdc620;
 }
 .stageButton:hover .stageNumber {
   border-color: var(--cycle-highlight);
@@ -155,7 +158,7 @@
   margin-top: 0;
 }
 .stageDetail {
-  border-left: 1px solid #c9a24b35;
+  border-left: 1px solid var(--rule);
   padding-left: 38px;
 }
 .explanation {
@@ -187,7 +190,7 @@
   display: flex;
   gap: 24px;
   align-items: center;
-  color: var(--cycle-cream);
+  color: var(--cycle-text);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -198,7 +201,7 @@
   color: var(--cycle-highlight);
 }
 .comparison {
-  border-top: 1px solid #c9a24b35;
+  border-top: 1px solid var(--rule);
   padding-top: 32px;
 }
 .comparison h3 {
@@ -235,9 +238,10 @@
   display: grid;
   place-items: center;
   padding: 18px 8px;
-  background: var(--cycle-stone);
+  background: var(--cycle-raised);
   border: 1px solid transparent;
-  color: var(--cycle-cream);
+  border-radius: 6px;
+  color: var(--cycle-text);
   font-size: 12px;
   font-weight: 500;
   text-align: center;
@@ -248,12 +252,12 @@
   left: -23px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--cycle-gold);
+  color: var(--cycle-accent);
   font-size: 16px;
 }
 .hypothesisNode .pathNode {
   background: transparent;
-  border: 1px dashed var(--cycle-gold);
+  border: 1px dashed var(--cycle-accent);
   color: var(--cycle-highlight);
 }
 .comparisonNote {
@@ -267,7 +271,7 @@
   gap: 52px;
   margin-top: 32px;
   padding-top: 30px;
-  border-top: 1px solid #c9a24b35;
+  border-top: 1px solid var(--rule);
 }
 .grounding h3 {
   font-size: 25px;
@@ -327,9 +331,8 @@
   .explanation {
     min-height: 325px;
   }
-  .mapCenter img {
-    width: 54px;
-    height: 54px;
+  .mapCenter strong {
+    font-size: 17px;
   }
   .mapCenter span {
     font-size: 10px;
@@ -354,7 +357,7 @@
     gap: 18px;
   }
   .header h2 {
-    font-size: 42px;
+    font-size: 36px;
     text-wrap: balance;
     max-width: 300px;
   }
@@ -388,11 +391,10 @@
     font-size: 12px;
   }
   .mapCenter {
-    width: 130px;
+    width: 120px;
   }
-  .mapCenter img {
-    width: 48px;
-    height: 48px;
+  .mapCenter strong {
+    font-size: 16px;
   }
   .mapCenter span {
     margin-top: 8px;
@@ -492,18 +494,20 @@
     padding: 25px 18px;
   }
   .header h2 {
-    font-size: 38px;
+    font-size: 32px;
   }
   .stageButton {
     width: 66px;
     font-size: 9px;
   }
-  .mapCenter img {
-    width: 38px;
-    height: 38px;
+  .mapCenter {
+    width: 90px;
+  }
+  .mapCenter strong {
+    font-size: 12px;
   }
   .mapCenter span {
-    font-size: 8px;
+    display: none;
   }
   .explanation {
     min-height: 290px;

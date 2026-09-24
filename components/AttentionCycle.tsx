@@ -1,22 +1,6 @@
-import localFont from "next/font/local";
-import { JetBrains_Mono } from "next/font/google";
 import AttentionCycleDiagram from "./AttentionCycleDiagram";
 import styles from "./AttentionCycle.module.css";
 
-const didot = localFont({
-  src: "../public/fonts/GFSDidotBold.otf",
-  weight: "700",
-  variable: "--font-cycle-display",
-  display: "swap",
-  preload: false,
-});
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-cycle-label",
-  display: "swap",
-  preload: false,
-});
 const articleUrl = "https://x.com/JesusMartinez/status/2085797626448896297";
 
 function Pathway({
@@ -64,7 +48,7 @@ export default function AttentionCycle() {
     <section
       id="attention-cycle"
       aria-labelledby="attention-cycle-title"
-      className={`container ${styles.section} ${didot.variable} ${mono.variable}`}
+      className={`container ${styles.section}`}
     >
       <div className={styles.surface}>
         <header className={styles.header}>
