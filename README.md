@@ -27,6 +27,16 @@ The story is grounded in Jesus's supplied video captions: his brother's leverage
 
 The original Google Drive folder was unavailable. `/press-kit` now hosts the bio, dated audience numbers, contact details, and a downloadable portrait. `public/media/jesus-martinez-studio.jpg` and `jesus-martinez-portrait.jpg` are Jesus's original 1920x1080 studio photographs from his Camera Roll; the originals are preserved and Next Image optimizes display sizes.
 
+## Website analytics
+
+Vercel Web Analytics is enabled for `new-website`. Open the private dashboard at https://vercel.com/jesuseliers-projects/new-website/analytics to see visitors, page views, traffic sources, countries, and devices. Select Production and the desired date range; use Hostnames to distinguish www.martinezaccess.com from Vercel aliases.
+
+`app/layout.tsx` mounts `@vercel/analytics/next` once for every Next.js page, including client-side route changes. The standalone tier-list document has its own deferred Vercel tracking script because its rewrite bypasses the layout. Preserve both integrations when changing layouts or replacing the tier-list HTML. Its `beforeSend` hook removes URL fragments so shared coin rankings are not included in page-view URLs; no custom events or visitor identity fields are sent by the application.
+
+Collection began with this integration; visits from before it cannot be reconstructed by Web Analytics. The Hobby plan supports traffic analytics but not custom events. Its current allowance is 50,000 events per month across the team and a one-month reporting window; exceeding the allowance can pause collection. Recheck Vercel's current limits before changing plans. No paid upgrade is required for this setup.
+
+To verify after deployment: visit the production homepage, follow an internal link, and open `/tier-list`. Confirm the tracking script loads, check for browser errors, and verify those page paths appear in the Analytics dashboard after processing. Local Next.js development uses the SDK's development mode and does not send production page views.
+
 ## YouTube feed
 
 `lib/youtube.ts` fetches JM Crypto's Atom feed and its Videos tab in parallel. `lib/youtube-feed.ts` reads the Videos tab's data without executing page JavaScript, validates and decodes entries, builds safe watch/image URLs, deduplicates uploads, and formats dates in America/New_York. Only IDs verified on the Videos tab or in the long-form snapshot may appear. Shorts are excluded. If classification fails, unknown uploads are withheld; duration is never used to guess whether an upload is a Short. There are no per-video HEAD probes.
