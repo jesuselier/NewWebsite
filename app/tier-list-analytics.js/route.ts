@@ -1,5 +1,11 @@
 export const dynamic = "force-static";
 
+function absolutePath(value: string) {
+  return value.startsWith("/") || /^https?:\/\//.test(value)
+    ? value
+    : `/${value}`;
+}
+
 export function GET() {
   // Use the same deployment-provided endpoints as @vercel/analytics/next.
   const config = JSON.parse(
@@ -8,9 +14,9 @@ export function GET() {
       "{}",
   ).analytics || {};
   const options = {
-    src: config.scriptSrc || "/_vercel/insights/script.js",
-    viewEndpoint: config.viewEndpoint || "/_vercel/insights/view",
-    eventEndpoint: config.eventEndpoint || "/_vercel/insights/event",
+    src: absolutePath(config.scriptSrc || "/_vercel/insights/script.js"),
+    viewEndpoint: absolutePath(config.viewEndpoint || "/_vercel/insights/view"),
+    eventEndpoint: absolutePath(config.eventEndpoint || "/_vercel/insights/event"),
   };
 
   return new Response(
