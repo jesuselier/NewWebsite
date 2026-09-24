@@ -27,7 +27,9 @@ The story is grounded in Jesus's supplied video captions: his brother's leverage
 
 The original press-kit Google Drive folder was unavailable. `/press-kit` now hosts the bio, dated audience numbers, contact details, and a downloadable portrait. `public/media/jesus-martinez-studio.jpg` and `jesus-martinez-portrait.jpg` are Jesus's original 1920x1080 studio photographs from his Camera Roll.
 
-The landing page uses `public/media/jesus-martinez-professional.jpg`, the original `C2_09680.JPG` selected from Jesus's supplied professional shoot folder on September 23, 2026. Source: https://drive.google.com/file/d/1zlg4FdtsuWOLd5-gnTlpZhqzc1W-z0cz/view (folder `16j5_T-xpDHJVKr27UzPVgFS5amWheSMw`). The original photograph is preserved; Next Image handles orientation and optimized responsive delivery. The CSS crop keeps his face prominent without the previous landscape image's extra zoom. Check the crop at desktop, tablet, and phone widths when changing the hero dimensions.
+The landing-page introduction uses the smiling, camera-facing `jesus-martinez-studio.jpg` with a close CSS crop. Jesus requested direct eye contact for this introduction. The candid professional portrait sits to the left of the homepage story text and also appears on `/about`, so his gaze leads toward the story on desktop.
+
+`public/media/jesus-martinez-professional.jpg` is the original `C2_09680.JPG` selected from Jesus's supplied professional shoot folder on September 23, 2026. Source: https://drive.google.com/file/d/1zlg4FdtsuWOLd5-gnTlpZhqzc1W-z0cz/view (folder `16j5_T-xpDHJVKr27UzPVgFS5amWheSMw`). Original photographs are preserved; Next Image handles orientation and optimized responsive delivery. Check both portrait crops at desktop, tablet, and phone widths when changing their containers.
 
 ## Website analytics
 

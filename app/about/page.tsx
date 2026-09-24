@@ -21,10 +21,10 @@ export default function AboutPage() {
         <div className="about-layout">
           <figure className="about-photo">
             <Image
-              src="/media/jesus-martinez-portrait.jpg"
-              alt="Jesus Martinez in his studio beside the JM Crypto microphone"
+              src="/media/jesus-martinez-professional.jpg"
+              alt="Jesus Martinez seated at the microphone during a JM Crypto conversation"
               fill
-              sizes="(max-width: 760px) 92vw, 43vw"
+              sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1100px) 45vw, 500px"
               preload
             />
           </figure>

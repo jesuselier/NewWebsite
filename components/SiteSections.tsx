@@ -1,34 +1,43 @@
+import Image from "next/image";
 import Link from "next/link";
 export function StoryFeature() {
   return (
     <section className="story-feature" id="story">
       <div className="container story-inner">
-        <div>
+        <figure className="story-photo">
+          <Image
+            src="/media/jesus-martinez-professional.jpg"
+            alt="Jesus Martinez seated at the microphone during a JM Crypto conversation"
+            fill
+            sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1100px) 45vw, 493px"
+          />
+        </figure>
+        <div className="story-copy">
           <span className="section-label">How it started</span>
           <h2>
             I got into crypto
             <br />
             to help my brother.
           </h2>
+          <div className="story-excerpt">
+            <p>
+              In 2021, my brother lost his life savings through high-leverage
+              trading. I wanted to help him rebuild, so I started learning
+              everything I could.
+            </p>
+            <p>
+              I put $700 into Axie Infinity, half of what I had in the bank.
+              Through the game’s breeding market, I turned that into mid-five
+              figures and helped my brother recover.
+            </p>
+            <p>
+              That experience changed my direction. Today, I’m all in on growing
+              JM Crypto and sharing what I learn.
+            </p>
+          </div>
           <Link className="text-link" href="/about">
             The full story <span aria-hidden="true">↗</span>
           </Link>
-        </div>
-        <div className="story-excerpt">
-          <p>
-            In 2021, my brother lost his life savings through high-leverage
-            trading. I wanted to help him rebuild, so I started learning
-            everything I could.
-          </p>
-          <p>
-            I put $700 into Axie Infinity, half of what I had in the bank.
-            Through the game’s breeding market, I turned that into mid-five
-            figures and helped my brother recover.
-          </p>
-          <p>
-            That experience changed my direction. Today, I’m all in on growing
-            JM Crypto and sharing what I learn.
-          </p>
         </div>
       </div>
     </section>

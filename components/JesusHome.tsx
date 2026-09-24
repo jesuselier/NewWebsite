@@ -40,10 +40,10 @@ export default async function JesusHome() {
         </div>
         <div className="hero-visual">
           <Image
-            src="/media/jesus-martinez-professional.jpg"
-            alt="Jesus Martinez seated at the microphone in the JM Crypto studio"
+            src="/media/jesus-martinez-studio.jpg"
+            alt="Jesus Martinez smiling at the camera in his studio"
             fill
-            sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1100px) 48vw, 531px"
+            sizes="(max-width: 380px) 810px, (max-width: 760px) 920px, 1250px"
             preload
             className="hero-portrait"
           />

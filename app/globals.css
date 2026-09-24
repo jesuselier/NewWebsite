@@ -252,7 +252,9 @@ button {
 }
 .hero-portrait {
   object-fit: cover;
-  object-position: center 12%;
+  object-position: 55% center;
+  transform: scale(1.23);
+  transform-origin: 55% 60%;
 }
 .portrait-caption {
   position: absolute;
@@ -391,9 +393,25 @@ button {
 }
 .story-inner {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
   gap: 85px;
   padding-block: 65px;
+}
+.story-photo {
+  position: relative;
+  height: 520px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #24282a;
+}
+.story-photo img {
+  object-fit: cover;
+  object-position: center 12%;
+}
+.story-excerpt {
+  margin-top: 24px;
 }
 .story-feature .section-label {
   color: var(--cyan);
@@ -770,7 +788,7 @@ button {
 }
 .about-photo img {
   object-fit: cover;
-  object-position: 47% center;
+  object-position: center 12%;
 }
 .about-copy h2 {
   font-size: 27px;
@@ -1001,6 +1019,10 @@ button {
   .hero-visual {
     height: 420px;
   }
+  .hero-portrait {
+    object-position: 54% center;
+    transform-origin: 54% 60%;
+  }
   .portrait-caption {
     padding: 40px 20px 17px;
     font-size: 10px;
@@ -1068,6 +1090,9 @@ button {
     grid-template-columns: 1fr;
     gap: 28px;
     padding-block: 43px;
+  }
+  .story-photo {
+    height: 400px;
   }
   .story-feature h2 {
     font-size: 33px;
