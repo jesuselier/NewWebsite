@@ -1,24 +1,32 @@
+import Link from "next/link";
 export default function Footer() {
   return (
-    <footer
-      className="rule-top footer-grid"
-      style={{
-        marginTop: 120,
-        padding: "32px 0 48px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 40,
-      }}
-    >
-      <span
-        className="font-serif text-ink-mute"
-        style={{ fontSize: 14, fontStyle: "italic" }}
-      >
-        © 2026 Martinez Access. All rights reserved.
-      </span>
-      <span className="font-mono text-ink-mute" style={{ fontSize: 12, letterSpacing: "0.3em" }}>
-        · <span style={{ color: "var(--gold)" }}>·</span> ·
+    <footer className="container site-footer">
+      <div>
+        <Link href="/" className="footer-brand">
+          Martinez Access<span className="cyan">.</span>
+        </Link>
+        <p>Independent curiosity. Informed perspective.</p>
+      </div>
+      <div className="footer-links">
+        <a
+          href="https://x.com/JesusMartinez"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          X ↗
+        </a>
+        <a
+          href="https://www.youtube.com/@jm_crypto"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          YouTube ↗
+        </a>
+        <Link href="/press-kit">Press kit</Link>
+      </div>
+      <span className="copyright">
+        © {new Date().getFullYear()} Jesus Martinez
       </span>
     </footer>
   );

@@ -1,114 +1,90 @@
 import type { Metadata } from "next";
-import { Source_Serif_4, Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import "./globals.css";
-
-const sourceSerif = Source_Serif_4({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-source-serif",
-  display: "swap",
-});
-
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
   variable: "--font-inter",
   display: "swap",
 });
-
-const jetbrains = JetBrains_Mono({
+const mono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: "400",
   variable: "--font-jetbrains",
   display: "swap",
+  preload: false,
 });
-
+const didot = localFont({
+  src: "../public/fonts/GFSDidotBold.otf",
+  weight: "700",
+  variable: "--font-didot",
+  display: "swap",
+  preload: false,
+});
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.martinezaccess.com"),
   title: {
-    default: "Jesus Martinez - Martinez Access",
+    default: "Jesus Martinez | Crypto, With Context",
     template: "%s | Martinez Access",
   },
   description:
-    "Markets, macro, and the AI that now trades them — two desks from Jesus Martinez: JM Crypto and Jesus Martinez Trades.",
-  keywords: [
-    "Jesus Martinez",
-    "JM Crypto",
-    "Jesus Martinez Trades",
-    "Martinez Access",
-    "crypto news",
-    "AI stocks",
-    "agentic trading",
-    "AI and crypto",
-    "macro markets",
-  ],
-  authors: [{ name: "Jesus Martinez", url: "https://martinezaccess.com" }],
+    "Crypto research, conversations, and tools from Jesus Martinez. Watch JM Crypto, explore The Attention Cycle, and build your own crypto tier list.",
+  authors: [{ name: "Jesus Martinez", url: "https://www.martinezaccess.com" }],
   creator: "Jesus Martinez",
-  publisher: "Martinez Access",
-  metadataBase: new URL("https://martinezaccess.com"),
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
-    title: "Jesus Martinez - Martinez Access",
-    description:
-      "Markets, macro, and the AI that now trades them — by Jesus Martinez.",
-    url: "https://martinezaccess.com",
     siteName: "Martinez Access",
-    images: ["/opengraph-image"],
     locale: "en_US",
     type: "website",
+    images: ["/opengraph-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jesus Martinez - Martinez Access",
-    description:
-      "Markets, macro, and the AI that now trades them — by Jesus Martinez.",
+    creator: "@JesusMartinez",
     images: ["/opengraph-image"],
   },
+  icons: { icon: "/icon.svg" },
 };
-
-const structuredData = {
+const person = {
   "@context": "https://schema.org",
   "@type": "Person",
   name: "Jesus Martinez",
-  url: "https://martinezaccess.com",
-  image: "https://martinezaccess.com/Happy.webp",
-  jobTitle: "Creator and market analyst",
-  brand: {
-    "@type": "Brand",
-    name: "Martinez Access",
-  },
+  url: "https://www.martinezaccess.com",
+  image: "https://www.martinezaccess.com/Happy.webp",
+  jobTitle: "Crypto creator and researcher",
   sameAs: [
-    "https://youtube.com/@jm_crypto",
+    "https://www.youtube.com/@jm_crypto",
     "https://www.youtube.com/@JesusMartinezTrades",
     "https://x.com/JesusMartinez",
-    "https://instagram.com/jesusmartinezez",
+    "https://www.instagram.com/jesusmartinezez/",
   ],
   knowsAbout: [
-    "cryptocurrency",
-    "macro markets",
-    "artificial intelligence",
-    "AI stocks",
-    "agentic trading",
-    "digital assets",
+    "Cryptocurrency",
+    "Bittensor",
+    "Artificial intelligence",
+    "Digital assets",
   ],
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"
-      className={`${sourceSerif.variable} ${inter.variable} ${jetbrains.variable}`}
+      className={`${inter.variable} ${mono.variable} ${didot.variable}`}
     >
       <body>
+        <a className="skip-link" href="#main-content">
+          Skip to content
+        </a>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }}
         />
-        {children}
+        <Navbar />
+        <main id="main-content">{children}</main>
+        <Footer />
       </body>
     </html>
   );

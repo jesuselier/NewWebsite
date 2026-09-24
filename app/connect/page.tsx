@@ -1,64 +1,64 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import SectionHead from "@/components/SectionHead";
+import Link from "next/link";
 import EmailTile from "@/components/EmailTile";
-import MediaKitTile from "@/components/MediaKitTile";
-import SocialTile from "@/components/SocialTile";
-import Reveal from "@/components/Reveal";
-
-export const metadata = {
-  title: "Connect - Jesus Martinez",
-  description:
-    "Contact Jesus Martinez for sponsorships, press, collaborations, and social channels.",
-};
-
+import { LINKS, pageMetadata } from "@/lib/site";
+export const metadata = pageMetadata(
+  "Get in Touch",
+  "Contact Jesus Martinez for interviews, collaborations, sponsorships, and press. Find JM Crypto and The Attention Cycle.",
+  "/connect",
+);
 export default function ConnectPage() {
   return (
-    <div className="container-page">
-      <Navbar />
-      <SectionHead num="03" title="Connect" />
-
-      <Reveal
-        as="section"
-        className="rule-top rule-bottom row-4"
-        style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}
-      >
-        <EmailTile />
-        <MediaKitTile />
-        <SocialTile
-          name="X"
-          handle="318K followers"
-          tag="Daily market takes"
-          href="https://x.com/JesusMartinez"
-          featured
-          featuredTag="Primary platform"
-        />
-        <SocialTile
-          name="Instagram"
-          handle="@jesusmartinezez"
-          tag="Behind the scenes"
-          href="https://instagram.com/jesusmartinezez"
-        />
-      </Reveal>
-
-      <Reveal
-        as="section"
-        className="premium-panel"
-        style={{ marginTop: 48, padding: 40 }}
-      >
-        <span className="font-mono text-gold uppercase" style={{ fontSize: 10, letterSpacing: "0.14em" }}>
-          Best fit
-        </span>
-        <p
-          className="font-serif text-ink"
-          style={{ fontSize: 28, lineHeight: 1.3, margin: "12px 0 0", maxWidth: "34ch", fontStyle: "italic" }}
-        >
-          Sponsorships, media requests, exchange and trading-platform campaigns, AI tooling,
-          and stories at the intersection of markets and machine intelligence.
+    <div className="container page-body">
+      <header className="page-heading">
+        <span className="eyebrow">Let’s connect</span>
+        <h1>
+          Good conversations
+          <br />
+          start somewhere.
+        </h1>
+        <p>
+          Have a story, a product, or a perspective my audience should hear?
+          Send a little context and let’s talk.
         </p>
-      </Reveal>
-
-      <Footer />
+      </header>
+      <EmailTile />
+      <div className="contact-grid">
+        <a
+          className="contact-card"
+          href={LINKS.x}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="eyebrow">The daily conversation</span>
+          <h2>
+            Find me on X <span aria-hidden="true">↗</span>
+          </h2>
+          <p>@JesusMartinez</p>
+        </a>
+        <a
+          className="contact-card"
+          href={LINKS.instagram}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="eyebrow">Behind the scenes</span>
+          <h2>
+            Instagram <span aria-hidden="true">↗</span>
+          </h2>
+          <p>@jesusmartinezez</p>
+        </a>
+        <Link className="contact-card" href="/press-kit">
+          <span className="eyebrow">For partners & press</span>
+          <h2>
+            Press kit <span aria-hidden="true">↗</span>
+          </h2>
+          <p>Bio, collaboration formats, and media assets.</p>
+        </Link>
+      </div>
+      <p className="contact-help">
+        For a faster conversation, include your project, the format you have in
+        mind, and your timeline.
+      </p>
     </div>
   );
 }

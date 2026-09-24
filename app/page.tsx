@@ -1,20 +1,11 @@
-import type { Metadata } from "next";
 import JesusHome from "@/components/JesusHome";
-
-export const metadata: Metadata = {
-  title: {
-    absolute: "Jesus Martinez - Martinez Access",
-  },
-  description:
-    "Markets, macro, and the AI that now trades them. Home of JM Crypto and Jesus Martinez Trades.",
-  openGraph: {
-    title: "Jesus Martinez - Martinez Access",
-    description:
-      "Markets, macro, and the AI that now trades them — by Jesus Martinez.",
-    images: ["/opengraph-image"],
-  },
-};
-
+import { pageMetadata } from "@/lib/site";
 export const revalidate = 1800;
-
-export default JesusHome;
+export const metadata = pageMetadata(
+  "Jesus Martinez | Crypto, With Context",
+  "Crypto research, conversations, and tools from Jesus Martinez. Watch JM Crypto, explore The Attention Cycle, and build your own tier list.",
+  "/",
+);
+export default function Home() {
+  return <JesusHome />;
+}

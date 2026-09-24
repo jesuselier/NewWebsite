@@ -1,17 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,500;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* Match Martinez Access while keeping the original tier board and interactions. */
 :root {
-    --bg-dark: #080807;
-    --bg-darker: #080807;
-    --bg-app: #080807;
-    --bg-card: #12100d;
-    --bg-elevated: #211c15;
-    --text-primary: #f7f1e6;
-    --text-secondary: #ccc2b1;
-    --text-muted: #a59a88;
-    --neon-cyan: #d9a75b;
-    --neon-cyan-soft: rgba(217, 167, 91, .25);
+    --bg-dark: #0b1018;
+    --bg-darker: #0b1018;
+    --bg-app: #0b1018;
+    --bg-card: #141c27;
+    --bg-elevated: #1d2937;
+    --text-primary: #f4eee2;
+    --text-secondary: #a5afbc;
+    --text-muted: #a5afbc;
+    --neon-cyan: #00c8e0;
+    --neon-cyan-soft: rgba(0, 200, 224, .25);
 }
 body { font-family: 'Inter', sans-serif; color: var(--text-primary); }
 .grid-bg, .glow-orb { display: none; }
@@ -25,14 +25,14 @@ body { font-family: 'Inter', sans-serif; color: var(--text-primary); }
     margin-bottom: 40px;
     border-bottom: 1px solid var(--border-medium);
 }
-.access-brand { font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; white-space: nowrap; }
+.access-brand { font-family: 'Inter', sans-serif; font-size: 24px; white-space: nowrap; }
 .access-brand em { color: var(--text-secondary); font-weight: 400; }
 .access-nav a { color: var(--text-primary); text-decoration: none; }
 .access-links { display: flex; gap: 28px; font-size: 13px; }
 .access-links a[aria-current], .access-nav a:hover { color: var(--neon-cyan); }
 .hero { padding-top: 0; margin-bottom: 36px; animation: none; }
 .hero h1 {
-    font-family: 'Source Serif 4', Georgia, serif;
+    font-family: 'Inter', sans-serif;
     font-size: clamp(40px, 5vw, 68px);
     font-weight: 400;
     line-height: 1.1;
@@ -48,9 +48,9 @@ body { font-family: 'Inter', sans-serif; color: var(--text-primary); }
     font-family: 'Inter', sans-serif;
     letter-spacing: .02em;
 }
-.neon-btn { box-shadow: none; background: #d9a75b; color: #18120b; }
+.neon-btn { box-shadow: none; background: #00c8e0; color: #061219; }
 .submit-btn, .share-btn { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-strong); }
-.category-tab.active { background: #d9a75b; border-color: #d9a75b; color: #18120b; box-shadow: none; }
+.category-tab.active { background: #00c8e0; border-color: #00c8e0; color: #061219; box-shadow: none; }
 .tier-helper { background: var(--bg-card); }
 .tier-content.empty::after { color: var(--text-muted); }
 .theme-toggle, .degen-toggle { box-shadow: none; border-color: var(--border-strong); }
@@ -69,7 +69,7 @@ body.light-mode {
     --bg-elevated: #e6e9ee;
 }
 body.light-mode .access-nav a { color: var(--text-primary); }
-body.light-mode .access-links a[aria-current] { color: #765013; }
+body.light-mode .access-links a[aria-current] { color: #006776; }
 body.light-mode .hero h1 { background: none; }
 @media (max-width: 600px) {
     .access-nav { flex-wrap: wrap; gap: 18px; margin-bottom: 28px; }
@@ -86,3 +86,24 @@ body.light-mode .hero h1 { background: none; }
     .share-btn { order: -1; }
     .shortcut-hint { display: none !important; }
 }
+
+.access-brand { font-size: 14px; font-weight: 750; letter-spacing: .03em; display: flex; align-items: center; gap: 8px; }
+.access-brand::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--neon-cyan); margin-right: 5px; }
+.access-brand em { font-style: normal; font-weight: 400; }
+.access-links { align-items: center; font-size: 12px; gap: 25px; }
+.access-links a { min-height: 44px; display: inline-flex; align-items: center; }
+.hero h1 { font-weight: 600; letter-spacing: -.05em; }
+.coin-pool, .tier-list { box-shadow: none; }
+.tier-label, .tier-label-inner { text-shadow: none; }
+@media (max-width: 600px) { .access-nav { gap: 10px; } .access-links { font-size: 10px; gap: 8px; } .access-brand { font-size: 13px; } }
+/* Flat controls match the rest of the site without changing the ranking colors. */
+.neon-btn, .secondary-btn, .theme-toggle, .degen-toggle, .category-tab { box-shadow: none; border-radius: 6px; font-weight: 600; }
+.neon-btn, .secondary-btn { font-size: 11px; }
+.secondary-btn, .theme-toggle, .degen-toggle, .category-tab { border-width: 1px; background: var(--bg-card); }
+.neon-btn::before, .neon-btn::after { display: none; }
+#coinInput { font-size: 14px; font-weight: 400; letter-spacing: 0; border-width: 1px; border-radius: 6px; box-shadow: none; }
+#coinInput::placeholder { font-size: 13px; font-weight: 400; letter-spacing: 0; }
+.subtitle { font-weight: 400; }
+.footer { font-size: 12px; font-weight: 400; }
+.access-brand { font-family: 'Inter', sans-serif; }
+@media (max-width: 600px) { .access-nav { padding-top: 0; margin-bottom: 24px; } }

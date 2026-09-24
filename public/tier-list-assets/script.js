@@ -1001,6 +1001,7 @@ function setupEventListeners() {
         if (query.length < 2) {
             searchResults.innerHTML = '';
             searchResults.style.display = 'none';
+            coinInput.setAttribute('aria-expanded', 'false');
             return;
         }
 
@@ -1018,6 +1019,7 @@ function setupEventListeners() {
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-wrapper')) {
             searchResults.style.display = 'none';
+            coinInput.setAttribute('aria-expanded', 'false');
         }
     });
 
@@ -1157,6 +1159,7 @@ function showSearchMessage(message) {
     div.textContent = message;
     searchResults.appendChild(div);
     searchResults.style.display = 'block';
+    coinInput.setAttribute('aria-expanded', 'true');
 }
 
 // Local coin search index (coins-index.json, built by scripts/build-coin-index.js).
@@ -1223,6 +1226,7 @@ async function searchCoins(query) {
     if (sanitizedQuery.length < 2) {
         searchResults.innerHTML = '';
         searchResults.style.display = 'none';
+        coinInput.setAttribute('aria-expanded', 'false');
         return;
     }
 
@@ -1299,6 +1303,7 @@ function showSearchSkeletons() {
         searchResults.appendChild(row);
     }
     searchResults.style.display = 'block';
+    coinInput.setAttribute('aria-expanded', 'true');
 }
 
 // Display search results
@@ -1354,6 +1359,7 @@ function displaySearchResults(coinList) {
             };
             coinInput.value = selectedCoin.symbol;
             searchResults.style.display = 'none';
+            coinInput.setAttribute('aria-expanded', 'false');
             addCoin();
         };
 
@@ -1373,6 +1379,7 @@ function displaySearchResults(coinList) {
     });
 
     searchResults.style.display = 'block';
+    coinInput.setAttribute('aria-expanded', 'true');
 }
 
 // Add custom coin
@@ -1434,6 +1441,7 @@ function addCoin() {
     coinInput.value = '';
     selectedCoin = null;
     searchResults.style.display = 'none';
+    coinInput.setAttribute('aria-expanded', 'false');
 
     // Trigger animation
     setTimeout(() => {
@@ -2928,8 +2936,38 @@ async function imageToDataURL(url) {
     });
 }
 
+// Load the image renderer only when an export or image share is requested.
+let exportRendererPromise;
+function loadExportRenderer() {
+    if (typeof window.html2canvas === 'function') return Promise.resolve();
+    if (!exportRendererPromise) {
+        exportRendererPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            const timeout = setTimeout(() => fail(), 15000);
+            function fail() {
+                clearTimeout(timeout);
+                script.remove();
+                reject(new Error('Image export could not load. Please try again.'));
+            }
+            script.src = '/tier-list-assets/vendor/html2canvas.min.js';
+            script.onload = () => {
+                clearTimeout(timeout);
+                if (typeof window.html2canvas === 'function') resolve();
+                else fail();
+            };
+            script.onerror = fail;
+            document.head.appendChild(script);
+        }).catch(error => {
+            exportRendererPromise = null;
+            throw error;
+        });
+    }
+    return exportRendererPromise;
+}
+
 // Create export canvas (shared between export and share functions)
 async function createExportCanvas() {
+    await loadExportRenderer();
     // Calculate width based on max coins - wider layout to match website
     let maxCoinsInTier = 0;
     const tiers = ['S', 'A', 'B', 'C', 'D', 'F'];
@@ -2952,7 +2990,7 @@ async function createExportCanvas() {
         left: -9999px;
         top: 0;
         width: ${calculatedWidth}px;
-        background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #0a0e27 100%);
+        background: #0b1018;
         padding: 15px;
         font-family: Arial, sans-serif;
     `;
@@ -2962,7 +3000,7 @@ async function createExportCanvas() {
     exportHeader.style.cssText = `
         text-align: center;
         padding: 8px 0 14px;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 18px;
         font-weight: 700;
         letter-spacing: 4px;
@@ -3032,7 +3070,7 @@ async function createExportCanvas() {
 
         const letterDiv = document.createElement('div');
         letterDiv.style.cssText = `
-            font-family: 'Orbitron', monospace;
+            font-family: 'Inter', monospace;
             font-size: ${tier.letter.length > 2 ? '24px' : '32px'};
             font-weight: 900;
             white-space: nowrap;
@@ -3043,10 +3081,13 @@ async function createExportCanvas() {
 
         const labelTextDiv = document.createElement('div');
         labelTextDiv.style.cssText = `
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 8px;
             font-weight: 700;
-            letter-spacing: 2px;
+            letter-spacing: 0.7px;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            text-align: center;
             margin-top: 4px;
             opacity: 0.9;
         `;
@@ -3094,7 +3135,7 @@ async function createExportCanvas() {
                 const text = document.createElement('span');
                 text.style.cssText = `
                     color: #ffffff;
-                    font-family: 'Orbitron', monospace;
+                    font-family: 'Inter', monospace;
                     font-weight: 700;
                     font-size: 11px;
                     letter-spacing: 1px;
@@ -3122,7 +3163,7 @@ async function createExportCanvas() {
     `;
     const footerText = document.createElement('span');
     footerText.style.cssText = `
-        font-family: 'Rajdhani', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 12px;
         color: rgba(255, 255, 255, 0.4);
         letter-spacing: 1px;
@@ -3151,7 +3192,7 @@ async function createExportCanvas() {
 
     // Use html2canvas - no CORS issues since we use data URLs
     const canvas = await html2canvas(exportContainer, {
-        backgroundColor: '#0a0e27',
+        backgroundColor: '#0b1018',
         scale: 2,
         logging: false,
         useCORS: false,

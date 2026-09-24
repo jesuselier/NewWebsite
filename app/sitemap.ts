@@ -1,12 +1,17 @@
 import type { MetadataRoute } from "next";
-
-const routes = ["", "/channels", "/latest", "/connect", "/press-kit", "/tier-list"];
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  return routes.map((route, index) => ({
-    url: `https://martinezaccess.com${route}`,
-    lastModified: new Date(route === "/tier-list" ? "2026-09-23" : "2026-06-10"),
-    changeFrequency: index === 0 || route === "/latest" ? "weekly" : "monthly",
-    priority: index === 0 ? 1 : 0.75,
+  return [
+    "",
+    "/channels",
+    "/latest",
+    "/about",
+    "/connect",
+    "/press-kit",
+    "/tier-list",
+  ].map((path) => ({
+    url: `https://www.martinezaccess.com${path}`,
+    lastModified: "2026-09-24",
+    changeFrequency: path === "/latest" || path === "" ? "daily" : "monthly",
+    priority: path === "" ? 1 : 0.7,
   }));
 }
