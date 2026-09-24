@@ -544,6 +544,7 @@ button {
 }
 .footer-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 23px;
   font-size: 11px;
   color: var(--muted);

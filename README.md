@@ -33,6 +33,14 @@ The original Google Drive folder was unavailable. `/press-kit` now hosts the bio
 
 `lib/youtube-snapshot.json` contains verified JM Crypto upload metadata checked on September 23, 2026, and provides a useful fallback during YouTube outages. Live entries take precedence; known durations are preserved. Refresh this snapshot periodically from the actual channel. Do not invent titles, dates, or statistics. Visitors can always open the channel directly for every upload.
 
+## Attention Cycle explainer
+
+The homepage's `#attention-cycle` section explains Jesus's market framework with an interactive five-stage cycle and a gaming/AI pathway comparison. It is grounded in his August 7, 2026 X Article: https://x.com/JesusMartinez/status/2085797626448896297. It does not restart or promote the paused second channel.
+
+The section preserves the Attention Cycle's gold/ink palette, approved aperture image, GFS Didot Bold headings, and JetBrains Mono labels in scoped CSS and fonts. Both the round trip and the invalidation condition stay visible. The AI-crypto handoff is labeled as a thesis, and the diagrams contain no fabricated prices, measured flows, or undated market statistics.
+
+Check all five stage buttons, keyboard activation, the next-stage wrap, responsive diagrams, article link, and footer anchor after changes.
+
 ## Crypto tier lists
 
 `/tier-list` serves the standalone ClassyCrypto builder adapted for Martinez Access. Its HTML, styles, JavaScript, local coin index, and bundled html2canvas 1.4.1 are in `public/tier-list-assets/`. A rewrite in `next.config.ts` gives it a clean URL and a separate document so its CSS cannot affect the site. Use regular anchors when linking to this route. The image renderer loads only when export or image sharing is requested.

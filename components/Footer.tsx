@@ -20,6 +20,7 @@ export default function Footer() {
           Instagram
         </a>
         <Link href="/press-kit">Media kit</Link>
+        <Link href="/#attention-cycle">The Attention Cycle</Link>
       </div>
       <span className="copyright">
         © {new Date().getFullYear()} Jesus Martinez / Martinez Access

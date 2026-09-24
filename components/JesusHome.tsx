@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getFullLatest } from "@/lib/youtube";
 import { LINKS } from "@/lib/site";
 import Audience from "./Audience";
+import AttentionCycle from "./AttentionCycle";
 import VideoCard from "./VideoCard";
 import { StoryFeature, TierListFeature, ContactStrip } from "./SiteSections";
 export default async function JesusHome() {
@@ -76,6 +77,7 @@ export default async function JesusHome() {
         </div>
       </section>
       <StoryFeature />
+      <AttentionCycle />
       <TierListFeature />
       <ContactStrip />
     </>
