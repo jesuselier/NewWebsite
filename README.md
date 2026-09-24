@@ -27,7 +27,7 @@ The story is grounded in Jesus's supplied video captions: his brother's leverage
 
 The original press-kit Google Drive folder was unavailable. `/press-kit` now hosts the bio, dated audience numbers, contact details, and a downloadable portrait. `public/media/jesus-martinez-studio.jpg` and `jesus-martinez-portrait.jpg` are Jesus's original 1920x1080 studio photographs from his Camera Roll.
 
-The landing-page introduction uses the smiling, camera-facing `jesus-martinez-studio.jpg` with a close CSS crop. Jesus requested direct eye contact for this introduction. The candid professional portrait sits to the left of the homepage story text and also appears on `/about`, so his gaze leads toward the story on desktop.
+The landing-page introduction uses `jesus-martinez-city-portrait.png`, an AI-assisted crop and restrained color correction of Jesus's supplied New York nighttime photograph. Jesus requested a tighter crop and color correction after choosing the camera-facing city portrait. Keep the natural smile, eye contact, and visible skyline. The studio originals remain available. The candid professional portrait sits to the left of the homepage story text and also appears on `/about`, so his gaze leads toward the story on desktop.
 
 `public/media/jesus-martinez-professional.jpg` is the original `C2_09680.JPG` selected from Jesus's supplied professional shoot folder on September 23, 2026. Source: https://drive.google.com/file/d/1zlg4FdtsuWOLd5-gnTlpZhqzc1W-z0cz/view (folder `16j5_T-xpDHJVKr27UzPVgFS5amWheSMw`). Original photographs are preserved; Next Image handles orientation and optimized responsive delivery. Check both portrait crops at desktop, tablet, and phone widths when changing their containers.
 
@@ -53,7 +53,7 @@ The homepage's `#attention-cycle` section explains Jesus's market framework with
 
 At Jesus's request, the website explainer uses the site's Inter typography, slate surfaces, and muted teal accents. Its central diagram uses text rather than the separate channel's gold aperture. This site-specific adaptation does not change the Attention Cycle's canonical standalone branding. Both the round trip and the invalidation condition stay visible. The AI-crypto handoff is labeled as a thesis, and the diagrams contain no fabricated prices, measured flows, or undated market statistics.
 
-The opening portrait uses a closer CSS crop without changing the original photograph. The shared footer has an oversized outlined JESUS MARTINEZ signature and a back-to-top link; check the full name at phone and wide desktop sizes when changing typography.
+The opening portrait uses the edited city photograph with responsive CSS framing. The shared footer has an oversized outlined JESUS MARTINEZ signature and a back-to-top link; check the full name at phone and wide desktop sizes when changing typography.
 
 Check all five stage buttons, keyboard activation, the next-stage wrap, responsive diagrams, article link, and footer anchor after changes.
 

@@ -40,15 +40,15 @@ export default async function JesusHome() {
         </div>
         <div className="hero-visual">
           <Image
-            src="/media/jesus-martinez-studio.jpg"
-            alt="Jesus Martinez smiling at the camera in his studio"
+            src="/media/jesus-martinez-city-portrait.png"
+            alt="Jesus Martinez smiling in front of the New York City skyline at night"
             fill
-            sizes="(max-width: 380px) 810px, (max-width: 760px) 920px, 1250px"
+            sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1100px) 48vw, 531px"
             preload
             className="hero-portrait"
           />
           <span className="portrait-caption">
-            Miami, Florida. Building JM Crypto.
+            Building JM Crypto. Sharing the journey.
           </span>
         </div>
       </section>
