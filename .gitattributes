@@ -1,0 +1,2 @@
+# Preserve generated PDF bytes and present them as binary artifacts in diffs.
+*.pdf binary

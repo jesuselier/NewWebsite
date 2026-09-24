@@ -48,7 +48,7 @@ export default function ConnectPage() {
           <h2>
             Media kit <span aria-hidden="true">↗</span>
           </h2>
-          <p>My bio, audience numbers, and a downloadable portrait.</p>
+          <p>Photos, ready-to-use bios, channel artwork, and a downloadable media kit.</p>
         </Link>
       </div>
       <p className="contact-help">

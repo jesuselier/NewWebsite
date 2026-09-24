@@ -1,0 +1,43 @@
+.heading { max-width: 920px; }
+.actions { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; margin-top: 30px; }
+.heading .downloadNote { max-width: none; font-size: 12px; margin-top: 16px; color: var(--muted); }
+.audience { display: flex; align-items: flex-start; gap: 80px; border-block: 1px solid var(--rule); padding-block: 30px; }
+.audience :global(.audience) { margin: 0; }
+.views { display: flex; flex-direction: column; gap: 7px; }
+.views strong { font-size: 36px; line-height: 1; letter-spacing: -.05em; font-weight: 650; }
+.views span { font-size: 12px; color: var(--muted); }
+.views small { font-size: 10px; color: var(--muted); margin-top: 9px; }
+.section { padding-block: 52px; border-bottom: 1px solid var(--rule); }
+.section h2 { font-size: clamp(27px, 3vw, 34px); font-weight: 550; letter-spacing: -.035em; line-height: 1.2; }
+.sectionHeading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 28px; }
+.sectionHeading p { margin-top: 12px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.photoGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 30px; }
+.photoFrame { position: relative; height: 390px; overflow: hidden; border-radius: 10px; background: var(--panel); }
+.photoFrame img { object-fit: cover; }
+.photoHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; margin: 19px 0 9px; }
+.photoHeading h3 { font-weight: 550; font-size: 20px; letter-spacing: -.025em; }
+.photoHeading a { white-space: nowrap; font-size: 12px; }
+.photoCard p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
+.photoCard small { display: block; font-size: 11px; color: var(--muted); line-height: 1.6; }
+.photoCard .treatment { margin-top: 3px; color: var(--cyan); }
+.bioGrid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 50px; }
+.bioHeading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 20px; }
+.bioHeading h3 { font-size: 17px; font-weight: 550; }
+.bioHeading button { font-size: 12px; background: transparent; padding: 0; cursor: pointer; }
+.bio p { font-size: 14px; line-height: 1.9; color: var(--muted); margin-bottom: 16px; }
+.channelGrid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 55px; align-items: start; }
+.banner { background: #07080a; border-radius: 8px; overflow: hidden; margin-bottom: 18px; }
+.banner img { display: block; width: 100%; height: auto; }
+.topics { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: 28px; color: var(--muted); font-size: 13px; }
+.facts div { display: grid; grid-template-columns: 90px 1fr; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.facts div:first-child { padding-top: 0; }
+.facts dt { color: var(--muted); }
+.facts a { color: var(--cyan); overflow-wrap: anywhere; }
+.usageGrid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 75px; border-bottom: none; padding-bottom: 5px; }
+.usageGrid p { color: var(--muted); font-size: 14px; line-height: 1.85; margin-top: 18px; }
+.usageGrid .note { font-size: 12px; }
+.email { display: inline-block; margin-top: 20px; font-size: clamp(14px, 2vw, 21px); color: var(--cyan); overflow-wrap: anywhere; }
+@media (max-width: 900px) { .audience { gap: 35px; } .bioGrid, .channelGrid, .usageGrid { gap: 30px; } .photoFrame { height: 330px; } .views strong { font-size: 28px; } .bioHeading { align-items: start; flex-direction: column; gap: 10px; } }
+@media (max-width: 760px) { .audience { flex-direction: column; gap: 25px; } .section { padding-block: 38px; } .sectionHeading { flex-direction: column; align-items: start; gap: 15px; } .bioGrid, .channelGrid, .usageGrid { grid-template-columns: 1fr; gap: 30px; } .photoFrame { height: 290px; } .photoHeading { flex-direction: column; gap: 8px; } .bioHeading { flex-direction: row; align-items: baseline; } .facts { margin: 0; } }
+@media (max-width: 640px) { .photoGrid { grid-template-columns: 1fr; gap: 32px; } .photoFrame { height: 360px; } .photoHeading { flex-direction: row; } .actions { gap: 22px; } }
+@media (max-width: 380px) { .photoFrame { height: 310px; } .photoHeading h3 { font-size: 17px; } .photoHeading a { font-size: 11px; } }

@@ -1,0 +1,21 @@
+{
+  "name": "Jesus Martinez",
+  "role": "Creator of JM Crypto",
+  "location": "Miami, Florida",
+  "shortBio": "Jesus Martinez is a Miami-based creator and the voice behind JM Crypto. Full time in crypto since 2021, he shares research, project deep dives, and conversations about the wider market, with a particular interest in Bittensor and AI.",
+  "extendedBio": [
+    "Jesus Martinez is a Miami-based creator and the voice behind JM Crypto. A first-generation Cuban American, he entered crypto in 2021 after his brother lost his life savings through high-leverage trading. He put $700 into Axie Infinity and, through the game's breeding market, grew that into mid-five figures, helping his brother recover and setting himself on a new path.",
+    "Full time in crypto since 2021, Jesus now shares research, project deep dives, and interviews through JM Crypto. His interests span the wider crypto market, Bittensor, AI, and the relationship between attention and capital. His focus is growing JM Crypto and making what he learns useful to the people watching."
+  ],
+  "topics": ["Crypto markets", "Bittensor & AI", "Gaming economies", "The Attention Cycle"],
+  "formats": ["YouTube integrations", "Project deep dives", "Founder interviews", "Conference appearances", "Social campaigns", "Podcast conversations"],
+  "lifetimeViews": {"count": 3817819, "display": "3.8M", "checkedAt": "2026-09-23", "source": "https://www.youtube.com/@jm_crypto/about"},
+  "usage": "Use these assets when featuring Jesus Martinez or JM Crypto in articles, interviews, guest announcements, and event listings. Keep the name and channel spelling as shown. Crop photos to fit your layout while keeping the subject recognizable. For paid campaigns, endorsements, or specific photography credit requirements, contact jmcryptobusiness@gmail.com.",
+  "photos": [
+    {"id":"studio", "title":"Smiling studio portrait", "description":"Camera-facing portrait for guest announcements and introductions.", "src":"/media/jesus-martinez-studio.jpg", "filename":"Jesus-Martinez-Smiling-Studio.jpg", "alt":"Jesus Martinez smiling at the camera in his studio", "position":"55% center", "treatment":"Original photograph"},
+    {"id":"interview", "title":"In conversation", "description":"Professional interview portrait for editorial coverage and speaker profiles.", "src":"/media/jesus-martinez-professional.jpg", "filename":"Jesus-Martinez-Interview-Portrait.jpg", "alt":"Jesus Martinez seated at the microphone during a JM Crypto conversation", "position":"center 12%", "treatment":"Original photograph"},
+    {"id":"portrait", "title":"Studio portrait", "description":"A composed studio image with the JM Crypto microphone.", "src":"/media/jesus-martinez-portrait.jpg", "filename":"Jesus-Martinez-Studio-Portrait.jpg", "alt":"Jesus Martinez with his arms crossed beside a JM Crypto microphone", "position":"47% center", "treatment":"Original photograph"},
+    {"id":"city", "title":"City portrait", "description":"A personal image for profiles and digital layouts.", "src":"/media/jesus-martinez-city-portrait.png", "filename":"Jesus-Martinez-City-Portrait-Edited.png", "alt":"Jesus Martinez smiling in front of the New York City skyline at night", "position":"center 20%", "treatment":"AI-assisted crop and color correction"}
+  ],
+  "banner": {"src":"/media-kit/jm-crypto-channel-banner.jpg", "filename":"JM-Crypto-Channel-Banner.jpg", "source":"https://www.youtube.com/@jm_crypto", "checkedAt":"2026-09-23"}
+}

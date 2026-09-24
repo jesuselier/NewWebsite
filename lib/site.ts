@@ -10,7 +10,7 @@ export const AUDIENCE = {
   checkedAt: "2026-09-23",
   checkedLabel: "September 23, 2026",
   youtube: { count: 40000, display: "40K", source: LINKS.crypto },
-  x: { count: 322731, display: "322.7K", source: LINKS.x },
+  x: { count: 322735, display: "322.7K", source: LINKS.x },
 };
 export function pageMetadata(
   title: string,

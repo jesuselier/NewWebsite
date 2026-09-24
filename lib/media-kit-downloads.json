@@ -1,0 +1,33 @@
+{
+  "zipSize": "21.6 MB",
+  "photos": [
+    {
+      "id": "studio",
+      "width": 1920,
+      "height": 1080,
+      "format": "JPG",
+      "size": "314 KB"
+    },
+    {
+      "id": "interview",
+      "width": 4000,
+      "height": 6000,
+      "format": "JPG",
+      "size": "15.9 MB"
+    },
+    {
+      "id": "portrait",
+      "width": 1920,
+      "height": 1080,
+      "format": "JPG",
+      "size": "374 KB"
+    },
+    {
+      "id": "city",
+      "width": 1122,
+      "height": 1402,
+      "format": "PNG",
+      "size": "2.1 MB"
+    }
+  ]
+}

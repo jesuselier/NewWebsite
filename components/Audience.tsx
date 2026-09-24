@@ -7,7 +7,7 @@ export default function Audience() {
           href={AUDIENCE.youtube.source}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="40 thousand subscribers on JM Crypto, open YouTube"
+          aria-label={`${AUDIENCE.youtube.count.toLocaleString("en-US")} subscribers on JM Crypto, open YouTube`}
         >
           <strong>{AUDIENCE.youtube.display}</strong>
           <span>JM Crypto subscribers</span>
@@ -16,7 +16,7 @@ export default function Audience() {
           href={AUDIENCE.x.source}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="322,731 followers on X, open profile"
+          aria-label={`${AUDIENCE.x.count.toLocaleString("en-US")} followers on X, open profile`}
         >
           <strong>{AUDIENCE.x.display}</strong>
           <span>Followers on X</span>

@@ -21,15 +21,27 @@ Browser checks should cover desktop and phone navigation, every page, video imag
 
 `app/globals.css` owns the soft charcoal, slate, and muted JM cyan palette and responsive layouts. Jesus rejected the bright page background as uncomfortable on September 23, 2026; keep the site dark by default, including panels and hover states, with readable off-white and grey text. This website preference does not change thumbnail styling. Inter is the main font. The site focuses on JM Crypto; The Attention Cycle is currently paused. `/channels` redirects to `/latest` for older bookmarks.
 
-`lib/site.ts` centralizes public links and dated audience statistics. The September 23, 2026 public profile checks returned 40,000 JM Crypto subscribers (YouTube's rounded public count) and 322,731 X followers. These are dated snapshots, not live counters. Instagram is `@jesusmartinezbuilds`. Every page has its own canonical URL and metadata.
+`lib/site.ts` centralizes public links and dated audience statistics. The September 23, 2026 public profile checks returned 40,000 JM Crypto subscribers (YouTube's rounded public count) and 322,735 X followers. These are dated snapshots, not live counters. Instagram is `@jesusmartinezbuilds`. Every page has its own canonical URL and metadata.
 
 The story is grounded in Jesus's supplied video captions: his brother's leveraged-trading loss, the $700 Axie Infinity start, and mid-five figures through its breeding market. Do not imply those earnings happened in a week or generalize the personal outcome into a return promise.
 
-The original press-kit Google Drive folder was unavailable. `/press-kit` now hosts the bio, dated audience numbers, contact details, and a downloadable portrait. `public/media/jesus-martinez-studio.jpg` and `jesus-martinez-portrait.jpg` are Jesus's original 1920x1080 studio photographs from his Camera Roll.
+The original press-kit Google Drive folder was unavailable. `/press-kit` now hosts four downloadable portraits, copyable bios, channel artwork, dated audience figures, contact details, a one-page PDF, and an all-in-one ZIP. `public/media/jesus-martinez-studio.jpg` and `jesus-martinez-portrait.jpg` are Jesus's original 1920x1080 studio photographs from his Camera Roll.
 
 The landing-page introduction uses `jesus-martinez-city-portrait.png`, an AI-assisted crop and restrained color correction of Jesus's supplied New York nighttime photograph. Jesus requested a tighter crop and color correction after choosing the camera-facing city portrait. Keep the natural smile, eye contact, and visible skyline. The studio originals remain available. The candid professional portrait sits to the left of the homepage story text and also appears on `/about`, so his gaze leads toward the story on desktop.
 
 `public/media/jesus-martinez-professional.jpg` is the original `C2_09680.JPG` selected from Jesus's supplied professional shoot folder on September 23, 2026. Source: https://drive.google.com/file/d/1zlg4FdtsuWOLd5-gnTlpZhqzc1W-z0cz/view (folder `16j5_T-xpDHJVKr27UzPVgFS5amWheSMw`). Original photographs are preserved; Next Image handles orientation and optimized responsive delivery. Check both portrait crops at desktop, tablet, and phone widths when changing their containers.
+
+## Media kit downloads
+
+`lib/media-kit.json` owns the bios, photo descriptions, usage notes, and channel details. The public YouTube profile returned 3,817,819 lifetime views on September 23, 2026. The banner in `public/media-kit/` is the current public artwork from `@jm_crypto`, retrieved that day. The kit labels the city portrait as an AI-assisted edit and includes three unchanged original photographs. Photo metadata respects EXIF orientation; the professional portrait displays at 4000 x 6000 pixels.
+
+After changing kit content or the public audience counts in `lib/site.ts`, regenerate the PDF, text files, ZIP, and `lib/media-kit-downloads.json` together:
+
+```sh
+npm run media-kit -- --python /path/to/python
+```
+
+The builder requires Node 24 (or 22.18+) and Python with Pillow and reportlab. Omit `--python` to use `PYTHON` or the `python` command. All generated downloads are committed, so Vercel does not require Python. The ZIP contains only the four listed photos, banner, PDF, bios, official links, dated facts, and usage notes. Review the rendered PDF, copy buttons, individual downloads, ZIP contents, and phone layout before publishing. Audience figures are dated snapshots and need a fresh public-profile check when updated.
 
 ## Website analytics
 
