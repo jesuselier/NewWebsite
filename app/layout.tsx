@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -9,6 +9,10 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
+export const viewport: Viewport = {
+  themeColor: "#11171d",
+  colorScheme: "dark",
+};
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.martinezaccess.com"),
   title: {

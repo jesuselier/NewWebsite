@@ -12,15 +12,15 @@ export default function Image() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        background: "#F7F9FA",
-        color: "#111D29",
+        background: "#11171D",
+        color: "#D3DDE4",
         padding: 76,
         fontFamily: "sans-serif",
       }}
     >
       <div style={{ display: "flex", fontSize: 26, fontWeight: 700 }}>
         Jesus Martinez
-        <span style={{ color: "#007789", marginLeft: 25, fontWeight: 400 }}>
+        <span style={{ color: "#79BDC6", marginLeft: 25, fontWeight: 400 }}>
           Creator of JM Crypto
         </span>
       </div>
@@ -41,7 +41,7 @@ export default function Image() {
         style={{
           display: "flex",
           fontSize: 24,
-          borderTop: "2px solid #00C8E0",
+          borderTop: "2px solid #3B6972",
           paddingTop: 28,
           justifyContent: "space-between",
         }}

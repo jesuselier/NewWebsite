@@ -1,12 +1,15 @@
 @import "tailwindcss";
 :root {
-  --bg: #f7f9fa;
-  --panel: #fff;
-  --ink: #111d29;
-  --muted: #566577;
-  --rule: #dde4e7;
-  --cyan: #007789;
-  --accent: #00c8e0;
+  color-scheme: dark;
+  --bg: #11171d;
+  --panel: #19232d;
+  --raised: #23313d;
+  --ink: #d3dde4;
+  --muted: #9aaab7;
+  --subtle: #8b9aa7;
+  --rule: #2b3742;
+  --cyan: #79bdc6;
+  --accent: #214d57;
   --maxw: 1180px;
 }
 @theme inline {
@@ -29,8 +32,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 ::selection {
-  background: #9ce7ef;
-  color: var(--ink);
+  background: #294953;
+  color: #e1e8ed;
 }
 a {
   color: inherit;
@@ -96,8 +99,8 @@ button {
   left: 10px;
   z-index: 100;
   padding: 12px 20px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--raised);
+  color: var(--ink);
   transform: translateY(-200%);
 }
 .skip-link:focus {
@@ -157,14 +160,14 @@ button {
   color: var(--cyan);
 }
 .nav-contact {
-  background: var(--ink);
-  color: #fff;
+  background: var(--raised);
+  color: var(--ink);
   border-radius: 6px;
   padding: 10px 17px;
 }
 .nav-links .nav-contact:hover {
-  color: #fff;
-  background: #284251;
+  color: var(--ink);
+  background: #2d3f4d;
 }
 .hero {
   display: grid;
@@ -215,17 +218,19 @@ button {
 }
 .button-primary {
   background: var(--accent);
-  color: #09272d;
+  color: #d0e6e9;
+  box-shadow: inset 0 0 0 1px #3b6972;
 }
 .button-primary:hover {
-  background: #78dfe9;
+  background: #2c616b;
 }
 .button-dark {
-  background: var(--ink);
-  color: white;
+  background: var(--raised);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px #394b59;
 }
 .button-dark:hover {
-  background: #284251;
+  background: #2d3f4d;
 }
 .text-link {
   display: inline-flex;
@@ -289,7 +294,7 @@ button {
 .audience-date {
   margin-top: 13px;
   font-size: 9px;
-  color: #67717c;
+  color: var(--subtle);
 }
 .section {
   padding-block: 60px;
@@ -324,7 +329,7 @@ button {
   position: relative;
   aspect-ratio: 16/9;
   overflow: hidden;
-  background: #e2e7ec;
+  background: var(--panel);
   border-radius: 8px;
 }
 .video-image img {
@@ -380,8 +385,8 @@ button {
   color: var(--cyan);
 }
 .story-feature {
-  background: #111d29;
-  color: #f7f9fa;
+  background: #16212b;
+  color: var(--ink);
   margin-block: 5px 10px;
 }
 .story-inner {
@@ -391,7 +396,7 @@ button {
   padding-block: 65px;
 }
 .story-feature .section-label {
-  color: #8adce5;
+  color: var(--cyan);
   margin-bottom: 20px;
 }
 .story-feature h2 {
@@ -402,12 +407,12 @@ button {
 }
 .story-feature .text-link {
   margin-top: 26px;
-  color: #8adce5;
+  color: var(--cyan);
 }
 .story-excerpt p {
   font-size: 14px;
   line-height: 1.9;
-  color: #c6d0d8;
+  color: #b3bec8;
   margin-bottom: 17px;
 }
 .story-excerpt p:last-child {
@@ -442,8 +447,8 @@ button {
 .tier-preview {
   display: block;
   padding: 22px;
-  background: #111d29;
-  color: #f7f9fa;
+  background: var(--panel);
+  color: var(--ink);
   border-radius: 12px;
 }
 .preview-toolbar {
@@ -551,7 +556,7 @@ button {
 }
 .copyright {
   font-size: 10px;
-  color: #67717c;
+  color: var(--subtle);
   grid-column: 1/-1;
 }
 .page-body {
@@ -593,7 +598,7 @@ button {
   color: var(--muted);
 }
 .email-card {
-  background: #fff;
+  background: var(--panel);
   border: 1px solid var(--rule);
   border-radius: 10px;
   padding: 32px;
@@ -622,7 +627,7 @@ button {
 .copy-button {
   background: var(--bg);
   color: var(--ink);
-  border: 1px solid #b6c3cc;
+  border: 1px solid #41515f;
   border-radius: 5px;
   padding: 8px 14px;
   font-size: 11px;
@@ -630,7 +635,7 @@ button {
   white-space: nowrap;
 }
 .copy-button:hover {
-  background: #e9f0f3;
+  background: var(--raised);
 }
 .copy-status {
   font-size: 11px;
