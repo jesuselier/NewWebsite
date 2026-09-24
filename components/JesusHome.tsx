@@ -12,7 +12,7 @@ export default async function JesusHome() {
     <>
       <section className="container hero">
         <div className="hero-copy">
-          <p className="hero-intro">Hey, I’m Jesus Martinez.</p>
+          <p className="hero-intro">Hey, my name is Jesus Martinez.</p>
           <h1>
             Crypto changed
             <br />
