@@ -21,7 +21,7 @@ Browser checks should cover desktop and phone navigation, every page, video imag
 
 `app/globals.css` owns the soft charcoal, slate, and muted JM cyan palette and responsive layouts. Jesus rejected the bright page background as uncomfortable on September 23, 2026; keep the site dark by default, including panels and hover states, with readable off-white and grey text. This website preference does not change thumbnail styling. Inter is the main font. The site focuses on JM Crypto; The Attention Cycle is currently paused. `/channels` redirects to `/latest` for older bookmarks.
 
-`lib/site.ts` centralizes public links and dated audience statistics. The September 23, 2026 public profile checks returned 40,000 JM Crypto subscribers (YouTube's rounded public count) and 322,735 X followers. These are dated snapshots, not live counters. Instagram is `@jesusmartinezbuilds`. Every page has its own canonical URL and metadata.
+`lib/site.ts` centralizes public links and dated audience statistics. The current business/contact email is `jesus@martinezaccess.com`, updated at Jesus's request on September 25, 2026. The September 23, 2026 public profile checks returned 40,000 JM Crypto subscribers (YouTube's rounded public count) and 322,735 X followers. These are dated snapshots, not live counters. Instagram is `@jesusmartinezbuilds`. Every page has its own canonical URL and metadata.
 
 The story is grounded in Jesus's supplied video captions: his brother's leveraged-trading loss, the $700 Axie Infinity start, and mid-five figures through its breeding market. Do not imply those earnings happened in a week or generalize the personal outcome into a return promise.
 

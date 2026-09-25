@@ -2,7 +2,7 @@ JESUS MARTINEZ / JM CRYPTO MEDIA KIT
 Updated September 23, 2026
 
 USING THESE ASSETS
-Use these assets when featuring Jesus Martinez or JM Crypto in articles, interviews, guest announcements, and event listings. Keep the name and channel spelling as shown. Crop photos to fit your layout while keeping the subject recognizable. For paid campaigns, endorsements, or specific photography credit requirements, contact jmcryptobusiness@gmail.com.
+Use these assets when featuring Jesus Martinez or JM Crypto in articles, interviews, guest announcements, and event listings. Keep the name and channel spelling as shown. Crop photos to fit your layout while keeping the subject recognizable. For paid campaigns, endorsements, or specific photography credit requirements, contact jesus@martinezaccess.com.
 
 PHOTOS
 photos/Jesus-Martinez-Smiling-Studio.jpg - Smiling studio portrait

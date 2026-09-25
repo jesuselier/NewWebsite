@@ -3,7 +3,7 @@ export const LINKS = {
   crypto: "https://www.youtube.com/@jm_crypto",
   x: "https://x.com/JesusMartinez",
   instagram: "https://www.instagram.com/jesusmartinezbuilds/",
-  email: "jmcryptobusiness@gmail.com",
+  email: "jesus@martinezaccess.com",
   mediaKit: "/press-kit",
 };
 export const AUDIENCE = {
