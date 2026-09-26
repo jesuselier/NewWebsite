@@ -33,9 +33,9 @@ The landing-page introduction uses `jesus-martinez-city-portrait.png`, an AI-ass
 
 ## Homepage
 
-`components/JesusHome.tsx` sets the pacing: an introduction that says who Jesus is, what JM Crypto offers, and what to watch first; a curated Start here path; the story; the Attention Cycle; the latest uploads; the tier-list tool; and contact. Homepage sections live in `components/home/` with their styles in `components/home/home.module.css`. `ContactStrip` in `components/SiteSections.tsx` is shared with `/about`.
+`components/JesusHome.tsx` sets the pacing: an introduction that says who Jesus is and what JM Crypto offers, with a link that sends new visitors to Start here; a curated Start here path; the story; the Attention Cycle; the latest uploads; the tier-list tool; and contact. Homepage sections live in `components/home/` with their styles in `components/home/home.module.css`. `ContactStrip` in `components/SiteSections.tsx` is shared with `/about`.
 
-`lib/start-here.ts` holds the three curated long-form videos (perspective, research, interview) with titles, durations, and publish dates checked against the public video pages on September 25, 2026, plus a short note on why each is a good starting point. Keep titles exactly as published and re-check them if a video is retitled or replaced. The hero's "Watch this first" card and the Attention Cycle's video link point to the first entry. The latest-uploads grid still comes from `getFullLatest(4)`, so Shorts stay excluded.
+`lib/start-here.ts` holds the three curated long-form videos (perspective, research, interview) with titles, durations, and publish dates checked against the public video pages on September 25, 2026, plus a short note on why each is a good starting point. Keep titles exactly as published and re-check them if a video is retitled or replaced. The Attention Cycle's video link points to the first entry. The latest-uploads grid still comes from `getFullLatest(4)`, so Shorts stay excluded.
 
 Motion is limited to a short entrance in the hero, one-time reveals on scroll, hover states, and the disclosure. `components/home/ScrollReveal.tsx` only hides content after hydration, never for visitors who prefer reduced motion, and never for anything already on screen, so the page is fully readable without JavaScript. Homepage copy follows the house rule of no em or en dashes.
 

@@ -1,15 +1,8 @@
 import Image from "next/image";
 import { AUDIENCE, LINKS } from "@/lib/site";
-import {
-  START_HERE,
-  durationMinutes,
-  thumbnailUrl,
-  watchUrl,
-} from "@/lib/start-here";
 import styles from "./home.module.css";
 
 export default function HomeHero() {
-  const first = START_HERE.videos[0];
   return (
     <section className={styles.hero} aria-labelledby="home-title">
       <div className={`container ${styles.heroGrid}`}>
@@ -52,25 +45,6 @@ export default function HomeHero() {
               preload
             />
           </figure>
-          <a
-            className={styles.watchFirst}
-            href={watchUrl(first.id)}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Watch this first: ${first.title}, ${durationMinutes(first.duration)} minutes on YouTube`}
-          >
-            <span className={styles.watchThumb}>
-              <Image src={thumbnailUrl(first.id)} alt="" fill sizes="128px" />
-            </span>
-            <span className={styles.watchText}>
-              <span className={styles.watchKicker}>Watch this first</span>
-              <span className={styles.watchTitle}>{first.title}</span>
-              <span className={styles.watchMeta}>
-                {durationMinutes(first.duration)} min on YouTube
-                <span aria-hidden="true"> ↗</span>
-              </span>
-            </span>
-          </a>
         </div>
         <div className={styles.proof}>
           <ul className={styles.proofList}>
