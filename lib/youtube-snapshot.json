@@ -1,7 +1,29 @@
 {
-  "checkedAt": "2026-09-23",
+  "checkedAt": "2026-09-25",
   "source": "https://www.youtube.com/@jm_crypto/videos",
   "videos": [
+    {
+      "id": "PxtetKzpgVg",
+      "title": "NEAR Holders Need to See This Bitwise Price Prediction",
+      "published": "2026-09-25T14:37:53-07:00",
+      "thumbSrc": "https://i.ytimg.com/vi/PxtetKzpgVg/hq720.jpg",
+      "watchUrl": "https://www.youtube.com/watch?v=PxtetKzpgVg",
+      "duration": "13:27",
+      "channel": "JM Crypto",
+      "channelKey": "jm_crypto",
+      "gold": false
+    },
+    {
+      "id": "OA73clJdPVM",
+      "title": "Why I’m Buying QNT After This Massive Banking Deal",
+      "published": "2026-09-24T15:28:48-07:00",
+      "thumbSrc": "https://i.ytimg.com/vi/OA73clJdPVM/hq720.jpg",
+      "watchUrl": "https://www.youtube.com/watch?v=OA73clJdPVM",
+      "duration": "14:31",
+      "channel": "JM Crypto",
+      "channelKey": "jm_crypto",
+      "gold": false
+    },
     {
       "id": "h4JwMVLQGMc",
       "title": "The Greatest XRP Explanation of ALL TIME (feat. Maximus Crypto)",
