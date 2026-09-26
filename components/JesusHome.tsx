@@ -1,85 +1,29 @@
-import Image from "next/image";
-import Link from "next/link";
 import { getFullLatest } from "@/lib/youtube";
-import { LINKS } from "@/lib/site";
-import Audience from "./Audience";
 import AttentionCycle from "./AttentionCycle";
-import VideoCard from "./VideoCard";
-import { StoryFeature, TierListFeature, ContactStrip } from "./SiteSections";
+import { ContactStrip } from "./SiteSections";
+import HomeHero from "./home/HomeHero";
+import LatestUploads from "./home/LatestUploads";
+import ScrollReveal from "./home/ScrollReveal";
+import StartHere from "./home/StartHere";
+import Story from "./home/Story";
+import TierListFeature from "./home/TierListFeature";
+import { newsreader } from "./home/fonts";
+import styles from "./home/home.module.css";
+
+// Pacing: who I am and what to watch first, a curated path, the story behind
+// the channel, the framework that grew out of it, what's new, then the tool.
 export default async function JesusHome() {
-  const videos = await getFullLatest(3);
+  const videos = await getFullLatest(4);
   return (
-    <>
-      <section className="container hero">
-        <div className="hero-copy">
-          <p className="hero-intro">Hey, my name is Jesus Martinez.</p>
-          <h1>
-            Crypto changed
-            <br />
-            my life.
-          </h1>
-          <p className="hero-description">
-            What started as a way to help my brother became JM Crypto. Now I
-            share the research, conversations, and lessons I pick up along the
-            way.
-          </p>
-          <div className="hero-actions">
-            <a
-              className="button button-primary"
-              href={LINKS.crypto + "?sub_confirmation=1"}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span aria-hidden="true">▶</span> Join me on YouTube
-            </a>
-            <Link href="/about" className="text-link">
-              Read my story
-            </Link>
-          </div>
-          <Audience />
-        </div>
-        <div className="hero-visual">
-          <Image
-            src="/media/jesus-martinez-city-portrait.png"
-            alt="Jesus Martinez smiling in front of the New York City skyline at night"
-            fill
-            sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1100px) 48vw, 531px"
-            preload
-            className="hero-portrait"
-          />
-          <span className="portrait-caption">
-            Building JM Crypto. Sharing the journey.
-          </span>
-        </div>
-      </section>
-      <section id="videos" className="section container video-section">
-        <div className="section-heading">
-          <div>
-            <h2>From the channel</h2>
-            <p>Full conversations. Deeper research. A little more context.</p>
-          </div>
-          <Link className="text-link" href="/latest">
-            Browse all videos <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-        <div className="video-grid">
-          {videos.map((v) => (
-            <VideoCard
-              key={v.id}
-              channel={v.channel}
-              date={v.publishedLabel}
-              duration={v.duration}
-              title={v.title}
-              href={v.watchUrl}
-              thumbSrc={v.thumbSrc}
-            />
-          ))}
-        </div>
-      </section>
-      <StoryFeature />
+    <div className={`${newsreader.variable} ${styles.home}`}>
+      <ScrollReveal />
+      <HomeHero />
+      <StartHere />
+      <Story />
       <AttentionCycle />
+      <LatestUploads videos={videos} />
       <TierListFeature />
       <ContactStrip />
-    </>
+    </div>
   );
 }
