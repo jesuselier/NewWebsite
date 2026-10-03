@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="referrer" content="no-referrer">
+    <meta name="theme-color" content="#11171d">
     <title>Crypto Tier List Maker | Martinez Access</title>
     <meta name="description" content="Make your own crypto tier list. Search coins, rank them from S to F, customize labels, and export or share your rankings.">
     <link rel="canonical" href="https://www.martinezaccess.com/tier-list">
@@ -14,225 +15,276 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta property="og:image" content="https://www.martinezaccess.com/opengraph-image">
     <link rel="icon" type="image/svg+xml" href="/icon.svg">
-    <link rel="stylesheet" href="/tier-list-assets/style.css">
-    <link rel="stylesheet" href="/tier-list-assets/martinez.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://coin-images.coingecko.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap">
+    <link rel="stylesheet" href="/tier-list-assets/style.css?v=2026-10-03">
 </head>
 <body class="mode-builder">
-    <div class="grid-bg"></div>
-    <div class="glow-orb glow-orb-1"></div>
-    <div class="glow-orb glow-orb-2"></div>
+    <a class="skip-link" href="#tierBoard">Skip to the tier list</a>
 
-    <div class="container">
-        <nav class="access-nav" aria-label="Main navigation">
-            <a class="access-brand" href="/">MARTINEZ <em>ACCESS</em></a>
-            <div class="access-links"><a href="/latest">Videos</a><a href="/about">My story</a><a href="/tier-list" aria-current="page">Tier lists</a><a href="/connect">Get in touch</a></div>
-        </nav>
-        <header class="hero">
-            <div class="header-toggles">
-                <button id="themeToggle" class="theme-toggle" title="Toggle Light/Dark Mode" aria-label="Toggle light or dark mode" aria-pressed="false">
-                    <span class="theme-icon" aria-hidden="true">🌙</span>
+    <div class="page">
+        <header class="site-header">
+            <nav class="site-nav" aria-label="Main navigation">
+                <a class="wordmark" href="/" aria-label="Martinez Access home">
+                    <span class="brand-monogram">JM<span>.</span></span>
+                    <span>Jesus Martinez<span class="brand-subtitle">Creator of JM Crypto</span></span>
+                </a>
+                <div class="nav-links">
+                    <a href="/latest">Videos</a>
+                    <a href="/about">My story</a>
+                    <a href="/tier-list" aria-current="page">Tier lists</a>
+                    <a href="/connect" class="nav-contact">Get in touch</a>
+                </div>
+            </nav>
+        </header>
+
+        <header class="tl-header">
+            <div class="tl-intro">
+                <p class="kicker">Free tool</p>
+                <h1>Crypto tier list</h1>
+                <p class="lede">Add the coins you follow, rank them from S to F, then export an image or share a link.</p>
+            </div>
+            <div class="tl-prefs">
+                <button id="degenToggle" class="switch" type="button" aria-pressed="false" title="Swap the tier names for degen labels">
+                    <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+                    <span class="switch-text">Degen labels</span>
                 </button>
-                <button id="degenToggle" class="degen-toggle" title="Toggle Degen-Fi Mode" aria-label="Toggle Degen-Fi mode for alternative tier labels" aria-pressed="false">
-                    <span class="toggle-icon" aria-hidden="true">🚀</span>
-                    <span class="toggle-text">DEGEN MODE</span>
+                <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to light mode" title="Switch to light mode">
+                    <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8 8 0 0 1 9.4 4a8 8 0 1 0 10.6 10.6z"/></svg>
+                </button>
+                <button id="helpBtn" class="icon-btn" type="button" aria-label="How it works and keyboard shortcuts" title="How it works">
+                    <span aria-hidden="true">?</span>
                 </button>
             </div>
-            <h1>Crypto tier list</h1>
-            <p class="subtitle">Your coins. Your rankings. Build a list worth sharing.</p>
         </header>
 
         <div id="modeBanner" class="mode-banner" role="status" hidden>
             <span id="modeBannerText"></span>
-            <button id="modeBannerCta" class="mode-banner-cta" hidden>Make your own tier list</button>
+            <button id="modeBannerCta" class="btn btn-primary btn-sm" type="button" hidden>Make your own tier list</button>
         </div>
 
-        <section class="controls">
-            <div class="input-zone">
+        <section class="add-bar" aria-label="Add coins">
+            <div class="add-row">
                 <div class="search-wrapper">
+                    <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
                     <input
                         type="text"
                         id="coinInput"
-                        placeholder="Search coin (e.g., Bitcoin, Bittensor)"
+                        placeholder="Search any coin, e.g. Bitcoin or TAO"
                         autocomplete="off"
-                        aria-label="Search for a cryptocurrency"
-                        aria-describedby="searchResults"
+                        spellcheck="false"
+                        aria-label="Search for a coin to add"
                         aria-autocomplete="list"
                         role="combobox"
                         aria-expanded="false"
                         aria-controls="searchResults"
                     />
+                    <kbd class="search-kbd" aria-hidden="true">/</kbd>
                     <div id="searchResults" class="search-results" role="listbox" aria-label="Search results"></div>
                 </div>
-                <button id="addCoinBtn" class="neon-btn" aria-label="Add selected coin to your portfolio">
-                    <span>ADD COIN</span>
-                </button>
+                <button id="addCoinBtn" class="btn" type="button" aria-label="Add the coin you typed">Add</button>
             </div>
-
-            <div class="actions">
-                <button id="submitBtn" class="neon-btn submit-btn" aria-label="Submit your portfolio for review on X (Twitter)">
-                    <span>SUBMIT FOR REVIEW</span>
-                </button>
-                <button id="exportBtn" class="neon-btn export-btn" aria-label="Export tier list as image">
-                    <span>EXPORT IMAGE</span>
-                </button>
-                <button id="shareBtn" class="neon-btn share-btn" aria-label="Share tier list to X (Twitter)">
-                    <span>SHARE ON X 𝕏</span>
-                </button>
-                <button id="copyLinkBtn" class="neon-btn copy-link-btn" aria-label="Copy shareable link to clipboard">
-                    <span>COPY LINK</span>
-                </button>
-                <button id="clearBtn" class="secondary-btn" aria-label="Clear all tiers and move coins back to pool">Clear All</button>
-                <button id="resetBtn" class="secondary-btn" aria-label="Reset everything and remove all coins">Reset</button>
+            <div class="browse" role="group" aria-label="Browse coins by category">
+                <span class="browse-label">Or browse</span>
+                <div class="chips">
+                    <button class="chip" type="button" data-category="top-marketcap" aria-expanded="false" aria-controls="catalog">Top 20</button>
+                    <button class="chip" type="button" data-category="ai" aria-expanded="false" aria-controls="catalog">AI</button>
+                    <button class="chip" type="button" data-category="rwa" aria-expanded="false" aria-controls="catalog">RWA</button>
+                    <button class="chip" type="button" data-category="gaming" aria-expanded="false" aria-controls="catalog">Gaming</button>
+                    <button class="chip" type="button" data-category="meme" aria-expanded="false" aria-controls="catalog">Meme</button>
+                </div>
             </div>
-        </section>
-
-        <section class="coin-pool">
-            <h2 id="coinPoolTitle">Unranked coins</h2>
-            <div class="category-tabs" role="tablist" aria-label="Coin categories">
-                <button class="category-tab active" data-category="none" role="tab" aria-selected="true" aria-label="My coins">
-                    <span class="tab-icon" aria-hidden="true">💼</span>
-                    <span class="tab-text">MY COINS</span>
-                </button>
-                <button class="category-tab" data-category="top-marketcap" role="tab" aria-selected="false" aria-label="Top 20 coins by market cap">
-                    <span class="tab-icon" aria-hidden="true">🏆</span>
-                    <span class="tab-text">TOP 20</span>
-                </button>
-                <button class="category-tab" data-category="ai" role="tab" aria-selected="false" aria-label="AI and machine learning coins">
-                    <span class="tab-icon" aria-hidden="true">🤖</span>
-                    <span class="tab-text">AI</span>
-                </button>
-                <button class="category-tab" data-category="rwa" role="tab" aria-selected="false" aria-label="Real world asset coins">
-                    <span class="tab-icon" aria-hidden="true">🏢</span>
-                    <span class="tab-text">RWA</span>
-                </button>
-                <button class="category-tab" data-category="gaming" role="tab" aria-selected="false" aria-label="Gaming blockchain coins">
-                    <span class="tab-icon" aria-hidden="true">🎮</span>
-                    <span class="tab-text">GAMING</span>
-                </button>
-                <button class="category-tab" data-category="meme" role="tab" aria-selected="false" aria-label="Meme coins">
-                    <span class="tab-icon" aria-hidden="true">🐸</span>
-                    <span class="tab-text">MEME</span>
-                </button>
-            </div>
-            <div id="coinContainer" class="coin-grid">
-                <!-- Coins will be populated here -->
+            <div id="catalog" class="catalog" role="region" aria-labelledby="catalogTitle" hidden>
+                <div class="catalog-head">
+                    <div>
+                        <h2 id="catalogTitle">Top 20 by market cap</h2>
+                        <p class="catalog-note">Tap a coin to add it. Added coins wait in Unranked until you rank them.</p>
+                    </div>
+                    <div class="catalog-actions">
+                        <button id="catalogAddAll" class="btn btn-sm" type="button">Add all</button>
+                        <button id="catalogClose" class="icon-btn icon-btn-sm" type="button" aria-label="Close categories">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="catalog-tabs" role="group" aria-label="Switch category">
+                    <button class="catalog-tab" type="button" data-category="top-marketcap">Top 20</button>
+                    <button class="catalog-tab" type="button" data-category="ai">AI</button>
+                    <button class="catalog-tab" type="button" data-category="rwa">RWA</button>
+                    <button class="catalog-tab" type="button" data-category="gaming">Gaming</button>
+                    <button class="catalog-tab" type="button" data-category="meme">Meme</button>
+                </div>
+                <div id="catalogGrid" class="catalog-grid"></div>
             </div>
         </section>
 
-        <div id="tierHelper" class="tier-helper" role="status" aria-live="polite">
-            <strong>Start ranking.</strong> Add coins, then drag them into a tier. Click any tier name to rename it, or press <kbd>?</kbd> for shortcuts.
+        <div class="workspace">
+            <section class="board" id="tierBoard" aria-labelledby="boardTitle" tabindex="-1">
+                <div class="board-head">
+                    <div class="board-meta">
+                        <h2 id="boardTitle">Your tier list</h2>
+                        <p class="board-status"><span id="tierSummaryTotal">0</span> ranked <span class="dot" aria-hidden="true">·</span> <span id="unrankedTotal">0</span> unranked</p>
+                    </div>
+                    <div class="board-actions">
+                        <button id="exportBtn" class="btn btn-primary" type="button" aria-label="Export your tier list as an image"><span>Export image</span></button>
+                        <button id="shareBtn" class="btn" type="button" aria-label="Share your tier list on X"><span>Share on X</span></button>
+                        <button id="copyLinkBtn" class="btn" type="button" aria-label="Copy a link to your tier list"><span>Copy link</span></button>
+                        <button id="submitBtn" class="btn" type="button" aria-label="Submit your coins for a review on X"><span>Submit for review</span></button>
+                        <div class="menu-wrap">
+                            <button id="moreBtn" class="icon-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="moreMenu" aria-label="More actions" title="More actions">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/></svg>
+                            </button>
+                            <div id="moreMenu" class="menu" hidden>
+                                <button id="clearBtn" class="menu-item" type="button">Move every coin back to Unranked</button>
+                                <button id="resetBtn" class="menu-item menu-item-danger" type="button">Start over and remove all coins</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tierHelper" class="tier-helper" role="status" aria-live="polite">
+                    <strong>Start ranking.</strong> Drag a coin onto a tier, or tap it and pick a tier. Click a tier name to rename it.
+                </div>
+
+                <div class="tier-list" aria-label="Tier list rankings">
+                    <div class="tier-row tier-s" data-tier="S" role="region" aria-label="S tier">
+                        <div class="tier-label">
+                            <span class="tier-letter">S</span>
+                            <span class="tier-name">GENERATIONAL</span>
+                            <span class="tier-count" data-tier="S" aria-label="0 coins">0</span>
+                        </div>
+                        <div class="tier-content" data-tier="S" aria-label="S tier coins"></div>
+                    </div>
+                    <div class="tier-row tier-a" data-tier="A" role="region" aria-label="A tier">
+                        <div class="tier-label">
+                            <span class="tier-letter">A</span>
+                            <span class="tier-name">STRONG BAG</span>
+                            <span class="tier-count" data-tier="A" aria-label="0 coins">0</span>
+                        </div>
+                        <div class="tier-content" data-tier="A" aria-label="A tier coins"></div>
+                    </div>
+                    <div class="tier-row tier-b" data-tier="B" role="region" aria-label="B tier">
+                        <div class="tier-label">
+                            <span class="tier-letter">B</span>
+                            <span class="tier-name">SOLID</span>
+                            <span class="tier-count" data-tier="B" aria-label="0 coins">0</span>
+                        </div>
+                        <div class="tier-content" data-tier="B" aria-label="B tier coins"></div>
+                    </div>
+                    <div class="tier-row tier-c" data-tier="C" role="region" aria-label="C tier">
+                        <div class="tier-label">
+                            <span class="tier-letter">C</span>
+                            <span class="tier-name">RETHINK</span>
+                            <span class="tier-count" data-tier="C" aria-label="0 coins">0</span>
+                        </div>
+                        <div class="tier-content" data-tier="C" aria-label="C tier coins"></div>
+                    </div>
+                    <div class="tier-row tier-d" data-tier="D" role="region" aria-label="D tier">
+                        <div class="tier-label">
+                            <span class="tier-letter">D</span>
+                            <span class="tier-name">TRIM IT</span>
+                            <span class="tier-count" data-tier="D" aria-label="0 coins">0</span>
+                        </div>
+                        <div class="tier-content" data-tier="D" aria-label="D tier coins"></div>
+                    </div>
+                    <div class="tier-row tier-f" data-tier="F" role="region" aria-label="F tier">
+                        <div class="tier-label">
+                            <span class="tier-letter">F</span>
+                            <span class="tier-name">EXIT NOW</span>
+                            <span class="tier-count" data-tier="F" aria-label="0 coins">0</span>
+                        </div>
+                        <div class="tier-content" data-tier="F" aria-label="F tier coins"></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="tray-col">
+                <section id="tray" class="tray" aria-labelledby="coinPoolTitle">
+                    <div class="tray-head">
+                        <div class="tray-title">
+                            <h2 id="coinPoolTitle">Unranked coins</h2>
+                            <span id="poolCount" class="count-pill">0</span>
+                        </div>
+                        <p class="tray-hint"><span class="hint-pointer">Drag onto a tier, or click a coin to pick one.</span><span class="hint-touch">Tap a coin to rank it.</span></p>
+                        <button id="trayToggle" class="icon-btn icon-btn-sm" type="button" aria-expanded="true" aria-controls="coinContainer" aria-label="Hide unranked coins" title="Hide unranked coins">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                    </div>
+                    <div id="coinContainer" class="coin-grid" aria-label="Unranked coins"></div>
+                </section>
+            </div>
         </div>
 
-        <section class="tier-list" aria-label="Tier list rankings">
-            <div class="tier-row tier-s" data-tier="S" role="region" aria-label="S Tier - Generational verdict">
-                <div class="tier-label">
-                    <span class="tier-letter">S</span>
-                    <span class="tier-name">GENERATIONAL</span>
-                    <span class="tier-count" data-tier="S" aria-label="0 coins">0</span>
-                </div>
-                <div class="tier-content" data-tier="S" aria-label="S Tier drop zone"></div>
-            </div>
-
-            <div class="tier-row tier-a" data-tier="A" role="region" aria-label="A Tier - Strong bag verdict">
-                <div class="tier-label">
-                    <span class="tier-letter">A</span>
-                    <span class="tier-name">STRONG BAG</span>
-                    <span class="tier-count" data-tier="A" aria-label="0 coins">0</span>
-                </div>
-                <div class="tier-content" data-tier="A" aria-label="A Tier drop zone"></div>
-            </div>
-
-            <div class="tier-row tier-b" data-tier="B" role="region" aria-label="B Tier - Solid verdict">
-                <div class="tier-label">
-                    <span class="tier-letter">B</span>
-                    <span class="tier-name">SOLID</span>
-                    <span class="tier-count" data-tier="B" aria-label="0 coins">0</span>
-                </div>
-                <div class="tier-content" data-tier="B" aria-label="B Tier drop zone"></div>
-            </div>
-
-            <div class="tier-row tier-c" data-tier="C" role="region" aria-label="C Tier - Rethink verdict">
-                <div class="tier-label">
-                    <span class="tier-letter">C</span>
-                    <span class="tier-name">RETHINK</span>
-                    <span class="tier-count" data-tier="C" aria-label="0 coins">0</span>
-                </div>
-                <div class="tier-content" data-tier="C" aria-label="C Tier drop zone"></div>
-            </div>
-
-            <div class="tier-row tier-d" data-tier="D" role="region" aria-label="D Tier - Trim it verdict">
-                <div class="tier-label">
-                    <span class="tier-letter">D</span>
-                    <span class="tier-name">TRIM IT</span>
-                    <span class="tier-count" data-tier="D" aria-label="0 coins">0</span>
-                </div>
-                <div class="tier-content" data-tier="D" aria-label="D Tier drop zone"></div>
-            </div>
-
-            <div class="tier-row tier-f" data-tier="F" role="region" aria-label="F Tier - Exit now verdict">
-                <div class="tier-label">
-                    <span class="tier-letter">F</span>
-                    <span class="tier-name">EXIT NOW</span>
-                    <span class="tier-count" data-tier="F" aria-label="0 coins">0</span>
-                </div>
-                <div class="tier-content" data-tier="F" aria-label="F Tier drop zone"></div>
-            </div>
-        </section>
-
-        <div id="tierSummary" class="tier-summary" aria-label="Tier distribution">
-            <div class="tier-summary-item" data-tier="S"><span class="tier-summary-letter">S</span><span class="tier-summary-count">0</span></div>
-            <div class="tier-summary-item" data-tier="A"><span class="tier-summary-letter">A</span><span class="tier-summary-count">0</span></div>
-            <div class="tier-summary-item" data-tier="B"><span class="tier-summary-letter">B</span><span class="tier-summary-count">0</span></div>
-            <div class="tier-summary-item" data-tier="C"><span class="tier-summary-letter">C</span><span class="tier-summary-count">0</span></div>
-            <div class="tier-summary-item" data-tier="D"><span class="tier-summary-letter">D</span><span class="tier-summary-count">0</span></div>
-            <div class="tier-summary-item" data-tier="F"><span class="tier-summary-letter">F</span><span class="tier-summary-count">0</span></div>
-            <div class="tier-summary-total"><span id="tierSummaryTotal">0</span> ranked</div>
-        </div>
-
-        <footer class="footer">
-            <p>
-                Created by Jesus Martinez, <a href="https://www.martinezaccess.com/" target="_blank" rel="noopener noreferrer">martinezaccess.com</a>
-                &middot; Want your portfolio reviewed? Tag <a href="https://x.com/jesusmartinez" target="_blank" rel="noopener noreferrer">@jesusmartinez</a> on 𝕏
-            </p>
+        <footer class="tl-footer">
+            <p>Made by Jesus Martinez. Want a second opinion on your coins? Hit <strong>Submit for review</strong> or tag <a href="https://x.com/JesusMartinez" target="_blank" rel="noopener noreferrer">@JesusMartinez</a> on X.</p>
+            <p class="tl-footer-meta">Rankings save in this browser. Coin logos and extended search come from <a href="https://www.coingecko.com/" target="_blank" rel="noopener noreferrer">CoinGecko</a>.</p>
         </footer>
+    </div>
+
+    <div id="tierPicker" class="tier-picker" role="dialog" aria-modal="false" aria-labelledby="tierPickerTitle" hidden>
+        <div class="tier-picker-head">
+            <img id="tierPickerLogo" class="tier-picker-logo" alt="" width="36" height="36">
+            <div class="tier-picker-id">
+                <strong id="tierPickerTitle">BTC</strong>
+                <span id="tierPickerName"></span>
+            </div>
+            <button id="tierPickerClose" class="icon-btn icon-btn-sm" type="button" aria-label="Close">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+        <p class="tier-picker-label" id="tierPickerPrompt">Move to</p>
+        <div class="tier-picker-tiers" role="group" aria-labelledby="tierPickerPrompt">
+            <button type="button" class="pick pick-s" data-tier="S"><span class="pick-letter">S</span></button>
+            <button type="button" class="pick pick-a" data-tier="A"><span class="pick-letter">A</span></button>
+            <button type="button" class="pick pick-b" data-tier="B"><span class="pick-letter">B</span></button>
+            <button type="button" class="pick pick-c" data-tier="C"><span class="pick-letter">C</span></button>
+            <button type="button" class="pick pick-d" data-tier="D"><span class="pick-letter">D</span></button>
+            <button type="button" class="pick pick-f" data-tier="F"><span class="pick-letter">F</span></button>
+        </div>
+        <div class="tier-picker-foot">
+            <button id="tierPickerPool" class="btn btn-sm" type="button">Back to Unranked</button>
+            <button id="tierPickerRemove" class="btn btn-sm btn-danger" type="button">Remove coin</button>
+        </div>
     </div>
 
     <div id="toastStack" aria-live="polite" aria-atomic="false"></div>
 
-    <div id="shortcutHint" class="shortcut-hint" role="status">
-        <span>Press <kbd>?</kbd> for shortcuts</span>
-        <button class="shortcut-hint-close" aria-label="Dismiss shortcuts hint">&times;</button>
-    </div>
-
     <div id="helpModal" class="help-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle" aria-hidden="true">
         <div class="help-modal">
-            <h2 id="helpModalTitle">How It Works</h2>
+            <button class="icon-btn icon-btn-sm help-close" type="button" aria-label="Close" data-close-help>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+            </button>
+            <h2 id="helpModalTitle">How it works</h2>
             <ol class="help-steps">
-                <li>Search for coins or browse a category, then add them to your list.</li>
-                <li>Drag coins into S through F. Click a tier name to make it your own.</li>
-                <li>Export an image or copy a link to share your rankings. Your work saves in this browser.</li>
+                <li>Search for a coin, or browse a category and tap the coins you want. They wait in <strong>Unranked</strong> until you rank them.</li>
+                <li>Drag a coin onto a tier, or tap it and pick a tier. On a phone, press and hold a coin to drag it.</li>
+                <li>Export an image or copy a link. Your list saves in this browser.</li>
             </ol>
-            <h2 class="help-shortcuts-title">Keyboard Shortcuts</h2>
+            <h2 class="help-shortcuts-title">Keyboard shortcuts</h2>
             <div class="help-shortcut-row"><span>Open this help</span><span class="help-shortcut-keys"><kbd>?</kbd></span></div>
-            <div class="help-shortcut-row"><span>Command palette</span><span class="help-shortcut-keys"><kbd>Ctrl</kbd><kbd>K</kbd></span></div>
-            <div class="help-shortcut-row"><span>Focus search</span><span class="help-shortcut-keys"><kbd>/</kbd> <kbd>s</kbd></span></div>
-            <div class="help-shortcut-row"><span>Pick up focused coin</span><span class="help-shortcut-keys"><kbd>Enter</kbd></span></div>
-            <div class="help-shortcut-row"><span>Move picked coin between tiers</span><span class="help-shortcut-keys"><kbd>↑</kbd><kbd>↓</kbd></span></div>
-            <div class="help-shortcut-row"><span>Move picked coin to tier</span><span class="help-shortcut-keys"><kbd>1</kbd>-<kbd>6</kbd></span></div>
-            <div class="help-shortcut-row"><span>Send picked coin back to pool</span><span class="help-shortcut-keys"><kbd>0</kbd></span></div>
-            <div class="help-shortcut-row"><span>Undo last remove</span><span class="help-shortcut-keys"><kbd>Ctrl</kbd><kbd>Z</kbd> / <kbd>u</kbd></span></div>
+            <div class="help-shortcut-row"><span>Quick add (command palette)</span><span class="help-shortcut-keys"><kbd>Ctrl</kbd><kbd>K</kbd></span></div>
+            <div class="help-shortcut-row"><span>Focus search</span><span class="help-shortcut-keys"><kbd>/</kbd></span></div>
+            <div class="help-shortcut-row"><span>Pick up the focused coin</span><span class="help-shortcut-keys"><kbd>Enter</kbd></span></div>
+            <div class="help-shortcut-row"><span>Move a picked-up coin between tiers</span><span class="help-shortcut-keys"><kbd>↑</kbd><kbd>↓</kbd></span></div>
+            <div class="help-shortcut-row"><span>Reorder a picked-up coin</span><span class="help-shortcut-keys"><kbd>←</kbd><kbd>→</kbd></span></div>
+            <div class="help-shortcut-row"><span>Send a picked-up coin to S through F</span><span class="help-shortcut-keys"><kbd>1</kbd> to <kbd>6</kbd></span></div>
+            <div class="help-shortcut-row"><span>Send a picked-up coin back to Unranked</span><span class="help-shortcut-keys"><kbd>0</kbd></span></div>
+            <div class="help-shortcut-row"><span>Undo the last removal</span><span class="help-shortcut-keys"><kbd>Ctrl</kbd><kbd>Z</kbd></span></div>
             <div class="help-shortcut-row"><span>Export image</span><span class="help-shortcut-keys"><kbd>e</kbd></span></div>
-            <div class="help-shortcut-row"><span>Toggle theme</span><span class="help-shortcut-keys"><kbd>t</kbd></span></div>
-            <div class="help-shortcut-row"><span>Close dialogs</span><span class="help-shortcut-keys"><kbd>Esc</kbd></span></div>
+            <div class="help-shortcut-row"><span>Light or dark mode</span><span class="help-shortcut-keys"><kbd>t</kbd></span></div>
+            <div class="help-shortcut-row"><span>Close a dialog</span><span class="help-shortcut-keys"><kbd>Esc</kbd></span></div>
         </div>
     </div>
 
-    <div id="cmdPalette" class="cmd-palette-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div id="cmdPalette" class="cmd-palette-overlay" role="dialog" aria-modal="true" aria-label="Quick add" aria-hidden="true">
         <div class="cmd-palette">
-            <input type="text" id="cmdPaletteInput" class="cmd-palette-input" placeholder="Search coins… (Enter to add, 1-6 for tier)" autocomplete="off" aria-label="Command palette search" />
+            <input type="text" id="cmdPaletteInput" class="cmd-palette-input" placeholder="Search coins. Enter adds, 1 to 6 sends it straight to S through F." autocomplete="off" spellcheck="false" aria-label="Quick add search" />
             <div id="cmdPaletteResults" class="cmd-palette-results" role="listbox"></div>
             <div class="cmd-palette-footer">
-                <span><kbd>↑</kbd><kbd>↓</kbd> navigate &middot; <kbd>Enter</kbd> add to pool &middot; <kbd>1</kbd>-<kbd>6</kbd> send to tier &middot; <kbd>Esc</kbd> close</span>
+                <span><kbd>↑</kbd><kbd>↓</kbd> choose · <kbd>Enter</kbd> add to Unranked · <kbd>1</kbd> to <kbd>6</kbd> add to a tier · <kbd>Esc</kbd> close</span>
             </div>
         </div>
     </div>
@@ -247,6 +299,6 @@
         });
     </script>
     <script defer src="/tier-list-analytics.js"></script>
-    <script src="/tier-list-assets/script.js"></script>
+    <script src="/tier-list-assets/script.js?v=2026-10-03"></script>
 </body>
 </html>

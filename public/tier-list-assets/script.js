@@ -14,8 +14,6 @@ let draggedElement = null;
 let customCoinData = {}; // Store custom coin metadata (logo URLs, etc.)
 let lastRemovedCoin = null; // Store last removed coin for undo
 let undoTimeout = null;
-let currentCategory = 'none'; // Track active category tab (My Portfolio by default)
-let categoryCache = {}; // Cache fetched category data
 
 // ============================================
 // SECURITY: Input Sanitization Utilities
@@ -57,12 +55,12 @@ function isValidTierName(tier) {
 // Single source of truth for tier letters, verdict labels, and export colors.
 // Names must stay ≤12 chars (the editable tier-name input cap).
 const TIER_LABELS = {
-    S: { letter: 'S', degenLetter: '100X', name: 'GENERATIONAL', degenName: 'NEVER SELL', color: '#22c55e', emoji: '🔥' },
-    A: { letter: 'A', degenLetter: '75X', name: 'STRONG BAG', degenName: 'SEND IT', color: '#84cc16', emoji: '💎' },
-    B: { letter: 'B', degenLetter: '50X', name: 'SOLID', degenName: 'HODL', color: '#eab308', emoji: '📈' },
-    C: { letter: 'C', degenLetter: '25X', name: 'RETHINK', degenName: 'COPE', color: '#f97316', emoji: '📊' },
-    D: { letter: 'D', degenLetter: '10X', name: 'TRIM IT', degenName: 'DOWN BAD', color: '#ef4444', emoji: '📉' },
-    F: { letter: 'F', degenLetter: 'RUG', name: 'EXIT NOW', degenName: 'RUGGED', color: '#6c757d', emoji: '🗑️' }
+    S: { letter: 'S', degenLetter: '100X', name: 'GENERATIONAL', degenName: 'NEVER SELL', color: '#72c99d', emoji: '🔥' },
+    A: { letter: 'A', degenLetter: '75X', name: 'STRONG BAG', degenName: 'SEND IT', color: '#a9cf82', emoji: '💎' },
+    B: { letter: 'B', degenLetter: '50X', name: 'SOLID', degenName: 'HODL', color: '#dccb8b', emoji: '📈' },
+    C: { letter: 'C', degenLetter: '25X', name: 'RETHINK', degenName: 'COPE', color: '#e0ad80', emoji: '📊' },
+    D: { letter: 'D', degenLetter: '10X', name: 'TRIM IT', degenName: 'DOWN BAD', color: '#df8f86', emoji: '📉' },
+    F: { letter: 'F', degenLetter: 'RUG', name: 'EXIT NOW', degenName: 'RUGGED', color: '#94a3ae', emoji: '🗑️' }
 };
 
 // Tier letter shown in the label column, respecting degen mode
@@ -129,10 +127,8 @@ function coinExistsInDOM(symbol) {
     return exists;
 }
 
-// Touch support variables
+// Touch support: the floating copy of a coin that follows the finger
 let touchClone = null;
-let touchStartX = 0;
-let touchStartY = 0;
 
 // ============================================
 // PERFORMANCE: Optimization utilities
@@ -180,7 +176,6 @@ function rafThrottle(func) {
 const searchCache = new Map();
 const CACHE_EXPIRY = 5 * 60 * 1000;
 const MAX_SEARCH_CACHE_SIZE = 50; // Maximum number of cached search results
-const MAX_CATEGORY_CACHE_SIZE = 10; // Maximum number of cached categories
 
 // Cache management functions
 function cleanupSearchCache() {
@@ -200,30 +195,8 @@ function cleanupSearchCache() {
     }
 }
 
-function cleanupCategoryCache() {
-    const now = Date.now();
-    const keys = Object.keys(categoryCache);
-    // Remove expired entries
-    keys.forEach(key => {
-        if (now - categoryCache[key].timestamp > CACHE_EXPIRY) {
-            delete categoryCache[key];
-        }
-    });
-    // If still over limit, remove oldest entries
-    const remainingKeys = Object.keys(categoryCache);
-    if (remainingKeys.length > MAX_CATEGORY_CACHE_SIZE) {
-        const entries = remainingKeys.map(key => ({ key, timestamp: categoryCache[key].timestamp }));
-        entries.sort((a, b) => a.timestamp - b.timestamp);
-        const toRemove = entries.slice(0, entries.length - MAX_CATEGORY_CACHE_SIZE);
-        toRemove.forEach(({ key }) => delete categoryCache[key]);
-    }
-}
-
 // Run cache cleanup periodically (every 2 minutes)
-setInterval(() => {
-    cleanupSearchCache();
-    cleanupCategoryCache();
-}, 2 * 60 * 1000);
+setInterval(cleanupSearchCache, 2 * 60 * 1000);
 
 // ============================================
 // SECURITY/PERFORMANCE: API Rate Limiting
@@ -413,6 +386,12 @@ const resetBtn = document.getElementById('resetBtn');
 const degenToggle = document.getElementById('degenToggle');
 const themeToggle = document.getElementById('themeToggle');
 const tierContents = document.querySelectorAll('.tier-content');
+const catalogEl = document.getElementById('catalog');
+const catalogGrid = document.getElementById('catalogGrid');
+const catalogTitle = document.getElementById('catalogTitle');
+const catalogAddAll = document.getElementById('catalogAddAll');
+const trayEl = document.getElementById('tray');
+const tierPickerEl = document.getElementById('tierPicker');
 
 // PERFORMANCE: Cache tier elements for fast access
 const tierElementCache = {};
@@ -444,15 +423,15 @@ function applyViewMode() {
 
     if (viewMode === 'review') {
         if (banner) banner.hidden = false;
-        if (bannerText) bannerText.innerHTML = '📥 <strong>PORTFOLIO SUBMISSION</strong>. drag their coins into verdict tiers, then hit SHARE ON X.';
+        if (bannerText) bannerText.innerHTML = '<strong>Portfolio submission.</strong> Rank their coins from Unranked, then hit Share on X.';
         if (bannerCta) bannerCta.hidden = true;
         if (poolTitle) poolTitle.textContent = 'Unranked coins';
-        if (helper) helper.innerHTML = '<strong>Time to judge.</strong> Drag coins from the portfolio above into verdict tiers.';
+        if (helper) helper.innerHTML = '<strong>Time to judge.</strong> Drag the coins in Unranked onto verdict tiers, or tap a coin and pick its tier.';
     } else if (viewMode === 'verdict') {
         if (banner) banner.hidden = false;
-        if (bannerText) bannerText.innerHTML = '↗ <strong>SHARED TIER LIST</strong>. Rankings shared by the creator.';
+        if (bannerText) bannerText.innerHTML = '<strong>Shared tier list.</strong> These rankings were shared by their creator.';
         if (bannerCta) bannerCta.hidden = false;
-        if (poolTitle) poolTitle.textContent = 'Unranked Coins';
+        if (poolTitle) poolTitle.textContent = 'Unranked coins';
     } else {
         if (banner) banner.hidden = true;
         if (poolTitle) poolTitle.textContent = 'Unranked coins';
@@ -462,11 +441,14 @@ function applyViewMode() {
 // Initialize
 function init() {
     setupEventListeners();
-    setupCategoryTabs();
+    setupCatalog();
     setupEditableTierNames();
+    setupTierPicker();
+    setupMenus();
+    setupTray();
 
     // Fire-and-forget: search works against the live API until this lands
-    loadCoinIndex();
+    coinIndexReady = loadCoinIndex();
 
     // Check for shared link first - if present, load from it instead of localStorage
     const sharedLinkLoaded = loadFromShareableLink();
@@ -475,36 +457,52 @@ function init() {
         loadFromLocalStorage();
     }
 
-    initThemeFromSystem();
+    applyTheme();
 
-    if (sharedLinkLoaded) {
-        // A shared portfolio just rendered into the pool. loading a category
-        // tab here would wipe it. Land on the portfolio tab instead.
-        activateCategoryTab('none');
-    } else {
-        // Start on the user's own portfolio (renders the empty-state hint
-        // for first-time visitors)
-        activateCategoryTab('none');
+    if (!sharedLinkLoaded) {
+        // Renders the unranked tray (and its empty state for first-time visitors)
         renderCoins();
     }
 
     // Initialize tier count badges
     updateTierCounts();
+    updateTierLabels();
 
     applyViewMode();
+
+    // Give every coin its real logo: typed tickers, older saves and shared
+    // links can arrive without one
+    backfillMissingLogos();
 }
 
-// Setup editable tier names
+// Tier names can be renamed: click, or focus and press Enter
 function setupEditableTierNames() {
     const tierNames = document.querySelectorAll('.tier-name');
     tierNames.forEach(nameEl => {
-        nameEl.style.cursor = 'pointer';
-        nameEl.title = 'Click to edit tier name';
+        nameEl.tabIndex = 0;
+        nameEl.setAttribute('role', 'button');
+        nameEl.title = 'Rename this tier';
         nameEl.addEventListener('click', (e) => {
             e.stopPropagation();
             makeTierNameEditable(nameEl);
         });
+        nameEl.addEventListener('keydown', (e) => {
+            if (e.target !== nameEl) return; // Keys inside the rename field
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                makeTierNameEditable(nameEl);
+            }
+        });
     });
+}
+
+function tierNameAriaLabel(tier) {
+    return `Rename the ${tier} tier, now ${customTierNames[tier] || getDefaultTierName(tier)}`;
+}
+
+// Same rules as saved and shared names: letters, numbers, spaces and hyphens
+function cleanTierName(value) {
+    return String(value || '').replace(/[^A-Z0-9\s\-]/gi, '').replace(/\s+/g, ' ').trim().toUpperCase().substring(0, 12);
 }
 
 // Make a tier name editable
@@ -518,12 +516,12 @@ function makeTierNameEditable(nameEl) {
 
     const currentText = nameEl.textContent;
 
-    // Create input element
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'tier-name-input';
     input.value = currentText;
     input.maxLength = 12;
+    input.setAttribute('aria-label', `New name for the ${tier} tier`);
     input.style.cssText = `
         background: transparent;
         border: 1px solid currentColor;
@@ -536,32 +534,39 @@ function makeTierNameEditable(nameEl) {
         outline: none;
     `;
 
-    // Save on blur or Enter
-    const saveEdit = () => {
-        const newValue = input.value.trim().toUpperCase() || getDefaultTierName(tier);
+    let finished = false;
+    const finish = (save) => {
+        if (finished) return;
+        finished = true;
+        const newValue = save ? (cleanTierName(input.value) || getDefaultTierName(tier)) : currentText;
         nameEl.textContent = newValue;
 
-        // Store custom name if different from default
-        const defaultName = getDefaultTierName(tier);
-        if (newValue !== defaultName) {
-            customTierNames[tier] = newValue;
-        } else {
-            delete customTierNames[tier];
+        if (save) {
+            // Store custom name if different from default
+            if (newValue !== getDefaultTierName(tier)) {
+                customTierNames[tier] = newValue;
+            } else {
+                delete customTierNames[tier];
+            }
+            saveToLocalStorage();
         }
-
-        saveToLocalStorage();
+        nameEl.setAttribute('aria-label', tierNameAriaLabel(tier));
     };
 
-    input.addEventListener('blur', saveEdit);
+    input.addEventListener('blur', () => finish(true));
     input.addEventListener('keydown', (e) => {
+        e.stopPropagation(); // Typing here must not trigger page shortcuts
         if (e.key === 'Enter') {
             e.preventDefault();
-            input.blur();
+            finish(true);
+            nameEl.focus();
         } else if (e.key === 'Escape') {
             e.preventDefault();
-            nameEl.textContent = currentText;
+            finish(false);
+            nameEl.focus();
         }
     });
+    input.addEventListener('click', (e) => e.stopPropagation());
 
     // Replace text with input
     nameEl.textContent = '';
@@ -577,250 +582,195 @@ function getDefaultTierName(tier) {
     return isDegenMode ? t.degenName : t.name;
 }
 
-// Initialize theme from system preference (if no saved preference)
-function initThemeFromSystem() {
-    const savedState = localStorage.getItem('martinezAccessTierListState');
-
-    // Only use system preference if user hasn't set a preference
-    if (savedState) {
-        try {
-            const state = JSON.parse(savedState);
-            if (typeof state.isLightMode === 'boolean') {
-                // User has a saved preference, don't override
-                return;
-            }
-        } catch (e) {
-            // Invalid saved state, continue with system detection
-        }
+// Reflect the theme on the page and the toggle. Dark is the default, matching
+// the rest of the site; light mode is opt-in and remembered.
+function applyTheme() {
+    document.body.classList.toggle('light-mode', isLightMode);
+    if (themeToggle) {
+        const label = isLightMode ? 'Switch to dark mode' : 'Switch to light mode';
+        themeToggle.setAttribute('aria-pressed', isLightMode ? 'true' : 'false');
+        themeToggle.setAttribute('aria-label', label);
+        themeToggle.title = label;
     }
-
-    // Check system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    const prefersLight = window.matchMedia('(prefers-color-scheme: light)');
-
-    if (prefersLight.matches) {
-        isLightMode = true;
-        document.body.classList.add('light-mode');
-        const themeIcon = themeToggle?.querySelector('.theme-icon');
-        if (themeIcon) {
-            themeIcon.textContent = '☀️';
-        }
-    }
-    // Default is dark mode, so no action needed if prefersDark
-
-    // Listen for system theme changes
-    prefersDark.addEventListener('change', handleSystemThemeChange);
-
-    // MEMORY: Store reference for cleanup
-    window._themeMediaQuery = prefersDark;
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.setAttribute('content', isLightMode ? '#e9eef2' : '#11171d');
 }
 
-// Handle system theme change
-function handleSystemThemeChange(e) {
-    // Only auto-switch if user hasn't manually set a preference
-    const savedState = localStorage.getItem('martinezAccessTierListState');
-    if (savedState) {
-        try {
-            const state = JSON.parse(savedState);
-            if (typeof state.isLightMode === 'boolean') {
-                // User has manually set preference, don't auto-switch
-                return;
-            }
-        } catch (err) {
-            // Continue with auto-switch
-        }
-    }
+// ============================================
+// CATALOG: browse curated categories and add coins in one tap
+// ============================================
 
-    // e.matches is true when system is dark mode
-    const systemWantsLight = !e.matches;
+const CATEGORY_TITLES = {
+    'top-marketcap': 'Top 20 by market cap',
+    'ai': 'AI and machine learning',
+    'rwa': 'Real-world assets',
+    'gaming': 'Gaming',
+    'meme': 'Meme coins'
+};
 
-    if (systemWantsLight !== isLightMode) {
-        toggleTheme();
-    }
-}
+let openCatalogCategory = null;
 
-// Setup category tab event listeners
-function setupCategoryTabs() {
-    const tabs = document.querySelectorAll('.category-tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => handleCategoryClick(tab));
-    });
-}
-
-// Update active tab styling/accessibility and track the current category
-function activateCategoryTab(category) {
-    document.querySelectorAll('.category-tab').forEach(t => {
-        const isTarget = t.dataset.category === category;
-        t.classList.toggle('active', isTarget);
-        t.setAttribute('aria-selected', isTarget ? 'true' : 'false');
-    });
-    currentCategory = category;
-}
-
-// Handle category tab click
-function handleCategoryClick(tab) {
-    const category = tab.dataset.category;
-
-    activateCategoryTab(category);
-
-    // If "My Coins" tab, show user's coins
-    if (category === 'none') {
-        renderCoins();
-        return;
-    }
-
-    // Load and display category coins (static data, no API calls)
-    fetchCategoryCoins(category);
-}
-
-// Load coins for a specific category from static data (no API calls)
-function fetchCategoryCoins(category) {
-    const staticCoins = STATIC_CATEGORY_COINS[category];
-    if (!staticCoins) {
-        console.error('Unknown category:', category);
-        renderCoins();
-        return;
-    }
-
-    // Use static data directly - no API calls needed
-    displayCategoryCoins(staticCoins);
-}
-
-
-// Display coins from a category (for adding to user's collection)
-function displayCategoryCoins(categoryCoins) {
-    const fragment = document.createDocumentFragment();
-
-    categoryCoins.forEach((coin, index) => {
-        const symbol = coin.symbol.toUpperCase();
-        // Check both coinSet and DOM (pool + tiers). coin can exist in either
-        const alreadyAdded = coinSet.has(symbol) || coinExistsInDOM(symbol);
-
-        // Store coin data for later use
-        if (!customCoinData[symbol]) {
-            customCoinData[symbol] = {
-                logo: coin.image,
-                name: coin.name,
-                id: coin.id
-            };
-        }
-
-        const coinEl = document.createElement('div');
-        coinEl.className = `coin category-coin ${alreadyAdded ? 'already-added' : ''}`;
-        coinEl.dataset.coin = symbol;
-        coinEl.dataset.coinId = coin.id;
-        coinEl.style.animationDelay = `${Math.min(index * 0.05, 2)}s`;
-
-        // Create logo image
-        const logo = document.createElement('img');
-        logo.className = 'coin-logo';
-        // NOTE: Don't set crossOrigin for display - CoinGecko doesn't support CORS hotlinking
-        logo.draggable = false;
-        logo.loading = 'lazy'; // PERFORMANCE: Native lazy loading
-        logo.decoding = 'async'; // PERFORMANCE: Async image decoding
-        logo.referrerPolicy = 'no-referrer'; // Help with hotlink protection
-        if (coin.image) {
-            const validatedUrl = sanitizeLogoUrl(coin.image);
-            if (validatedUrl) {
-                logo.src = validatedUrl;
-            }
-        }
-        // ACCESSIBILITY: Descriptive alt text
-        logo.alt = `${coin.name} (${symbol}) logo`;
-        logo.onerror = function() {
-            // Show placeholder instead of hiding
-            this.style.opacity = '0.3';
-            this.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23333"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="20">?</text></svg>');
-            this.onerror = null;
-        };
-
-        // Create text span
-        const text = document.createElement('span');
-        text.className = 'coin-text';
-        text.textContent = symbol;
-
-        // Create add button
-        const addBtn = document.createElement('button');
-        addBtn.className = 'coin-add-btn';
-        addBtn.innerHTML = alreadyAdded ? '&#10003;' : '+';
-        addBtn.title = alreadyAdded ? 'Already added' : 'Add to portfolio';
-        addBtn.disabled = alreadyAdded;
-
-        const handleAddCoin = (e) => {
+function setupCatalog() {
+    document.querySelectorAll('.chip[data-category]').forEach(chip => {
+        chip.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (!coinSet.has(symbol) && !coinExistsInDOM(symbol)) {
-                addCoinFromCategory(symbol, coin);
-                addBtn.innerHTML = '&#10003;';
-                addBtn.disabled = true;
-                coinEl.classList.add('already-added');
-            }
-        };
-
-        addBtn.addEventListener('click', handleAddCoin);
-        // Mobile touch support for add button
-        addBtn.addEventListener('touchstart', (e) => {
-            e.stopPropagation();
-        }, { passive: false });
-        addBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!addBtn.disabled) {
-                handleAddCoin(e);
-            }
-        }, { passive: false });
-
-        coinEl.appendChild(logo);
-        coinEl.appendChild(text);
-        coinEl.appendChild(addBtn);
-
-        // Click/tap on coin also adds it
-        const handleCoinTap = () => {
-            if (!coinSet.has(symbol) && !coinExistsInDOM(symbol)) {
-                addCoinFromCategory(symbol, coin);
-                addBtn.innerHTML = '&#10003;';
-                addBtn.disabled = true;
-                coinEl.classList.add('already-added');
-            }
-        };
-
-        coinEl.addEventListener('click', handleCoinTap);
-        // Mobile touch support for coin tap
-        let touchMoved = false;
-        coinEl.addEventListener('touchstart', () => {
-            touchMoved = false;
-        }, { passive: true });
-        coinEl.addEventListener('touchmove', () => {
-            touchMoved = true;
-        }, { passive: true });
-        coinEl.addEventListener('touchend', (e) => {
-            // Only trigger if not scrolling
-            if (!touchMoved && e.target === coinEl || e.target.classList.contains('coin-logo') || e.target.classList.contains('coin-text')) {
-                e.preventDefault();
-                handleCoinTap();
+            const category = chip.dataset.category;
+            if (openCatalogCategory === category) {
+                closeCatalog();
+            } else {
+                openCatalog(category);
             }
         });
-
-        fragment.appendChild(coinEl);
     });
 
-    coinContainer.innerHTML = '';
-    coinContainer.appendChild(fragment);
+    // Category switcher inside the catalog (shown on phones, where the
+    // catalog sheet covers the chips)
+    document.querySelectorAll('.catalog-tab[data-category]').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openCatalog(tab.dataset.category);
+        });
+    });
+
+    const closeBtn = document.getElementById('catalogClose');
+    if (closeBtn) closeBtn.addEventListener('click', () => closeCatalog(true));
+    if (catalogAddAll) catalogAddAll.addEventListener('click', addAllFromCatalog);
+
+    // Click outside the catalog (and its chips) closes it
+    document.addEventListener('click', (e) => {
+        if (!openCatalogCategory) return;
+        if (e.target.closest('#catalog') || e.target.closest('.chip[data-category]')) return;
+        closeCatalog();
+    });
 }
 
-// Add a coin from a category to user's collection
-function addCoinFromCategory(symbol, coinData) {
+function openCatalog(category) {
+    const list = STATIC_CATEGORY_COINS[category];
+    if (!list || !catalogEl) return;
+    closeTierPicker();
+    openCatalogCategory = category;
+    document.querySelectorAll('.chip[data-category]').forEach(chip => {
+        chip.setAttribute('aria-expanded', chip.dataset.category === category ? 'true' : 'false');
+    });
+    document.querySelectorAll('.catalog-tab[data-category]').forEach(tab => {
+        tab.setAttribute('aria-pressed', tab.dataset.category === category ? 'true' : 'false');
+    });
+    if (catalogTitle) catalogTitle.textContent = CATEGORY_TITLES[category] || 'Coins';
+    catalogEl.scrollTop = 0;
+    renderCatalog();
+    catalogEl.hidden = false;
+}
+
+function closeCatalog(returnFocus) {
+    if (!catalogEl || catalogEl.hidden) {
+        openCatalogCategory = null;
+        return;
+    }
+    const category = openCatalogCategory;
+    catalogEl.hidden = true;
+    openCatalogCategory = null;
+    document.querySelectorAll('.chip[data-category]').forEach(chip => chip.setAttribute('aria-expanded', 'false'));
+    if (returnFocus && category) {
+        document.querySelector(`.chip[data-category="${category}"]`)?.focus();
+    }
+}
+
+// Render the open category as a grid of add buttons
+function renderCatalog() {
+    const list = STATIC_CATEGORY_COINS[openCatalogCategory];
+    if (!list || !catalogGrid) return;
+    const fragment = document.createDocumentFragment();
+    let remaining = 0;
+
+    list.forEach(coin => {
+        const symbol = coin.symbol.toUpperCase();
+        const added = coinSet.has(symbol) || coinExistsInDOM(symbol);
+        if (!added) remaining++;
+
+        if (!customCoinData[symbol]) {
+            customCoinData[symbol] = { logo: coin.image, name: coin.name, id: coin.id };
+        }
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `catalog-coin${added ? ' is-added' : ''}`;
+        btn.dataset.coin = symbol;
+        btn.setAttribute('aria-pressed', added ? 'true' : 'false');
+        btn.setAttribute('aria-label', added ? `${coin.name} (${symbol}) is in your list` : `Add ${coin.name} (${symbol})`);
+
+        const logo = document.createElement('img');
+        logo.alt = '';
+        logo.loading = 'lazy';
+        logo.decoding = 'async';
+        logo.referrerPolicy = 'no-referrer';
+        setLogoImage(logo, symbol, coin.image);
+
+        const text = document.createElement('span');
+        text.className = 'cc-text';
+        const sym = document.createElement('span');
+        sym.className = 'cc-sym';
+        sym.textContent = symbol;
+        const name = document.createElement('span');
+        name.className = 'cc-name';
+        name.textContent = coin.name;
+        text.append(sym, name);
+
+        const state = document.createElement('span');
+        state.className = 'cc-state';
+        state.setAttribute('aria-hidden', 'true');
+        state.textContent = added ? '✓' : '+';
+
+        btn.append(logo, text, state);
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (coinSet.has(symbol) || coinExistsInDOM(symbol)) return;
+            addCoinFromCategory(symbol, coin);
+            renderCatalog();
+        });
+        fragment.appendChild(btn);
+    });
+
+    catalogGrid.innerHTML = '';
+    catalogGrid.appendChild(fragment);
+
+    if (catalogAddAll) {
+        catalogAddAll.disabled = remaining === 0;
+        catalogAddAll.textContent = remaining === 0 ? 'All added' : `Add all ${remaining}`;
+    }
+}
+
+function addAllFromCatalog(e) {
+    if (e) e.stopPropagation();
+    const list = STATIC_CATEGORY_COINS[openCatalogCategory];
+    if (!list) return;
+    let added = 0;
+    list.forEach(coin => {
+        const symbol = coin.symbol.toUpperCase();
+        if (coinSet.has(symbol) || coinExistsInDOM(symbol)) return;
+        if (addCoinFromCategory(symbol, coin, { quiet: true })) added++;
+    });
+    renderCatalog();
+    if (added > 0) {
+        announceToScreenReader(`Added ${added} coins to Unranked`);
+        showNotification(`Added ${added} coin${added === 1 ? '' : 's'} to Unranked.`);
+    }
+}
+
+// Add a coin from a category, search, or the palette to the user's list.
+// The coin lands in the Unranked tray. Returns true when it was added.
+function addCoinFromCategory(symbol, coinData, options = {}) {
     if (coinSet.has(symbol)) {
-        return; // Already exists in set
+        return false; // Already exists in set
     }
 
     // Check the DOM (tiers + pool). the DOM is authoritative over coinSet
     if (coinExistsInDOM(symbol)) {
-        return;
+        return false;
     }
 
     // Store coin data
     customCoinData[symbol] = {
-        logo: sanitizeLogoUrl(coinData.image || ''),
+        logo: sanitizeLogoUrl(coinData.image || coinData.large || coinData.thumb || ''),
         name: sanitizeCoinName(coinData.name || ''),
         id: sanitizeCoinName(coinData.id || '')
     };
@@ -829,10 +779,20 @@ function addCoinFromCategory(symbol, coinData) {
     coins.push(symbol);
     coinSet.add(symbol);
 
-    saveToLocalStorage();
+    const coinEl = createCoinElement(symbol, 0);
+    if (!coinEl) {
+        coins.pop();
+        coinSet.delete(symbol);
+        delete customCoinData[symbol];
+        return false;
+    }
+    coinContainer.appendChild(coinEl);
+    revealTray();
 
-    // Show feedback
-    showNotification(`${symbol} added to your portfolio!`);
+    saveToLocalStorage();
+    if (!customCoinData[symbol].logo) backfillMissingLogos([symbol]);
+    if (!options.quiet) announceToScreenReader(`${symbol} added to Unranked`);
+    return true;
 }
 
 // PERFORMANCE: Render coins using DocumentFragment for batched DOM updates.
@@ -862,19 +822,43 @@ function renderCoins() {
     coinSet = new Set(coins);
 }
 
-// Keep the empty-portfolio hint in sync with the portfolio contents.
-// Must be called whenever a coin is added or removed outside renderCoins.
+// Keep the tray's empty state and counts in sync with its contents.
+// Must be called whenever a coin is added, removed or moved.
 function updatePoolEmptyState() {
     const existing = coinContainer.querySelector('.pool-empty-state');
-    const showHint = coins.length === 0 && currentCategory === 'none';
-    if (showHint && !existing) {
-        const empty = document.createElement('div');
-        empty.className = 'pool-empty-state';
-        empty.innerHTML = 'Search for a coin above, or browse <strong>TOP 20 · AI · RWA · GAMING · MEME</strong> and tap <strong>+</strong> to start your list.';
-        coinContainer.appendChild(empty);
-    } else if (!showHint && existing) {
+    const poolCoins = coinContainer.querySelectorAll('.coin').length;
+
+    if (poolCoins === 0) {
+        const message = coins.length === 0
+            ? 'Search for a coin or browse a category above. New coins wait here until you rank them.'
+            : '<strong>Everything is ranked.</strong> Add more coins above, or drag one back here.';
+        if (!existing) {
+            const empty = document.createElement('div');
+            empty.className = 'pool-empty-state';
+            empty.innerHTML = message;
+            coinContainer.appendChild(empty);
+        } else if (existing.innerHTML !== message) {
+            existing.innerHTML = message;
+        }
+    } else if (existing) {
         existing.remove();
     }
+
+    updatePoolCounts(poolCoins);
+}
+
+function updatePoolCounts(poolCoins) {
+    const count = typeof poolCoins === 'number' ? poolCoins : coinContainer.querySelectorAll('.coin').length;
+    const pill = document.getElementById('poolCount');
+    if (pill && pill.textContent !== String(count)) {
+        pill.textContent = count;
+        pill.setAttribute('aria-label', `${count} unranked coin${count === 1 ? '' : 's'}`);
+        pill.classList.remove('bump');
+        void pill.offsetWidth; // restart the animation
+        pill.classList.add('bump');
+    }
+    const unranked = document.getElementById('unrankedTotal');
+    if (unranked) unranked.textContent = count;
 }
 
 // Create coin element
@@ -886,16 +870,17 @@ function createCoinElement(coinName, index) {
         return null;
     }
 
+    const coinFullName = customCoinData[safeCoinName]?.name || safeCoinName;
     const coinEl = document.createElement('div');
     coinEl.className = 'coin';
     coinEl.draggable = true;
     coinEl.dataset.coin = safeCoinName;
     coinEl.tabIndex = 0; // Make focusable for keyboard navigation
+    coinEl.title = coinFullName === safeCoinName ? safeCoinName : `${coinFullName} (${safeCoinName})`;
     coinEl.setAttribute('role', 'button');
     coinEl.setAttribute('aria-label', `${safeCoinName} coin. Press Enter to pick up and move.`);
-    coinEl.style.animationDelay = `${Math.min(index * 0.05, 2)}s`; // Cap animation delay
 
-    // Create logo image
+    // Create logo image (real logo from CoinGecko, monogram until it loads)
     const logo = document.createElement('img');
     logo.className = 'coin-logo';
     // NOTE: Don't set crossOrigin for display - CoinGecko doesn't support CORS hotlinking
@@ -903,26 +888,8 @@ function createCoinElement(coinName, index) {
     logo.loading = 'lazy'; // PERFORMANCE: Native lazy loading
     logo.decoding = 'async'; // PERFORMANCE: Async image decoding
     logo.referrerPolicy = 'no-referrer'; // Help with hotlink protection
-
-    // Get logo from customCoinData (populated by loadDefaultCoinLogos or search)
-    if (customCoinData[safeCoinName] && customCoinData[safeCoinName].logo) {
-        const validatedUrl = sanitizeLogoUrl(customCoinData[safeCoinName].logo);
-        if (validatedUrl) {
-            logo.src = validatedUrl;
-        }
-    }
-    // If no logo yet, it will be set when loadDefaultCoinLogos completes
-
-    // ACCESSIBILITY: Descriptive alt text using full coin name if available
-    const coinFullName = customCoinData[safeCoinName]?.name || safeCoinName;
     logo.alt = `${coinFullName} (${safeCoinName}) logo`;
-
-    logo.onerror = function() {
-        // Show placeholder instead of hiding
-        this.style.opacity = '0.3';
-        this.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23333"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="20">?</text></svg>');
-        this.onerror = null; // Prevent infinite loop
-    };
+    setLogoImage(logo, safeCoinName, customCoinData[safeCoinName]?.logo);
 
     // Create text span
     const text = document.createElement('span');
@@ -932,8 +899,11 @@ function createCoinElement(coinName, index) {
     // Create remove button with double-tap confirmation
     const removeBtn = document.createElement('button');
     removeBtn.className = 'coin-remove';
+    removeBtn.type = 'button';
     removeBtn.innerHTML = '&times;';
     removeBtn.title = 'Remove coin';
+    removeBtn.setAttribute('aria-label', `Remove ${safeCoinName}`);
+    removeBtn.tabIndex = -1;
 
     const handleRemoveClick = (e) => {
         e.stopPropagation();
@@ -943,7 +913,7 @@ function createCoinElement(coinName, index) {
         } else {
             // First tap - show confirmation state
             removeBtn.classList.add('confirm');
-            removeBtn.innerHTML = 'Sure?';
+            removeBtn.textContent = 'Remove?';
             // Reset after 2 seconds if not confirmed
             setTimeout(() => {
                 removeBtn.classList.remove('confirm');
@@ -953,15 +923,7 @@ function createCoinElement(coinName, index) {
     };
 
     removeBtn.addEventListener('click', handleRemoveClick);
-    // Mobile touch support for remove button
-    removeBtn.addEventListener('touchstart', (e) => {
-        e.stopPropagation();
-    }, { passive: false });
-    removeBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleRemoveClick(e);
-    }, { passive: false });
+    removeBtn.addEventListener('mousedown', (e) => e.stopPropagation());
 
     coinEl.appendChild(logo);
     coinEl.appendChild(text);
@@ -971,10 +933,15 @@ function createCoinElement(coinName, index) {
     coinEl.addEventListener('dragstart', handleDragStart);
     coinEl.addEventListener('dragend', handleDragEnd);
 
-    // Touch events for mobile
-    coinEl.addEventListener('touchstart', handleTouchStart, { passive: false });
+    // Touch: press and hold to drag, so a swipe that starts on a coin still scrolls
+    coinEl.addEventListener('touchstart', handleTouchStart, { passive: true });
     coinEl.addEventListener('touchmove', handleTouchMove, { passive: false });
-    coinEl.addEventListener('touchend', handleTouchEnd);
+    coinEl.addEventListener('touchend', handleTouchEnd, { passive: false });
+    coinEl.addEventListener('touchcancel', handleTouchCancel);
+    coinEl.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Click or tap: choose a tier from the picker
+    coinEl.addEventListener('click', handleCoinClick);
 
     // Keyboard events for accessibility
     coinEl.addEventListener('keydown', handleCoinKeydown);
@@ -1005,14 +972,57 @@ function setupEventListeners() {
             return;
         }
 
-        searchTimeout = setTimeout(() => searchCoins(query), 300);
+        searchTimeout = setTimeout(() => searchCoins(query), 150);
     });
 
-    // Enter key to add coin
-    coinInput.addEventListener('keypress', (e) => {
+    // Enter adds the top search result (or the typed ticker), arrows walk the results
+    coinInput.addEventListener('keydown', (e) => {
+        const items = Array.from(searchResults.querySelectorAll('.search-item:not(.no-results)'))
+            .filter(item => item.dataset.selectable === '1');
+        const resultsOpen = searchResults.style.display === 'block';
         if (e.key === 'Enter') {
-            addCoin();
+            e.preventDefault();
+            if (resultsOpen && items.length > 0) {
+                items[0].click();
+            } else {
+                addCoin();
+            }
+        } else if (e.key === 'ArrowDown' && resultsOpen && items.length > 0) {
+            e.preventDefault();
+            items[0].focus();
+        } else if (e.key === 'Escape' && resultsOpen) {
+            e.preventDefault();
+            searchResults.style.display = 'none';
+            coinInput.setAttribute('aria-expanded', 'false');
         }
+    });
+
+    // Arrow keys move between search results
+    searchResults.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Escape') return;
+        const items = Array.from(searchResults.querySelectorAll('.search-item[data-selectable="1"]'));
+        const index = items.indexOf(document.activeElement);
+        e.preventDefault();
+        if (e.key === 'Escape') {
+            searchResults.style.display = 'none';
+            coinInput.setAttribute('aria-expanded', 'false');
+            coinInput.focus();
+        } else if (e.key === 'ArrowDown') {
+            items[Math.min(index + 1, items.length - 1)]?.focus();
+        } else if (index <= 0) {
+            coinInput.focus();
+        } else {
+            items[index - 1]?.focus();
+        }
+    });
+
+    // Help button and dialog close
+    document.getElementById('helpBtn')?.addEventListener('click', openHelpModal);
+    document.querySelector('[data-close-help]')?.addEventListener('click', closeHelpModal);
+
+    // While dragging with a mouse, scroll the page near the top and bottom edges
+    document.addEventListener('dragover', (e) => {
+        if (draggedElement) autoScrollForPointer(e.clientX, e.clientY, true);
     });
 
     // Close search results when clicking outside
@@ -1039,53 +1049,38 @@ function setupEventListeners() {
     // Global app-level keyboard shortcuts
     document.addEventListener('keydown', handleGlobalShortcut);
 
-    // Help modal & shortcut hint wiring
+    // Help dialog: clicking the backdrop closes it
     const helpModal = document.getElementById('helpModal');
     if (helpModal) {
         helpModal.addEventListener('click', (e) => {
             if (e.target === helpModal) closeHelpModal();
         });
     }
-    const hint = document.getElementById('shortcutHint');
-    if (hint) {
-        hint.addEventListener('click', (e) => {
-            if (e.target.classList.contains('shortcut-hint-close')) {
-                dismissShortcutHint();
-            } else {
-                openHelpModal();
-            }
-        });
-        // Show hint on first visit only
-        if (!localStorage.getItem('martinezAccessTierListHintSeen')) {
-            setTimeout(() => hint.classList.add('visible'), 1200);
-        }
-    }
 
     // Command palette wiring
     setupCommandPalette();
 
-    // Clear all tiers - move coins back to pool
+    // Clear all tiers - move coins back to the Unranked tray
     clearBtn.addEventListener('click', () => {
-        // Switch to "My Coins" tab first
-        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-        const myCoinsTab = document.querySelector('.category-tab[data-category="none"]');
-        if (myCoinsTab) myCoinsTab.classList.add('active');
-        currentCategory = 'none';
+        closeMenus();
+        closeTierPicker();
+        const ranked = document.querySelectorAll('.tier-content .coin').length;
+        if (ranked === 0) {
+            showNotification('Nothing is ranked yet.');
+            return;
+        }
 
-        // Collect coins from tiers before re-rendering
-        const tierCoinSymbols = [];
+        cancelKeyboardSelection();
         tierContents.forEach(tier => {
-            const tierCoins = tier.querySelectorAll('.coin');
-            tierCoins.forEach(coin => {
-                tierCoinSymbols.push(coin.dataset.coin);
-            });
             tier.innerHTML = ''; // Clear the tier
         });
 
-        // Re-render to show "My Coins" view, which will include all coins
+        // Re-render the tray, which now includes every coin
         renderCoins();
+        revealTray();
 
         saveToLocalStorage();
+        showNotification(`Moved ${ranked} coin${ranked === 1 ? '' : 's'} back to Unranked.`);
     });
 
     // Export as image
@@ -1112,20 +1107,19 @@ function setupEventListeners() {
 
     // Reset to default (clear all coins and tiers)
     resetBtn.addEventListener('click', () => {
-        showConfirmModal('Clear all coins and tiers? You can add new coins from the category tabs.', () => {
+        closeMenus();
+        closeTierPicker();
+        showConfirmModal('Remove every coin and clear all tiers? Your custom tier names stay.', () => {
+            cancelKeyboardSelection();
             coins = [];
             coinSet = new Set();
             customCoinData = {};
-            categoryCache = {}; // Clear category cache
             tierContents.forEach(tier => tier.innerHTML = '');
-            // Switch to "My Coins" tab
-            document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-            const myCoinsTab = document.querySelector('.category-tab[data-category="none"]');
-            if (myCoinsTab) myCoinsTab.classList.add('active');
-            currentCategory = 'none';
+            closeCatalog();
             renderCoins();
             saveToLocalStorage();
-        });
+            showNotification('Started over. Add coins to build a new list.');
+        }, { confirmLabel: 'Start over', danger: true });
     });
 
     // Degen mode toggle
@@ -1136,19 +1130,14 @@ function setupEventListeners() {
         themeToggle.addEventListener('click', toggleTheme);
     }
 
-    // Setup drop zones
-    tierContents.forEach(tier => {
-        tier.addEventListener('dragover', handleDragOver);
-        tier.addEventListener('drop', handleDrop);
-        tier.addEventListener('dragleave', handleDragLeave);
-        tier.addEventListener('dragenter', handleDragEnter);
+    // Drop zones: a whole tier row (label included) and the whole Unranked tray
+    const dropZones = [...document.querySelectorAll('.tier-row'), trayEl].filter(Boolean);
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', handleDragOver);
+        zone.addEventListener('drop', handleDrop);
+        zone.addEventListener('dragleave', handleDragLeave);
+        zone.addEventListener('dragenter', handleDragEnter);
     });
-
-    // Also allow dropping back to coin pool
-    coinContainer.addEventListener('dragover', handleDragOver);
-    coinContainer.addEventListener('drop', handleDrop);
-    coinContainer.addEventListener('dragleave', handleDragLeave);
-    coinContainer.addEventListener('dragenter', handleDragEnter);
 }
 
 // SECURITY: Helper to show search messages safely
@@ -1166,6 +1155,7 @@ function showSearchMessage(message) {
 // Loaded async at startup; search falls back to the live API when the index is
 // missing or has no match for a query.
 let coinIndex = null;
+let coinIndexReady = Promise.resolve();
 
 async function loadCoinIndex() {
     try {
@@ -1314,23 +1304,17 @@ function displaySearchResults(coinList) {
         const resultItem = document.createElement('div');
         resultItem.className = 'search-item';
         resultItem.setAttribute('role', 'option');
+        resultItem.dataset.selectable = '1';
         resultItem.tabIndex = 0;
 
         const logo = document.createElement('img');
         logo.decoding = 'async'; // PERFORMANCE: Async image decoding
         logo.referrerPolicy = 'no-referrer'; // Help with hotlink protection
-        // SECURITY: Sanitize logo URL from API response
-        const logoUrl = sanitizeLogoUrl(coin.thumb || coin.large || '');
-        if (logoUrl) {
-            logo.src = logoUrl;
-        }
         // ACCESSIBILITY: Descriptive alt text
         logo.alt = `${coin.name} (${coin.symbol.toUpperCase()}) logo`;
         logo.className = 'search-logo';
-        logo.onerror = function() {
-            this.style.opacity = '0.3';
-            this.onerror = null;
-        };
+        // SECURITY: setLogoImage sanitizes the URL from the API response
+        setLogoImage(logo, sanitizeCoinName(coin.symbol.toUpperCase()), coin.large || coin.thumb || '');
 
         const info = document.createElement('div');
         info.className = 'search-info';
@@ -1363,11 +1347,8 @@ function displaySearchResults(coinList) {
             addCoin();
         };
 
+        // Click covers taps too, so scrolling the results on a phone never adds a coin
         resultItem.addEventListener('click', handleSelect);
-        resultItem.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            handleSelect();
-        });
         resultItem.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -1382,14 +1363,30 @@ function displaySearchResults(coinList) {
     coinInput.setAttribute('aria-expanded', 'true');
 }
 
+// Find a coin in the local index (or the curated lists) by exact ticker or name
+function findKnownCoin(query) {
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return null;
+    const curated = findStaticCoin(q.toUpperCase());
+    if (curated) return { symbol: curated.symbol, name: curated.name, id: curated.id, logo: curated.image };
+    if (!coinIndex) return null;
+    const hit = coinIndex.find(c => c.symbol.toLowerCase() === q) ||
+        coinIndex.find(c => c.name.toLowerCase() === q);
+    return hit ? { symbol: hit.symbol, name: hit.name, id: hit.id, logo: hit.large } : null;
+}
+
 // Add custom coin
 function addCoin() {
-    const rawSymbol = selectedCoin ? selectedCoin.symbol : coinInput.value.trim().toUpperCase();
+    const typed = coinInput.value.trim();
+    // Typed without picking a result: use the best known match so the coin
+    // arrives with its real name and logo
+    const picked = selectedCoin || findKnownCoin(typed);
+    const rawSymbol = picked ? picked.symbol : typed.toUpperCase();
     // SECURITY: Sanitize coin symbol
-    const coinSymbol = sanitizeCoinName(rawSymbol);
+    const coinSymbol = sanitizeCoinName(String(rawSymbol).toUpperCase());
 
     if (!coinSymbol) {
-        showNotification('Search for a coin to add', 'warning');
+        showNotification('Type a coin name or ticker to add it.', 'warning');
         coinInput.focus();
         coinInput.classList.add('input-highlight');
         setTimeout(() => coinInput.classList.remove('input-highlight'), 2000);
@@ -1397,32 +1394,23 @@ function addCoin() {
     }
 
     // PERFORMANCE: O(1) lookup using Set instead of Array.includes + DOM query
-    if (coinSet.has(coinSymbol)) {
-        showNotification('Coin already exists!', 'warning');
-        coinInput.value = '';
-        selectedCoin = null;
-        return;
-    }
-
-    // Also check if coin element already exists in DOM (in any tier or pool)
-    const existingCoin = document.querySelector(`.coin[data-coin="${escapeSelector(coinSymbol)}"]`);
-    if (existingCoin) {
-        // Sync coinSet with DOM state
+    // Also check the DOM (any tier or the tray), which is authoritative
+    if (coinSet.has(coinSymbol) || document.querySelector(`.coin[data-coin="${escapeSelector(coinSymbol)}"]`)) {
         coinSet.add(coinSymbol);
-        showNotification('Coin already exists!', 'warning');
+        showNotification(`${coinSymbol} is already on your list.`, 'warning');
         coinInput.value = '';
         selectedCoin = null;
+        flashCoin(coinSymbol);
         return;
     }
 
-    // Store custom coin data if selected from search
+    // Store coin data from the search result or the known-coin match
     // SECURITY: Validate logo URL before storing
-    if (selectedCoin && selectedCoin.logo) {
-        const validatedLogo = sanitizeLogoUrl(selectedCoin.logo);
+    if (picked) {
         customCoinData[coinSymbol] = {
-            logo: validatedLogo,
-            name: sanitizeCoinName(selectedCoin.name || ''),
-            id: sanitizeCoinName(selectedCoin.id || '')
+            logo: sanitizeLogoUrl(picked.logo || ''),
+            name: sanitizeCoinName(picked.name || ''),
+            id: sanitizeCoinName(picked.id || '')
         };
     }
 
@@ -1433,25 +1421,33 @@ function addCoin() {
     if (!coinEl) {
         coins.pop(); // Remove from array if element creation failed
         coinSet.delete(coinSymbol); // PERFORMANCE: Keep Set in sync
-        showNotification('Failed to add coin', 'error');
+        showNotification('Could not add that coin.', 'error');
         return;
     }
-    updatePoolEmptyState();
     coinContainer.appendChild(coinEl);
+    revealTray();
     coinInput.value = '';
     selectedCoin = null;
     searchResults.style.display = 'none';
     coinInput.setAttribute('aria-expanded', 'false');
 
-    // Trigger animation
-    setTimeout(() => {
-        coinEl.style.animation = 'none';
-        setTimeout(() => {
-            coinEl.style.animation = '';
-        }, 10);
-    }, 10);
-
     saveToLocalStorage();
+    announceToScreenReader(`${coinSymbol} added to Unranked`);
+
+    // Coins typed by ticker alone get their logo from CoinGecko's free API
+    if (!customCoinData[coinSymbol] || !customCoinData[coinSymbol].logo) {
+        backfillMissingLogos([coinSymbol]);
+    }
+    if (openCatalogCategory) renderCatalog();
+}
+
+// Briefly highlight a coin that is already on the board or in the tray
+function flashCoin(symbol) {
+    const el = document.querySelector(`.coin[data-coin="${escapeSelector(symbol)}"]`);
+    if (!el) return;
+    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    el.classList.add('is-picking');
+    setTimeout(() => el.classList.remove('is-picking'), 1200);
 }
 
 // Remove coin from the list
@@ -1462,12 +1458,17 @@ function removeCoin(coinSymbol) {
     }
 
     // Find where the coin currently is (coin pool or which tier)
-    const coinEl = document.querySelector(`.coin[data-coin="${safeCoinName}"]`);
+    const coinEl = document.querySelector(`.coin[data-coin="${escapeSelector(safeCoinName)}"]`);
     let location = 'pool';
     if (coinEl) {
         const tierContent = coinEl.closest('.tier-content');
         if (tierContent) {
             location = tierContent.dataset.tier;
+        }
+        if (pickerCoin === coinEl) closeTierPicker();
+        if (keyboardSelectedCoin === coinEl) {
+            coinEl.classList.remove('keyboard-selected');
+            keyboardSelectedCoin = null;
         }
     }
 
@@ -1492,19 +1493,33 @@ function removeCoin(coinSymbol) {
         delete customCoinData[safeCoinName];
     }
 
-    // Remove coin element from DOM with fade out animation
+    // Take the coin out right away so counts, saves and re-adds see the new
+    // state, and fade out a detached copy in its place
     if (coinEl) {
-        coinEl.classList.add('removing');
-        coinEl.addEventListener('animationend', () => {
-            coinEl.remove();
-            updatePoolEmptyState();
-        }, { once: true });
-    } else {
-        updatePoolEmptyState();
+        fadeOutCoinGhost(coinEl);
+        coinEl.remove();
     }
 
     saveToLocalStorage();
+    if (openCatalogCategory) renderCatalog();
     showUndoToast(safeCoinName);
+}
+
+// A purely visual copy of a removed coin that fades where the coin was
+function fadeOutCoinGhost(coinEl) {
+    const rect = coinEl.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const ghost = coinEl.cloneNode(true);
+    ghost.removeAttribute('data-coin');
+    ghost.removeAttribute('tabindex');
+    ghost.removeAttribute('role');
+    ghost.removeAttribute('aria-label');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.classList.remove('is-picking', 'keyboard-selected', 'dragging', 'drag-source');
+    ghost.classList.add('removing');
+    ghost.style.cssText = `position: fixed; left: ${rect.left}px; top: ${rect.top}px; width: ${rect.width}px; height: ${rect.height}px; margin: 0; z-index: 60; pointer-events: none;`;
+    document.body.appendChild(ghost);
+    setTimeout(() => ghost.remove(), 350);
 }
 
 // Show undo toast notification
@@ -1525,7 +1540,8 @@ function showUndoToast(coinName) {
 
     const undoBtn = document.createElement('button');
     undoBtn.className = 'undo-toast-btn';
-    undoBtn.textContent = 'UNDO';
+    undoBtn.type = 'button';
+    undoBtn.textContent = 'Undo';
     undoBtn.addEventListener('click', () => {
         undoRemove();
         toast.classList.add('hiding');
@@ -1551,6 +1567,13 @@ function undoRemove() {
 
     const { symbol, customData, location } = lastRemovedCoin;
 
+    // Re-added by hand in the meantime: nothing to restore
+    if (coinSet.has(symbol) || coinExistsInDOM(symbol)) {
+        lastRemovedCoin = null;
+        clearTimeout(undoTimeout);
+        return;
+    }
+
     // Restore to arrays
     coins.push(symbol);
     coinSet.add(symbol);
@@ -1571,19 +1594,19 @@ function undoRemove() {
     }
 
     // Add to correct location
-    if (location === 'pool') {
-        coinContainer.appendChild(coinEl);
+    const tierContent = location !== 'pool' && isValidTierName(location)
+        ? tierElementCache[location]?.content
+        : null;
+    if (tierContent) {
+        tierContent.appendChild(coinEl);
     } else {
-        const tierContent = document.querySelector(`.tier-content[data-tier="${location}"]`);
-        if (tierContent) {
-            tierContent.appendChild(coinEl);
-        } else {
-            coinContainer.appendChild(coinEl);
-        }
+        coinContainer.appendChild(coinEl);
+        revealTray();
     }
-    updatePoolEmptyState();
 
     saveToLocalStorage();
+    if (openCatalogCategory) renderCatalog();
+    announceToScreenReader(`${symbol} restored`);
     lastRemovedCoin = null;
     clearTimeout(undoTimeout);
 }
@@ -1682,13 +1705,15 @@ function triggerSTierConfetti(targetElement) {
     }, 1200);
 }
 
-// Custom confirmation modal
-function showConfirmModal(message, onConfirm) {
+// Custom confirmation dialog. options: { confirmLabel, cancelLabel, danger }
+function showConfirmModal(message, onConfirm, options = {}) {
     // Remove existing modal if any
     const existingModal = document.querySelector('.confirm-modal-overlay');
     if (existingModal) {
         existingModal.remove();
     }
+
+    const returnFocusTo = document.activeElement;
 
     // Create modal overlay
     const overlay = document.createElement('div');
@@ -1697,32 +1722,41 @@ function showConfirmModal(message, onConfirm) {
     // Create modal content
     const modal = document.createElement('div');
     modal.className = 'confirm-modal';
+    modal.setAttribute('role', 'alertdialog');
+    modal.setAttribute('aria-modal', 'true');
 
     const messageEl = document.createElement('p');
     messageEl.className = 'confirm-modal-message';
+    messageEl.id = 'confirmModalMessage';
     messageEl.textContent = message;
+    modal.setAttribute('aria-describedby', messageEl.id);
 
     const buttons = document.createElement('div');
     buttons.className = 'confirm-modal-buttons';
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'confirm-modal-btn cancel';
-    cancelBtn.textContent = 'CANCEL';
-    cancelBtn.addEventListener('click', () => {
-        overlay.classList.add('hiding');
-        setTimeout(() => overlay.remove(), 300);
-    });
-
-    const confirmBtn = document.createElement('button');
-    confirmBtn.className = 'confirm-modal-btn confirm';
-    confirmBtn.textContent = 'CONFIRM';
-    confirmBtn.addEventListener('click', () => {
+    const close = (after) => {
+        document.removeEventListener('keydown', handleKeys, true);
         overlay.classList.add('hiding');
         setTimeout(() => {
             overlay.remove();
-            onConfirm();
-        }, 300);
-    });
+            if (returnFocusTo && document.contains(returnFocusTo) && typeof returnFocusTo.focus === 'function') {
+                returnFocusTo.focus({ preventScroll: true });
+            }
+            if (after) after();
+        }, 200);
+    };
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'confirm-modal-btn cancel';
+    cancelBtn.textContent = options.cancelLabel || 'Cancel';
+    cancelBtn.addEventListener('click', () => close());
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.className = 'confirm-modal-btn confirm' + (options.danger ? ' danger' : '');
+    confirmBtn.textContent = options.confirmLabel || 'Confirm';
+    confirmBtn.addEventListener('click', () => close(onConfirm));
 
     buttons.appendChild(cancelBtn);
     buttons.appendChild(confirmBtn);
@@ -1731,28 +1765,29 @@ function showConfirmModal(message, onConfirm) {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // Trigger animation
+    // Trigger animation, and start on the safe choice
     requestAnimationFrame(() => {
         overlay.classList.add('visible');
+        (options.danger ? cancelBtn : confirmBtn).focus({ preventScroll: true });
     });
 
     // Close on overlay click
     overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            overlay.classList.add('hiding');
-            setTimeout(() => overlay.remove(), 300);
-        }
+        if (e.target === overlay) close();
     });
 
-    // Close on Escape key
-    const handleEscape = (e) => {
+    // Escape closes; Tab stays inside the dialog
+    function handleKeys(e) {
         if (e.key === 'Escape') {
-            overlay.classList.add('hiding');
-            setTimeout(() => overlay.remove(), 300);
-            document.removeEventListener('keydown', handleEscape);
+            e.preventDefault();
+            e.stopPropagation();
+            close();
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            (document.activeElement === cancelBtn ? confirmBtn : cancelBtn).focus();
         }
-    };
-    document.addEventListener('keydown', handleEscape);
+    }
+    document.addEventListener('keydown', handleKeys, true);
 }
 
 // ============================================
@@ -1807,23 +1842,6 @@ function updateInsertionIndicator(clientX, clientY, target) {
     }
 }
 
-// Get insertion position from coordinates (for touch)
-function getInsertionFromPoint(clientX, clientY) {
-    const elementBelow = document.elementFromPoint(clientX, clientY);
-    if (!elementBelow) return { target: null, position: null };
-
-    const coinEl = elementBelow.closest('.coin');
-    if (!coinEl || coinEl === draggedElement) {
-        return { target: null, position: null };
-    }
-
-    const rect = coinEl.getBoundingClientRect();
-    const coinCenterX = rect.left + rect.width / 2;
-    const position = clientX < coinCenterX ? 'before' : 'after';
-
-    return { target: coinEl, position };
-}
-
 // Remove duplicate coins from a container (keeps the moved coin, removes others with same symbol)
 function removeDuplicateCoins(container, movedCoin) {
     if (!container || !movedCoin) return;
@@ -1835,14 +1853,115 @@ function removeDuplicateCoins(container, movedCoin) {
         // Remove any other coin with the same symbol (not the one we just moved)
         if (coin !== movedCoin && coin.dataset.coin === movedSymbol) {
             coin.remove();
-            showNotification(`Removed duplicate ${movedSymbol}`, 'warning');
+            showNotification(`Removed a duplicate ${movedSymbol}.`, 'warning');
         }
     });
 }
 
-// Drag handlers
+// The drop zone for an element: a tier (anywhere on its row, label included)
+// or the Unranked tray (anywhere on the tray, header included)
+function getDropZone(el) {
+    if (!el || !el.closest) return null;
+    const row = el.closest('.tier-row');
+    if (row) return row.querySelector('.tier-content');
+    if (el.closest('#tray')) return coinContainer;
+    return null;
+}
+
+function setHighlightedZone(zone) {
+    if (zone === currentHighlightedZone) return;
+    if (currentHighlightedZone) currentHighlightedZone.classList.remove('drag-over');
+    if (zone) zone.classList.add('drag-over');
+    currentHighlightedZone = zone;
+}
+
+// Put a coin into a tier or the tray, honoring the insertion indicator
+function placeCoin(coinEl, dropTarget) {
+    if (!coinEl || !dropTarget) return;
+    if (insertionTarget && insertionTarget !== coinEl && insertionTarget.parentNode === dropTarget) {
+        if (insertionPosition === 'before') {
+            dropTarget.insertBefore(coinEl, insertionTarget);
+        } else {
+            dropTarget.insertBefore(coinEl, insertionTarget.nextSibling);
+        }
+    } else if (coinEl.parentNode !== dropTarget) {
+        // Default: append to end
+        dropTarget.appendChild(coinEl);
+    } else {
+        return; // Dropped back where it was
+    }
+
+    // Remove any duplicate coins in the target container
+    removeDuplicateCoins(dropTarget, coinEl);
+
+    // Trigger confetti for S-tier drops!
+    if (dropTarget.dataset.tier === 'S') {
+        triggerSTierConfetti(dropTarget);
+    }
+
+    saveToLocalStorage();
+    announceToScreenReader(dropTarget === coinContainer
+        ? `${coinEl.dataset.coin} moved to Unranked`
+        : `${coinEl.dataset.coin} ranked ${dropTarget.dataset.tier}`);
+}
+
+// Move a coin with the tier picker or the palette ('pool' sends it back to Unranked)
+function moveCoinTo(coinEl, tier) {
+    const target = tier === 'pool' ? coinContainer : tierElementCache[tier]?.content;
+    if (!coinEl || !target || coinEl.parentElement === target) return;
+    clearInsertionIndicator();
+    placeCoin(coinEl, target);
+}
+
+// Wide screens show the tray as a column beside the board (see style.css)
+const TRAY_SIDEBAR_QUERY = window.matchMedia('(min-width: 1100px)');
+function isTraySidebar() {
+    return TRAY_SIDEBAR_QUERY.matches;
+}
+
+// Scroll the page while a dragged coin is held near the top or bottom of the
+// screen (just above the tray when it is docked). Edge scrolling only starts
+// once the coin has been in the middle of the screen, so lifting a coin out of
+// the tray (or out of the top tier) does not scroll the board away.
+// Returns the distance scrolled.
+let autoScrollArmed = false;
+
+function autoScrollForPointer(clientX, clientY, perEvent) {
+    const vh = window.innerHeight;
+    const edge = Math.min(96, vh * 0.13);
+    let bottomLimit = vh;
+    if (trayEl) {
+        const r = trayEl.getBoundingClientRect();
+        // Over the tray: the user is dropping there
+        if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) return 0;
+        if (!isTraySidebar() && r.top < vh) bottomLimit = r.top;
+    }
+    const inTopBand = clientY < edge;
+    const inBottomBand = clientY > bottomLimit - edge;
+    if (!inTopBand && !inBottomBand) {
+        autoScrollArmed = true;
+        return 0;
+    }
+    if (!autoScrollArmed) return 0;
+    const divisor = perEvent ? 3 : 7;
+    const cap = perEvent ? 30 : 14;
+    let dy = 0;
+    if (inTopBand) {
+        dy = -Math.ceil((edge - clientY) / divisor);
+    } else {
+        dy = Math.ceil((clientY - (bottomLimit - edge)) / divisor);
+    }
+    dy = Math.max(-cap, Math.min(cap, dy));
+    if (dy) window.scrollBy(0, dy);
+    return dy;
+}
+
+// Drag handlers (mouse, HTML5 drag and drop)
 function handleDragStart(e) {
     draggedElement = e.currentTarget;
+    autoScrollArmed = false;
+    closeTierPicker();
+    closeCatalog();
     e.currentTarget.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     // SECURITY: Use text/plain with sanitized coin name instead of innerHTML
@@ -1851,49 +1970,34 @@ function handleDragStart(e) {
 
 function handleDragEnd(e) {
     e.currentTarget.classList.remove('dragging');
-
-    // PERFORMANCE: Only clear tracked zone instead of DOM query
-    if (currentHighlightedZone) {
-        currentHighlightedZone.classList.remove('drag-over');
-        currentHighlightedZone = null;
-    }
-
-    // Clear insertion indicator
+    setHighlightedZone(null);
     clearInsertionIndicator();
+    draggedElement = null;
 }
 
 function handleDragOver(e) {
-    if (e.preventDefault) {
-        e.preventDefault();
-    }
+    if (!draggedElement) return; // Ignore files and text dragged in from elsewhere
+    const zone = getDropZone(e.target);
+    if (!zone) return;
+    e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    setHighlightedZone(zone);
 
     // Detect insertion position for reordering
     updateInsertionIndicator(e.clientX, e.clientY, e.target);
-
-    return false;
 }
 
 function handleDragEnter(e) {
-    if (e.target.classList.contains('tier-content') || e.target.id === 'coinContainer') {
-        // PERFORMANCE: Track current zone instead of managing multiple
-        if (currentHighlightedZone && currentHighlightedZone !== e.target) {
-            currentHighlightedZone.classList.remove('drag-over');
-        }
-        e.target.classList.add('drag-over');
-        currentHighlightedZone = e.target;
-    }
+    if (!draggedElement) return;
+    const zone = getDropZone(e.target);
+    if (zone) setHighlightedZone(zone);
 }
 
 function handleDragLeave(e) {
-    if (e.target.classList.contains('tier-content') || e.target.id === 'coinContainer') {
-        // Only remove if we're actually leaving (not entering a child)
-        if (!e.currentTarget.contains(e.relatedTarget)) {
-            e.target.classList.remove('drag-over');
-            if (currentHighlightedZone === e.target) {
-                currentHighlightedZone = null;
-            }
-        }
+    const zone = getDropZone(e.target);
+    if (zone && zone === currentHighlightedZone && getDropZone(e.relatedTarget) !== zone) {
+        setHighlightedZone(null);
+        clearInsertionIndicator();
     }
 }
 
@@ -1901,85 +2005,96 @@ function handleDrop(e) {
     e.stopPropagation();
     e.preventDefault();
 
-    let dropTarget = e.target;
-
-    // Find the actual drop container
-    if (!dropTarget.classList.contains('tier-content') && dropTarget.id !== 'coinContainer') {
-        dropTarget = dropTarget.closest('.tier-content');
-        if (!dropTarget) {
-            dropTarget = coinContainer;
-        }
-    }
-
+    const dropTarget = getDropZone(e.target);
     if (draggedElement && dropTarget) {
-        // Insert at specific position if we have an insertion target
-        if (insertionTarget && insertionTarget !== draggedElement) {
-            if (insertionPosition === 'before') {
-                insertionTarget.parentNode.insertBefore(draggedElement, insertionTarget);
-            } else {
-                insertionTarget.parentNode.insertBefore(draggedElement, insertionTarget.nextSibling);
-            }
-        } else {
-            // Default: append to end
-            dropTarget.appendChild(draggedElement);
-        }
-
-        // Remove any duplicate coins in the target container
-        removeDuplicateCoins(dropTarget, draggedElement);
-
-        // Trigger confetti for S-tier drops!
-        if (dropTarget.dataset.tier === 'S') {
-            triggerSTierConfetti(dropTarget);
-        }
-
-        dropTarget.classList.remove('drag-over');
-        currentHighlightedZone = null; // PERFORMANCE: Clear tracked zone
-        clearInsertionIndicator();
-        saveToLocalStorage();
+        placeCoin(draggedElement, dropTarget);
     }
-
+    setHighlightedZone(null);
+    clearInsertionIndicator();
     return false;
 }
 
-// Touch handlers for mobile drag and drop
+// Touch: press and hold a coin to pick it up. A swipe that starts on a coin
+// scrolls the page as usual, and a quick tap opens the tier picker.
+const LONG_PRESS_MS = 260;
+const TOUCH_SLOP = 10;
+let touchState = null;
+let suppressClickUntil = 0;
+let lastDragPoint = null;
+let autoScrollRafId = null;
+
 function handleTouchStart(e) {
-    // If tapping the remove button, don't start drag - let the click event handle it
-    if (e.target.classList.contains('coin-remove')) {
+    if (e.target.closest('.coin-remove')) return;
+    if (e.touches.length !== 1) {
+        cancelTouchPress();
         return;
     }
-    e.preventDefault();
-    draggedElement = e.currentTarget;
     const touch = e.touches[0];
+    cancelTouchPress();
+    touchState = {
+        coinEl: e.currentTarget,
+        startX: touch.clientX,
+        startY: touch.clientY,
+        lastX: touch.clientX,
+        lastY: touch.clientY,
+        dragging: false,
+        timer: 0
+    };
+    touchState.timer = setTimeout(beginTouchDrag, LONG_PRESS_MS);
+}
 
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
+function beginTouchDrag() {
+    if (!touchState || touchState.dragging) return;
+    const { coinEl, lastX, lastY } = touchState;
+    touchState.dragging = true;
+    draggedElement = coinEl;
+    autoScrollArmed = false;
+    closeTierPicker();
+    closeCatalog();
 
     // Create a visual clone for dragging
-    touchClone = draggedElement.cloneNode(true);
+    touchClone = coinEl.cloneNode(true);
+    touchClone.classList.remove('dragging', 'keyboard-selected', 'is-picking');
     touchClone.classList.add('touch-dragging');
+    touchClone.removeAttribute('tabindex');
+    touchClone.setAttribute('aria-hidden', 'true');
     touchClone.style.position = 'fixed';
-    touchClone.style.zIndex = '10000';
-    touchClone.style.pointerEvents = 'none';
-    touchClone.style.opacity = '0.8';
-    touchClone.style.transform = 'scale(1.1) rotate(5deg)';
-    touchClone.style.left = `${touch.clientX - draggedElement.offsetWidth / 2}px`;
-    touchClone.style.top = `${touch.clientY - draggedElement.offsetHeight / 2}px`;
-
+    touchClone.style.width = `${coinEl.offsetWidth}px`;
+    touchClone.style.left = `${lastX - coinEl.offsetWidth / 2}px`;
+    touchClone.style.top = `${lastY - coinEl.offsetHeight / 2}px`;
     document.body.appendChild(touchClone);
 
-    // Hide original element
-    draggedElement.style.opacity = '0.3';
+    coinEl.classList.add('drag-source');
+    document.body.classList.add('is-touch-dragging');
+    if (navigator.vibrate) {
+        try { navigator.vibrate(12); } catch (_) {}
+    }
+    lastDragPoint = { x: lastX, y: lastY };
+    startAutoScroll();
+    updateTouchDropTarget(lastX, lastY);
 }
 
 // PERFORMANCE: RAF-coalesced touch move handler
 function handleTouchMove(e) {
-    e.preventDefault();
-    if (!touchClone || !draggedElement) return;
-
-    // Latch the latest touch coordinates; the RAF callback will use whichever is most recent.
+    if (!touchState) return;
     const touch = e.touches[0];
-    pendingTouchEvent = { clientX: touch.clientX, clientY: touch.clientY };
+    touchState.lastX = touch.clientX;
+    touchState.lastY = touch.clientY;
 
+    if (!touchState.dragging) {
+        // Moving before the hold completes is a scroll, not a drag
+        if (Math.abs(touch.clientX - touchState.startX) > TOUCH_SLOP ||
+            Math.abs(touch.clientY - touchState.startY) > TOUCH_SLOP) {
+            clearTimeout(touchState.timer);
+            touchState = null;
+        }
+        return;
+    }
+
+    e.preventDefault();
+    // Latch the latest touch coordinates; the RAF callback will use whichever is most recent.
+    pendingTouchEvent = { clientX: touch.clientX, clientY: touch.clientY };
+    lastDragPoint = { x: touch.clientX, y: touch.clientY };
     if (touchMoveRafId !== null) return;
     touchMoveRafId = requestAnimationFrame(processTouchMove);
 }
@@ -1993,23 +2108,26 @@ function processTouchMove() {
     // Update clone position
     touchClone.style.left = `${evt.clientX - touchClone.offsetWidth / 2}px`;
     touchClone.style.top = `${evt.clientY - touchClone.offsetHeight / 2}px`;
+    updateTouchDropTarget(evt.clientX, evt.clientY);
+}
 
-    // Find the element under the touch point (hide clone first so it doesn't intercept)
-    touchClone.style.display = 'none';
-    const elementBelow = document.elementFromPoint(evt.clientX, evt.clientY);
-    const { target, position } = getInsertionFromPoint(evt.clientX, evt.clientY);
-    touchClone.style.display = '';
+// Highlight the zone and insertion point under the finger
+function updateTouchDropTarget(x, y) {
+    if (touchClone) touchClone.style.display = 'none';
+    const below = document.elementFromPoint(x, y);
+    if (touchClone) touchClone.style.display = '';
 
-    const dropZone = elementBelow
-        ? (elementBelow.closest('.tier-content') || (elementBelow.id === 'coinContainer' ? elementBelow : null))
-        : null;
+    const zone = getDropZone(below);
+    setHighlightedZone(zone);
 
-    if (dropZone !== currentHighlightedZone) {
-        if (currentHighlightedZone) currentHighlightedZone.classList.remove('drag-over');
-        if (dropZone) dropZone.classList.add('drag-over');
-        currentHighlightedZone = dropZone;
+    let target = null;
+    let position = null;
+    const coinBelow = zone && below ? below.closest('.coin') : null;
+    if (coinBelow && coinBelow !== draggedElement && !coinBelow.classList.contains('touch-dragging')) {
+        const rect = coinBelow.getBoundingClientRect();
+        target = coinBelow;
+        position = x < rect.left + rect.width / 2 ? 'before' : 'after';
     }
-
     if (target !== insertionTarget || position !== insertionPosition) {
         clearInsertionIndicator();
         if (target && position) {
@@ -2021,67 +2139,529 @@ function processTouchMove() {
 }
 
 function handleTouchEnd(e) {
+    if (!touchState) return;
+    clearTimeout(touchState.timer);
+    const wasDragging = touchState.dragging;
+    touchState = null;
+    if (!wasDragging) return; // A tap: the click that follows opens the tier picker
+
     e.preventDefault();
+    suppressClickUntil = Date.now() + 450;
+    const touch = e.changedTouches && e.changedTouches[0];
+    endTouchDrag(touch ? { x: touch.clientX, y: touch.clientY } : null);
+}
 
-    if (!touchClone || !draggedElement) return;
+function handleTouchCancel() {
+    cancelTouchPress();
+}
 
-    const touch = e.changedTouches[0];
+function cancelTouchPress() {
+    if (!touchState) return;
+    clearTimeout(touchState.timer);
+    const wasDragging = touchState.dragging;
+    touchState = null;
+    if (wasDragging) endTouchDrag(null);
+}
 
-    // Find the element under the touch point
-    touchClone.style.display = 'none';
-    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-    touchClone.style.display = '';
+function endTouchDrag(point) {
+    stopAutoScroll();
+    if (touchMoveRafId !== null) {
+        cancelAnimationFrame(touchMoveRafId);
+        touchMoveRafId = null;
+    }
 
-    // Find the drop target
     let dropTarget = null;
-    if (elementBelow) {
-        dropTarget = elementBelow.closest('.tier-content') ||
-                    (elementBelow.id === 'coinContainer' ? elementBelow : null);
+    if (point) {
+        if (touchClone) touchClone.style.display = 'none';
+        dropTarget = getDropZone(document.elementFromPoint(point.x, point.y));
+    }
+    if (dropTarget && draggedElement) {
+        placeCoin(draggedElement, dropTarget);
     }
 
-    // Perform the drop
-    if (dropTarget) {
-        // Insert at specific position if we have an insertion target
-        if (insertionTarget && insertionTarget !== draggedElement) {
-            if (insertionPosition === 'before') {
-                insertionTarget.parentNode.insertBefore(draggedElement, insertionTarget);
-            } else {
-                insertionTarget.parentNode.insertBefore(draggedElement, insertionTarget.nextSibling);
-            }
-        } else {
-            // Default: append to end
-            dropTarget.appendChild(draggedElement);
-        }
-
-        // Remove any duplicate coins in the target container
-        removeDuplicateCoins(dropTarget, draggedElement);
-
-        // Trigger confetti for S-tier drops!
-        if (dropTarget.dataset.tier === 'S') {
-            triggerSTierConfetti(dropTarget);
-        }
-
-        saveToLocalStorage();
-    }
-
-    // Clean up
-    draggedElement.style.opacity = '1';
-
+    if (draggedElement) draggedElement.classList.remove('drag-source');
     if (touchClone) {
         touchClone.remove();
         touchClone = null;
     }
+    document.body.classList.remove('is-touch-dragging');
+    setHighlightedZone(null);
+    clearInsertionIndicator();
+    draggedElement = null;
+    lastDragPoint = null;
+}
 
-    // PERFORMANCE: Clean up tracked highlight instead of DOM query
-    if (currentHighlightedZone) {
-        currentHighlightedZone.classList.remove('drag-over');
-        currentHighlightedZone = null;
+function startAutoScroll() {
+    stopAutoScroll();
+    const step = () => {
+        if (!lastDragPoint) return;
+        if (autoScrollForPointer(lastDragPoint.x, lastDragPoint.y, false)) {
+            updateTouchDropTarget(lastDragPoint.x, lastDragPoint.y);
+        }
+        autoScrollRafId = requestAnimationFrame(step);
+    };
+    autoScrollRafId = requestAnimationFrame(step);
+}
+
+function stopAutoScroll() {
+    if (autoScrollRafId) cancelAnimationFrame(autoScrollRafId);
+    autoScrollRafId = null;
+}
+
+// Click or tap on a coin opens the tier picker next to it
+function handleCoinClick(e) {
+    if (Date.now() < suppressClickUntil) return;
+    if (e.target.closest('.coin-remove')) return;
+    const coinEl = e.currentTarget;
+    if (pickerCoin === coinEl && tierPickerEl && !tierPickerEl.hidden) {
+        closeTierPicker();
+        return;
+    }
+    openTierPicker(coinEl);
+}
+
+// ============================================
+// TIER PICKER: tap a coin, then tap a tier
+// ============================================
+
+let pickerCoin = null;
+
+function setupTierPicker() {
+    if (!tierPickerEl) return;
+
+    tierPickerEl.querySelectorAll('.pick[data-tier]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const coinEl = pickerCoin;
+            closeTierPicker();
+            if (coinEl) moveCoinTo(coinEl, btn.dataset.tier);
+        });
+    });
+
+    document.getElementById('tierPickerPool')?.addEventListener('click', () => {
+        const coinEl = pickerCoin;
+        closeTierPicker();
+        if (coinEl) moveCoinTo(coinEl, 'pool');
+    });
+
+    document.getElementById('tierPickerRemove')?.addEventListener('click', () => {
+        const coinEl = pickerCoin;
+        closeTierPicker();
+        if (coinEl) removeCoin(coinEl.dataset.coin);
+    });
+
+    document.getElementById('tierPickerClose')?.addEventListener('click', () => closeTierPicker(true));
+
+    tierPickerEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeTierPicker(true);
+        } else if (pickerCoin && (TIER_NUMBER_MAP[e.key] || e.key === '0')) {
+            e.preventDefault();
+            const coinEl = pickerCoin;
+            closeTierPicker(true);
+            moveCoinTo(coinEl, e.key === '0' ? 'pool' : TIER_NUMBER_MAP[e.key]);
+        }
+    });
+
+    // Clicking anywhere else closes it
+    document.addEventListener('click', (e) => {
+        if (!pickerCoin) return;
+        if (e.target.closest('#tierPicker') || e.target.closest('.coin') === pickerCoin) return;
+        closeTierPicker();
+    });
+
+    const reposition = rafThrottle(positionTierPicker);
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, { passive: true });
+    coinContainer.addEventListener('scroll', reposition, { passive: true });
+}
+
+function openTierPicker(coinEl) {
+    if (!tierPickerEl || !coinEl) return;
+    closeCatalog();
+    closeMenus();
+    if (pickerCoin && pickerCoin !== coinEl) pickerCoin.classList.remove('is-picking');
+    pickerCoin = coinEl;
+    coinEl.classList.add('is-picking');
+
+    const symbol = coinEl.dataset.coin;
+    const data = customCoinData[symbol] || {};
+    const currentTier = coinEl.closest('.tier-content')?.dataset.tier || null;
+
+    document.getElementById('tierPickerTitle').textContent = symbol;
+    const nameEl = document.getElementById('tierPickerName');
+    const placement = currentTier ? `In ${currentTier} tier` : 'Unranked';
+    nameEl.textContent = data.name && data.name.toUpperCase() !== symbol ? `${data.name} · ${placement}` : placement;
+    const logo = document.getElementById('tierPickerLogo');
+    setLogoImage(logo, symbol, data.logo);
+
+    tierPickerEl.querySelectorAll('.pick[data-tier]').forEach(btn => {
+        const tier = btn.dataset.tier;
+        const isCurrent = tier === currentTier;
+        btn.classList.toggle('is-current', isCurrent);
+        btn.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
+        btn.setAttribute('aria-label', `${getTierLetter(tier)} tier, ${customTierNames[tier] || getDefaultTierName(tier)}`);
+        btn.title = customTierNames[tier] || getDefaultTierName(tier);
+        const letter = btn.querySelector('.pick-letter');
+        if (letter) letter.textContent = getTierLetter(tier);
+    });
+    const poolBtn = document.getElementById('tierPickerPool');
+    if (poolBtn) poolBtn.hidden = !currentTier;
+
+    tierPickerEl.hidden = false;
+    positionTierPicker();
+
+    // Keyboard and screen-reader users land on the first tier
+    const first = tierPickerEl.querySelector('.pick:not(.is-current)');
+    if (first && (document.activeElement === coinEl || window.matchMedia('(hover: none)').matches)) {
+        first.focus({ preventScroll: true });
+    }
+}
+
+function closeTierPicker(returnFocus) {
+    if (!tierPickerEl) return;
+    const coinEl = pickerCoin;
+    pickerCoin = null;
+    if (!tierPickerEl.hidden) tierPickerEl.hidden = true;
+    if (coinEl) {
+        coinEl.classList.remove('is-picking');
+        if (returnFocus && document.contains(coinEl)) coinEl.focus({ preventScroll: true });
+    }
+}
+
+function positionTierPicker() {
+    if (!pickerCoin || !tierPickerEl || tierPickerEl.hidden) return;
+    if (!document.contains(pickerCoin)) {
+        closeTierPicker();
+        return;
+    }
+    // Phones get a bottom sheet from CSS
+    if (window.matchMedia('(max-width: 640px)').matches) {
+        tierPickerEl.style.left = '';
+        tierPickerEl.style.top = '';
+        return;
+    }
+    const rect = pickerCoin.getBoundingClientRect();
+    const width = tierPickerEl.offsetWidth;
+    const height = tierPickerEl.offsetHeight;
+    const margin = 10;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const inTray = Boolean(pickerCoin.closest('#tray'));
+    let left;
+    let top;
+
+    if (inTray && isTraySidebar()) {
+        // Coins in the side column: open beside the column, level with the coin
+        left = trayEl.getBoundingClientRect().left - width - 12;
+        top = rect.top + rect.height / 2 - height / 2;
+    } else {
+        // Below the coin when there is room above the docked tray, otherwise above it
+        left = rect.left + rect.width / 2 - width / 2;
+        const trayTop = trayEl && !isTraySidebar() ? trayEl.getBoundingClientRect().top : vh;
+        const bottomLimit = inTray ? vh : Math.min(vh, trayTop);
+        top = rect.bottom + 8;
+        if (inTray || top + height > bottomLimit - margin) {
+            top = rect.top - height - 8;
+        }
+    }
+    left = Math.max(margin, Math.min(left, vw - width - margin));
+    top = Math.max(margin, Math.min(top, vh - height - margin));
+
+    tierPickerEl.style.left = `${Math.round(left + window.scrollX)}px`;
+    tierPickerEl.style.top = `${Math.round(top + window.scrollY)}px`;
+}
+
+// ============================================
+// MENUS AND THE TRAY
+// ============================================
+
+function setupMenus() {
+    const btn = document.getElementById('moreBtn');
+    const menu = document.getElementById('moreMenu');
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = menu.hidden;
+        closeMenus();
+        if (willOpen) {
+            closeTierPicker();
+            menu.hidden = false;
+            btn.setAttribute('aria-expanded', 'true');
+            menu.querySelector('.menu-item')?.focus();
+        }
+    });
+
+    menu.addEventListener('keydown', (e) => {
+        const items = Array.from(menu.querySelectorAll('.menu-item'));
+        const index = items.indexOf(document.activeElement);
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeMenus();
+            btn.focus();
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            items[(index + 1) % items.length]?.focus();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            items[(index - 1 + items.length) % items.length]?.focus();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.menu-wrap')) closeMenus();
+    });
+}
+
+function closeMenus() {
+    const btn = document.getElementById('moreBtn');
+    const menu = document.getElementById('moreMenu');
+    if (menu && !menu.hidden) menu.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+const TRAY_PREF_KEY = 'martinezAccessTierListTrayCollapsed';
+
+function setupTray() {
+    const toggle = document.getElementById('trayToggle');
+    if (!toggle || !trayEl) return;
+    let collapsed = false;
+    try {
+        collapsed = localStorage.getItem(TRAY_PREF_KEY) === '1';
+    } catch (_) {}
+    applyTrayCollapsed(collapsed);
+
+    toggle.addEventListener('click', () => {
+        const next = !trayEl.classList.contains('is-collapsed');
+        applyTrayCollapsed(next);
+        try {
+            localStorage.setItem(TRAY_PREF_KEY, next ? '1' : '0');
+        } catch (_) {}
+    });
+
+    const updateCompact = rafThrottle(updateTrayCompact);
+    window.addEventListener('scroll', updateCompact, { passive: true });
+    window.addEventListener('resize', updateCompact);
+    updateTrayCompact();
+}
+
+// The docked tray stays one row tall until the board scrolls into view, so it
+// never covers the top of the page
+function updateTrayCompact() {
+    if (!trayEl) return;
+    const board = document.getElementById('tierBoard');
+    const compact = !isTraySidebar() && board && board.getBoundingClientRect().top > window.innerHeight * 0.45;
+    trayEl.classList.toggle('is-compact', Boolean(compact));
+}
+
+function applyTrayCollapsed(collapsed) {
+    if (!trayEl) return;
+    trayEl.classList.toggle('is-collapsed', collapsed);
+    const toggle = document.getElementById('trayToggle');
+    if (!toggle) return;
+    const label = collapsed ? 'Show unranked coins' : 'Hide unranked coins';
+    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    toggle.setAttribute('aria-label', label);
+    toggle.title = label;
+}
+
+// New coins should be visible, so adding one opens a collapsed tray
+function revealTray() {
+    if (trayEl && trayEl.classList.contains('is-collapsed')) applyTrayCollapsed(false);
+}
+
+// ============================================
+// LOGOS: real coin logos from CoinGecko's free API, monograms meanwhile
+// ============================================
+
+const monogramCache = new Map();
+
+function logoHue(symbol) {
+    let hash = 0;
+    for (const ch of String(symbol || '?')) {
+        hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+    }
+    return hash % 360;
+}
+
+function monogramLabel(symbol) {
+    const clean = String(symbol || '?').replace(/[^A-Z0-9]/gi, '').toUpperCase() || '?';
+    return clean.length > 3 ? clean.slice(0, 2) : clean;
+}
+
+// A lettered circle used until a logo loads, or when a coin has none
+function monogramDataUrl(symbol) {
+    const key = String(symbol || '?');
+    if (monogramCache.has(key)) return monogramCache.get(key);
+    const label = monogramLabel(key);
+    const hue = logoHue(key);
+    const size = label.length >= 3 ? 23 : 28;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="hsl(${hue},30%,32%)"/><text x="32" y="${Math.round(32 + size * 0.36)}" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="${size}" font-weight="700" fill="hsl(${hue},55%,90%)">${label}</text></svg>`;
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    monogramCache.set(key, url);
+    return url;
+}
+
+// Same monogram as a PNG, for the exported image
+function monogramPngDataUrl(symbol) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    const hue = logoHue(symbol);
+    const label = monogramLabel(symbol);
+    ctx.fillStyle = `hsl(${hue}, 30%, 32%)`;
+    ctx.beginPath();
+    ctx.arc(64, 64, 64, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = `hsl(${hue}, 55%, 90%)`;
+    ctx.font = `700 ${label.length >= 3 ? 46 : 56}px Inter, Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, 64, 68);
+    return canvas.toDataURL('image/png');
+}
+
+// Show a coin's real logo, falling back to its monogram if it is missing or fails
+function setLogoImage(img, symbol, url) {
+    if (!img) return;
+    const safe = sanitizeLogoUrl(url || '');
+    img.onerror = function () {
+        this.onerror = null;
+        this.classList.add('is-monogram');
+        this.src = monogramDataUrl(symbol);
+    };
+    if (safe) {
+        img.classList.remove('is-monogram');
+        if (img.getAttribute('src') !== safe) img.src = safe;
+    } else {
+        img.classList.add('is-monogram');
+        img.src = monogramDataUrl(symbol);
+    }
+}
+
+function refreshCoinLogos(symbol) {
+    const data = customCoinData[symbol];
+    if (!data || !data.logo) return;
+    document.querySelectorAll(`.coin[data-coin="${escapeSelector(symbol)}"] .coin-logo`).forEach(img => {
+        setLogoImage(img, symbol, data.logo);
+        if (data.name) img.alt = `${data.name} (${symbol}) logo`;
+    });
+    if (pickerCoin && pickerCoin.dataset.coin === symbol) {
+        setLogoImage(document.getElementById('tierPickerLogo'), symbol, data.logo);
+    }
+}
+
+// Fill in logos for coins that arrived without one: first from the curated
+// lists and the bundled CoinGecko index, then from CoinGecko's free public API
+// (a few calls per visit, rate limited).
+const LOGO_API_CALLS_PER_VISIT = 12;
+let logoApiCalls = 0;
+let logoBackfillRunning = false;
+const logoBackfillQueue = new Set();
+
+async function backfillMissingLogos(symbols) {
+    (symbols || coins).forEach(symbol => {
+        if (!customCoinData[symbol] || !customCoinData[symbol].logo) logoBackfillQueue.add(symbol);
+    });
+    if (logoBackfillRunning || logoBackfillQueue.size === 0) return;
+    logoBackfillRunning = true;
+    let changed = false;
+
+    try {
+        await coinIndexReady;
+
+        // 1. Local data, no network
+        for (const symbol of Array.from(logoBackfillQueue)) {
+            const data = customCoinData[symbol];
+            if ((data && data.logo) || !coinSet.has(symbol)) {
+                logoBackfillQueue.delete(symbol);
+                continue;
+            }
+            const curated = findStaticCoin(symbol);
+            const indexed = coinIndex ? coinIndex.find(c => c.symbol === symbol && c.large) : null;
+            const logo = curated ? curated.image : indexed ? indexed.large : '';
+            if (logo) {
+                customCoinData[symbol] = {
+                    logo: sanitizeLogoUrl(logo),
+                    name: sanitizeCoinName(data?.name || curated?.name || indexed?.name || ''),
+                    id: sanitizeCoinName(data?.id || curated?.id || indexed?.id || '')
+                };
+                refreshCoinLogos(symbol);
+                logoBackfillQueue.delete(symbol);
+                changed = true;
+            }
+        }
+
+        // 2a. Coins with a known CoinGecko id: one batched markets call
+        const withId = Array.from(logoBackfillQueue).filter(symbol => customCoinData[symbol]?.id);
+        if (withId.length > 0 && logoApiCalls < LOGO_API_CALLS_PER_VISIT) {
+            logoApiCalls++;
+            const ids = withId.slice(0, 50).map(symbol => customCoinData[symbol].id);
+            try {
+                const res = await rateLimitedFetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids.join(','))}&per_page=50&page=1`);
+                if (res.ok) {
+                    const rows = await res.json();
+                    (Array.isArray(rows) ? rows : []).forEach(row => {
+                        const symbol = withId.find(s => customCoinData[s]?.id === row.id);
+                        const logo = sanitizeLogoUrl(row.image || '');
+                        if (symbol && logo && customCoinData[symbol] && coinSet.has(symbol)) {
+                            customCoinData[symbol].logo = logo;
+                            if (!customCoinData[symbol].name) customCoinData[symbol].name = sanitizeCoinName(row.name || '');
+                            refreshCoinLogos(symbol);
+                            logoBackfillQueue.delete(symbol);
+                            changed = true;
+                        }
+                    });
+                }
+            } catch (_) {
+                // Offline or rate limited: the monogram stays
+            }
+        }
+
+        // 2b. Tickers only: search CoinGecko and take the best exact match
+        for (const symbol of Array.from(logoBackfillQueue)) {
+            if (logoApiCalls >= LOGO_API_CALLS_PER_VISIT) break;
+            logoBackfillQueue.delete(symbol); // One attempt per visit
+            if (!coinSet.has(symbol) || customCoinData[symbol]?.logo) continue;
+            logoApiCalls++;
+            try {
+                const res = await rateLimitedFetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(symbol)}`);
+                if (!res.ok) continue;
+                const result = await res.json();
+                const hits = (result.coins || []).filter(c => String(c.symbol || '').toUpperCase() === symbol);
+                hits.sort((a, b) => (a.market_cap_rank || 1e9) - (b.market_cap_rank || 1e9));
+                const best = hits[0];
+                const logo = best ? sanitizeLogoUrl(best.large || best.thumb || '') : '';
+                if (logo && coinSet.has(symbol)) {
+                    customCoinData[symbol] = {
+                        logo,
+                        name: sanitizeCoinName(customCoinData[symbol]?.name || best.name || ''),
+                        id: sanitizeCoinName(best.id || '')
+                    };
+                    refreshCoinLogos(symbol);
+                    changed = true;
+                }
+            } catch (_) {
+                // Keep the monogram
+            }
+        }
+    } finally {
+        logoBackfillRunning = false;
     }
 
-    // Clear insertion indicator
-    clearInsertionIndicator();
+    // Opening someone else's shared link must not overwrite the visitor's saved list
+    if (changed && !window.location.hash.startsWith('#share=')) {
+        debouncedSave();
+    }
 
-    draggedElement = null;
+    // Coins added while this pass was running get their own pass
+    if (logoBackfillQueue.size > 0 && logoApiCalls < LOGO_API_CALLS_PER_VISIT) {
+        setTimeout(() => backfillMissingLogos([]), 0);
+    }
 }
 
 // ============================================
@@ -2189,40 +2769,26 @@ function moveSelectedCoinToTier(direction) {
     }
 
     const newTier = TIER_ORDER[newTierIndex];
-    const targetContainer = document.querySelector(`.tier-content[data-tier="${newTier}"]`);
-
-    if (targetContainer && targetContainer !== currentContainer) {
-        targetContainer.appendChild(keyboardSelectedCoin);
-        removeDuplicateCoins(targetContainer, keyboardSelectedCoin);
-        if (newTier === 'S') triggerSTierConfetti(targetContainer);
-        keyboardSelectedCoin.focus();
-        saveToLocalStorage();
-        announceToScreenReader(`Moved to ${newTier} tier`);
-    }
+    sendSelectedCoinToTier(newTier);
 }
 
-// Send selected coin back to pool. separate from the tier cycle
+// Send the selected coin back to Unranked (separate from the arrow-key tier cycle)
 function sendSelectedCoinToPool() {
     if (!keyboardSelectedCoin) return;
-    if (keyboardSelectedCoin.parentElement.id === 'coinContainer') return;
-    coinContainer.appendChild(keyboardSelectedCoin);
-    keyboardSelectedCoin.focus();
-    saveToLocalStorage();
-    announceToScreenReader('Moved to coin pool');
+    if (keyboardSelectedCoin.parentElement === coinContainer) return;
+    const coinEl = keyboardSelectedCoin;
+    moveCoinTo(coinEl, 'pool');
+    revealTray();
+    coinEl.focus();
 }
 
-// Send selected coin directly to a tier by letter
+// Send the selected coin straight to a tier
 function sendSelectedCoinToTier(tier) {
     if (!keyboardSelectedCoin) return;
     if (!isValidTierName(tier)) return;
-    const target = document.querySelector(`.tier-content[data-tier="${tier}"]`);
-    if (!target || target === keyboardSelectedCoin.parentElement) return;
-    target.appendChild(keyboardSelectedCoin);
-    removeDuplicateCoins(target, keyboardSelectedCoin);
-    if (tier === 'S') triggerSTierConfetti(target);
-    keyboardSelectedCoin.focus();
-    saveToLocalStorage();
-    announceToScreenReader(`Moved to ${tier} tier`);
+    const coinEl = keyboardSelectedCoin;
+    moveCoinTo(coinEl, tier);
+    coinEl.focus();
 }
 
 // Reorder the selected coin within its current tier (left or right)
@@ -2314,59 +2880,43 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Toggle Degen Mode
+// Toggle Degen Mode (alternative tier letters and names)
 function toggleDegenMode() {
     isDegenMode = !isDegenMode;
-
-    // Update button appearance and accessibility
-    if (isDegenMode) {
-        degenToggle.classList.add('active');
-    } else {
-        degenToggle.classList.remove('active');
-    }
-    degenToggle.setAttribute('aria-pressed', isDegenMode.toString());
-
-    // Update all tier labels
     updateTierLabels();
-
-    // Save to localStorage
     saveToLocalStorage();
+    announceToScreenReader(isDegenMode ? 'Degen labels on' : 'Degen labels off');
 }
 
-// Toggle Theme (Light/Dark Mode)
+// Toggle light and dark mode
 function toggleTheme() {
     isLightMode = !isLightMode;
-
-    // Update body class
-    document.body.classList.toggle('light-mode', isLightMode);
-
-    // Update theme icon and accessibility
-    const themeIcon = themeToggle.querySelector('.theme-icon');
-    if (themeIcon) {
-        themeIcon.textContent = isLightMode ? '☀️' : '🌙';
-    }
-    themeToggle.setAttribute('aria-pressed', isLightMode.toString());
-
-    // Save to localStorage
+    applyTheme();
     saveToLocalStorage();
 }
 
-// Update tier labels based on mode
+// Update tier letters and names for the current mode and custom names
 function updateTierLabels() {
-    Object.keys(TIER_LABELS).forEach(tier => {
-        const tierRow = document.querySelector(`.tier-row[data-tier="${tier}"]`);
-        if (tierRow) {
-            const letterEl = tierRow.querySelector('.tier-letter');
-            const nameEl = tierRow.querySelector('.tier-name');
+    document.body.classList.toggle('degen-mode', isDegenMode);
+    if (degenToggle) degenToggle.setAttribute('aria-pressed', isDegenMode ? 'true' : 'false');
 
-            if (letterEl) letterEl.textContent = getTierLetter(tier);
-            // Use custom name if set, otherwise use default
-            if (nameEl) nameEl.textContent = customTierNames[tier] || getDefaultTierName(tier);
+    Object.keys(TIER_LABELS).forEach(tier => {
+        const tierRow = tierElementCache[tier]?.row;
+        if (!tierRow) return;
+        const letterEl = tierRow.querySelector('.tier-letter');
+        const nameEl = tierRow.querySelector('.tier-name');
+        if (letterEl) letterEl.textContent = getTierLetter(tier);
+        // Use custom name if set, otherwise use default. Leave a name that is
+        // being edited alone.
+        if (nameEl && !nameEl.querySelector('input')) {
+            nameEl.textContent = customTierNames[tier] || getDefaultTierName(tier);
+            nameEl.setAttribute('aria-label', tierNameAriaLabel(tier));
         }
     });
 }
 
-// Update tier count badges + the distribution strip + first-load helper panel.
+// Update the tier count badges, the board status line, the first-run helper
+// and the Unranked tray. Runs after every change (saveToLocalStorage calls it).
 function updateTierCounts() {
     const tiers = ['S', 'A', 'B', 'C', 'D', 'F'];
     let totalRanked = 0;
@@ -2375,24 +2925,22 @@ function updateTierCounts() {
         const cached = tierElementCache[tier];
         if (!cached || !cached.content || !cached.badge) return;
 
-        const count = cached.content.children.length;
+        const count = cached.content.querySelectorAll('.coin').length;
         totalRanked += count;
         cached.badge.textContent = count;
         cached.badge.setAttribute('aria-label', `${count} coin${count !== 1 ? 's' : ''}`);
         cached.badge.classList.toggle('empty', count === 0);
         cached.content.classList.toggle('empty', count === 0);
-
-        // Mirror into the tier-distribution strip
-        const summaryItem = document.querySelector(`.tier-summary-item[data-tier="${tier}"] .tier-summary-count`);
-        if (summaryItem) summaryItem.textContent = count;
     });
 
     const totalEl = document.getElementById('tierSummaryTotal');
     if (totalEl) totalEl.textContent = totalRanked;
 
-    // Helper panel: show whenever nothing is ranked yet
+    // Helper: only once there are coins to rank and none are ranked yet
     const helper = document.getElementById('tierHelper');
-    if (helper) helper.classList.toggle('visible', totalRanked === 0);
+    if (helper) helper.classList.toggle('visible', totalRanked === 0 && coins.length > 0);
+
+    updatePoolEmptyState();
 }
 
 // SECURITY: Helper to safely set button text
@@ -2428,13 +2976,17 @@ function handleGlobalShortcut(e) {
         return;
     }
 
-    // Esc. close any open modal/palette
+    // Esc closes whatever is open, topmost first
     if (e.key === 'Escape') {
         const helpOpen = document.getElementById('helpModal')?.classList.contains('visible');
         const paletteOpen = document.getElementById('cmdPalette')?.classList.contains('visible');
+        const menu = document.getElementById('moreMenu');
         if (helpOpen) { closeHelpModal(); e.preventDefault(); return; }
         if (paletteOpen) { closeCommandPalette(); e.preventDefault(); return; }
-        // Fall through. existing coin-keyboard handler manages its own Esc
+        if (tierPickerEl && !tierPickerEl.hidden) { closeTierPicker(true); e.preventDefault(); return; }
+        if (menu && !menu.hidden) { closeMenus(); document.getElementById('moreBtn')?.focus(); e.preventDefault(); return; }
+        if (openCatalogCategory) { closeCatalog(true); e.preventDefault(); return; }
+        // Fall through. The coin keyboard handler manages its own Esc
     }
 
     // Skip the rest while the user is typing in an input/textarea
@@ -2491,26 +3043,28 @@ function handleGlobalShortcut(e) {
     }
 }
 
+let helpReturnFocus = null;
+
 function openHelpModal() {
     const modal = document.getElementById('helpModal');
     if (!modal) return;
+    closeTierPicker();
+    closeMenus();
+    helpReturnFocus = document.activeElement;
     modal.classList.add('visible');
     modal.setAttribute('aria-hidden', 'false');
-    dismissShortcutHint();
+    setTimeout(() => modal.querySelector('[data-close-help]')?.focus({ preventScroll: true }), 30);
 }
 
 function closeHelpModal() {
     const modal = document.getElementById('helpModal');
-    if (!modal) return;
+    if (!modal || !modal.classList.contains('visible')) return;
     modal.classList.remove('visible');
     modal.setAttribute('aria-hidden', 'true');
-}
-
-function dismissShortcutHint() {
-    const hint = document.getElementById('shortcutHint');
-    if (!hint) return;
-    hint.classList.remove('visible');
-    try { localStorage.setItem('martinezAccessTierListHintSeen', '1'); } catch (_) {}
+    if (helpReturnFocus && document.contains(helpReturnFocus) && typeof helpReturnFocus.focus === 'function') {
+        helpReturnFocus.focus({ preventScroll: true });
+    }
+    helpReturnFocus = null;
 }
 
 // ---------- Command palette ----------
@@ -2531,10 +3085,12 @@ function openCommandPalette() {
     if (!overlay || !input) return;
     overlay.classList.add('visible');
     overlay.setAttribute('aria-hidden', 'false');
+    closeTierPicker();
+    closeMenus();
+    closeCatalog();
     input.value = '';
     renderCommandPaletteResults('');
     setTimeout(() => input.focus(), 50);
-    dismissShortcutHint();
 }
 
 function closeCommandPalette() {
@@ -2625,6 +3181,15 @@ function getLocalPaletteMatches(query) {
     return matches.slice(0, 8);
 }
 
+function createPaletteLogo(coin) {
+    const img = document.createElement('img');
+    img.alt = '';
+    img.referrerPolicy = 'no-referrer';
+    img.decoding = 'async';
+    setLogoImage(img, coin.symbol, coin.image);
+    return img;
+}
+
 function renderCommandPaletteResults(query) {
     const results = document.getElementById('cmdPaletteResults');
     if (!results) return;
@@ -2648,15 +3213,7 @@ function renderCommandPaletteResults(query) {
         item.dataset.index = idx;
         item.setAttribute('role', 'option');
 
-        if (coin.image) {
-            const img = document.createElement('img');
-            img.src = sanitizeLogoUrl(coin.image) || '';
-            img.alt = `${coin.name} logo`;
-            img.referrerPolicy = 'no-referrer';
-            img.decoding = 'async';
-            img.onerror = function () { this.style.opacity = '0.3'; };
-            item.appendChild(img);
-        }
+        item.appendChild(createPaletteLogo(coin));
 
         const info = document.createElement('div');
         info.className = 'cmd-palette-info';
@@ -2727,14 +3284,7 @@ function renderCommandPaletteList() {
         item.className = 'cmd-palette-item' + (idx === cmdPaletteActiveIndex ? ' active' : '');
         item.dataset.index = idx;
         item.setAttribute('role', 'option');
-        if (coin.image) {
-            const img = document.createElement('img');
-            img.src = sanitizeLogoUrl(coin.image) || '';
-            img.alt = `${coin.name} logo`;
-            img.referrerPolicy = 'no-referrer';
-            img.onerror = function () { this.style.opacity = '0.3'; };
-            item.appendChild(img);
-        }
+        item.appendChild(createPaletteLogo(coin));
         const info = document.createElement('div');
         info.className = 'cmd-palette-info';
         const name = document.createElement('span');
@@ -2770,28 +3320,33 @@ function commitCommandPaletteSelection(targetTier) {
     const coin = cmdPaletteItems[cmdPaletteActiveIndex];
     if (!coin) return;
 
-    // Use the existing add flow. it handles sanitize, DOM-sync, dedupe, and persistence
-    if (!coinSet.has(coin.symbol) && !coinExistsInDOM(coin.symbol)) {
-        addCoinFromCategory(coin.symbol, coin);
-    }
+    const symbol = sanitizeCoinName(String(coin.symbol || '').toUpperCase());
+    if (!symbol) return;
 
-    if (targetTier && isValidTierName(targetTier)) {
-        const coinEl = document.querySelector(`.coin[data-coin="${escapeSelector(coin.symbol)}"]`);
-        const target = document.querySelector(`.tier-content[data-tier="${targetTier}"]`);
-        if (coinEl && target) {
-            target.appendChild(coinEl);
-            removeDuplicateCoins(target, coinEl);
-            if (targetTier === 'S') triggerSTierConfetti(target);
-            saveToLocalStorage();
-        }
+    // Use the existing add flow. It handles sanitizing, dedupe and persistence
+    const isNew = !coinSet.has(symbol) && !coinExistsInDOM(symbol);
+    if (isNew) {
+        addCoinFromCategory(symbol, coin);
     }
 
     closeCommandPalette();
+
+    const coinEl = document.querySelector(`.coin[data-coin="${escapeSelector(symbol)}"]`);
+    if (targetTier && isValidTierName(targetTier)) {
+        if (coinEl) moveCoinTo(coinEl, targetTier);
+        showNotification(`${symbol} ranked ${getTierLetter(targetTier)}.`);
+    } else if (isNew) {
+        showNotification(`${symbol} added to Unranked.`);
+    } else {
+        showNotification(`${symbol} is already on your list.`, 'warning');
+        flashCoin(symbol);
+    }
+    if (openCatalogCategory) renderCatalog();
 }
 
 // Share to X (Twitter)
 async function shareToX() {
-    setButtonLoading(shareBtn, 'GENERATING…');
+    setButtonLoading(shareBtn, 'Preparing…');
 
     try {
         // Use the same export logic as exportAsImage
@@ -2830,7 +3385,7 @@ async function shareToX() {
             const verdictUrl = buildShareUrl(encoded);
             const includeLink = verdictUrl.length <= 2000;
 
-            // Build the tweet with the URL last and truncate only the summary —
+            // Build the post with the URL last and truncate only the summary.
             // X counts every URL as 23 chars (t.co), so budget with that
             const header = 'My crypto tier list';
             const footer = includeLink
@@ -2853,7 +3408,7 @@ async function shareToX() {
 
             if (clipboardSuccess) {
                 // Show notification
-                showNotification('Image copied! Paste it in your tweet (Ctrl+V or Cmd+V)');
+                showNotification('Image copied. Paste it into your post with Ctrl+V or Cmd+V.');
             }
 
             // Small delay before opening Twitter
@@ -2867,13 +3422,13 @@ async function shareToX() {
                 twitterWindow.opener = null;
             }
 
-            setButtonSuccess(shareBtn, 'SHARED', 'SHARE ON X');
+            setButtonSuccess(shareBtn, 'Opened X', 'Share on X');
         }, 'image/jpeg', 0.95);
 
     } catch (error) {
         console.error('Share failed:', error);
-        showNotification('Failed to generate image. Please try again.', 'error');
-        resetButtonLoading(shareBtn, 'SHARE ON X');
+        showNotification('Could not create the image. Please try again.', 'error');
+        resetButtonLoading(shareBtn, 'Share on X');
     }
 }
 
@@ -2983,6 +3538,15 @@ async function createExportCanvas() {
     const coinsForWidth = Math.min(maxCoinsInTier, MAX_COINS_PER_ROW_EXPORT);
     const calculatedWidth = Math.max(1000, 140 + (coinsForWidth * 85));
 
+    // Export palette: the site's dark theme, whatever theme is on screen
+    const EXPORT_BG = '#11171d';
+    const EXPORT_ROW = '#161f28';
+    const EXPORT_LINE = 'rgba(211, 221, 228, 0.08)';
+    const EXPORT_INK = '#e6ecef';
+    const EXPORT_MUTED = '#9aaab7';
+    const EXPORT_TIER_INK = '#13202a';
+    const EXPORT_LOGO_BG = '#23313d';
+
     // Create export container matching website appearance
     const exportContainer = document.createElement('div');
     exportContainer.style.cssText = `
@@ -2990,23 +3554,37 @@ async function createExportCanvas() {
         left: -9999px;
         top: 0;
         width: ${calculatedWidth}px;
-        background: #0b1018;
-        padding: 15px;
-        font-family: Arial, sans-serif;
+        background: ${EXPORT_BG};
+        padding: 22px 22px 16px;
+        font-family: 'Inter', Arial, sans-serif;
     `;
 
     // Header so the exported image is self-explanatory when shared
     const exportHeader = document.createElement('div');
     exportHeader.style.cssText = `
-        text-align: center;
-        padding: 8px 0 14px;
-        font-family: 'Inter', sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: 4px;
-        color: rgba(255, 255, 255, 0.85);
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        padding: 0 2px 16px;
     `;
-    exportHeader.textContent = 'MARTINEZ ACCESS · CRYPTO TIER LIST';
+    const exportTitle = document.createElement('div');
+    exportTitle.style.cssText = `
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: ${EXPORT_INK};
+    `;
+    exportTitle.textContent = 'Crypto tier list';
+    const exportBrand = document.createElement('div');
+    exportBrand.style.cssText = `
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        color: ${EXPORT_MUTED};
+    `;
+    exportBrand.textContent = 'MARTINEZ ACCESS';
+    exportHeader.appendChild(exportTitle);
+    exportHeader.appendChild(exportBrand);
     exportContainer.appendChild(exportHeader);
 
     const tierData = Object.keys(TIER_LABELS).map(tier => ({
@@ -3025,7 +3603,7 @@ async function createExportCanvas() {
         allCoinsInTiers.push(...coins);
     });
 
-    // Load all images in parallel
+    // Load all images in parallel; coins without a loadable logo get their monogram
     await Promise.all(allCoinsInTiers.map(async (coinName) => {
         if (customCoinData[coinName] && customCoinData[coinName].logo) {
             const dataUrl = await imageToDataURL(customCoinData[coinName].logo);
@@ -3033,9 +3611,10 @@ async function createExportCanvas() {
                 imageCache[coinName] = dataUrl;
             }
         }
+        if (!imageCache[coinName]) {
+            imageCache[coinName] = monogramPngDataUrl(coinName);
+        }
     }));
-
-    console.log('Loaded', Object.keys(imageCache).length, 'images as data URLs');
 
     tierData.forEach(tier => {
         const tierContent = document.querySelector(`.tier-content[data-tier="${tier.name}"]`);
@@ -3045,51 +3624,49 @@ async function createExportCanvas() {
         row.style.cssText = `
             display: flex;
             width: 100%;
-            margin-bottom: 4px;
-            border-radius: 6px;
+            margin-bottom: 6px;
+            border-radius: 10px;
             overflow: hidden;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            min-height: 75px;
+            background: ${EXPORT_ROW};
+            border: 1px solid ${EXPORT_LINE};
+            min-height: 88px;
         `;
 
         const label = document.createElement('div');
         label.style.cssText = `
-            width: 100px;
-            min-width: 100px;
-            background: linear-gradient(180deg, ${tier.color} 0%, ${tier.color}dd 100%);
-            padding: 10px;
+            width: 112px;
+            min-width: 112px;
+            background: ${tier.color};
+            padding: 10px 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            color: ${EXPORT_TIER_INK};
         `;
 
         const letterDiv = document.createElement('div');
         letterDiv.style.cssText = `
-            font-family: 'Inter', monospace;
-            font-size: ${tier.letter.length > 2 ? '24px' : '32px'};
-            font-weight: 900;
+            font-family: 'Inter', Arial, sans-serif;
+            font-size: ${tier.letter.length > 2 ? '24px' : '34px'};
+            font-weight: 800;
             white-space: nowrap;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-            line-height: 1;
+            line-height: 1.1;
         `;
         letterDiv.textContent = tier.letter;
 
         const labelTextDiv = document.createElement('div');
         labelTextDiv.style.cssText = `
-            font-family: 'Inter', sans-serif;
-            font-size: 8px;
+            font-family: 'Inter', Arial, sans-serif;
+            font-size: 9px;
             font-weight: 700;
-            letter-spacing: 0.7px;
+            line-height: 13px;
+            letter-spacing: 0.06em;
             max-width: 100%;
             overflow-wrap: anywhere;
             text-align: center;
-            margin-top: 4px;
-            opacity: 0.9;
+            margin-top: 8px;
+            opacity: 0.82;
         `;
         labelTextDiv.textContent = tier.label;
 
@@ -3102,71 +3679,70 @@ async function createExportCanvas() {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            padding: 8px 12px;
-            gap: 6px;
+            padding: 10px 14px;
+            gap: 8px;
         `;
 
-        if (coins.length > 0) {
-            coins.forEach(coinName => {
-                const coinEl = document.createElement('div');
-                coinEl.style.cssText = `
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    background: transparent;
-                    padding: 4px;
-                `;
+        coins.forEach(coinName => {
+            const coinEl = document.createElement('div');
+            coinEl.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 70px;
+                padding: 4px 0;
+            `;
 
-                // Add coin logo (use cached data URL to avoid CORS)
-                if (imageCache[coinName]) {
-                    const logo = document.createElement('img');
-                    logo.style.cssText = `
-                        width: 65px;
-                        height: 65px;
-                        object-fit: contain;
-                        border-radius: 50%;
-                    `;
-                    logo.src = imageCache[coinName];
-                    logo.alt = coinName;
-                    coinEl.appendChild(logo);
-                }
+            const logo = document.createElement('img');
+            logo.style.cssText = `
+                width: 52px;
+                height: 52px;
+                object-fit: contain;
+                border-radius: 50%;
+                background: ${EXPORT_LOGO_BG};
+            `;
+            logo.src = imageCache[coinName];
+            logo.alt = coinName;
+            coinEl.appendChild(logo);
 
-                const text = document.createElement('span');
-                text.style.cssText = `
-                    color: #ffffff;
-                    font-family: 'Inter', monospace;
-                    font-weight: 700;
-                    font-size: 11px;
-                    letter-spacing: 1px;
-                    margin-top: 4px;
-                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-                `;
-                text.textContent = coinName;
+            // No overflow clipping here: html2canvas cuts off glyphs inside
+            // clipped boxes, so long tickers are shortened up front
+            const text = document.createElement('div');
+            text.style.cssText = `
+                color: ${EXPORT_INK};
+                font-family: 'Inter', Arial, sans-serif;
+                font-weight: 700;
+                font-size: 11px;
+                line-height: 16px;
+                letter-spacing: 0.04em;
+                margin-top: 6px;
+                white-space: nowrap;
+            `;
+            text.textContent = coinName.length > 8 ? `${coinName.slice(0, 7)}…` : coinName;
 
-                coinEl.appendChild(text);
-                content.appendChild(coinEl);
-            });
-        }
+            coinEl.appendChild(text);
+            content.appendChild(coinEl);
+        });
 
         row.appendChild(label);
         row.appendChild(content);
         exportContainer.appendChild(row);
     });
 
-    // Add footer with website URL at bottom right
+    // Footer with the site address
     const footer = document.createElement('div');
     footer.style.cssText = `
         text-align: right;
-        margin-top: 8px;
+        margin-top: 10px;
         padding-right: 2px;
     `;
     const footerText = document.createElement('span');
     footerText.style.cssText = `
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', Arial, sans-serif;
         font-size: 12px;
-        color: rgba(255, 255, 255, 0.4);
-        letter-spacing: 1px;
+        color: ${EXPORT_MUTED};
+        letter-spacing: 0.04em;
     `;
     footerText.textContent = 'martinezaccess.com/tier-list';
     footer.appendChild(footerText);
@@ -3192,7 +3768,7 @@ async function createExportCanvas() {
 
     // Use html2canvas - no CORS issues since we use data URLs
     const canvas = await html2canvas(exportContainer, {
-        backgroundColor: '#0b1018',
+        backgroundColor: '#11171d',
         scale: 2,
         logging: false,
         useCORS: false,
@@ -3212,7 +3788,7 @@ async function createExportCanvas() {
 
 // Export tier list as image
 async function exportAsImage() {
-    setButtonLoading(exportBtn, 'GENERATING…');
+    setButtonLoading(exportBtn, 'Exporting…');
 
     try {
         const { canvas, exportContainer } = await createExportCanvas();
@@ -3220,8 +3796,8 @@ async function exportAsImage() {
 
         canvas.toBlob((blob) => {
             if (!blob) {
-                showNotification('Export failed: No blob created', 'error');
-                resetButtonLoading(exportBtn, 'EXPORT IMAGE');
+                showNotification('Export failed. Please try again.', 'error');
+                resetButtonLoading(exportBtn, 'Export image');
                 return;
             }
 
@@ -3233,13 +3809,13 @@ async function exportAsImage() {
             link.click();
             URL.revokeObjectURL(url);
 
-            setButtonSuccess(exportBtn, 'EXPORTED', 'EXPORT IMAGE');
+            setButtonSuccess(exportBtn, 'Saved', 'Export image');
         }, 'image/jpeg', 0.95);
 
     } catch (error) {
         console.error('Export failed:', error);
-        showNotification('Export failed: ' + error.message, 'error');
-        resetButtonLoading(exportBtn, 'EXPORT IMAGE');
+        showNotification(`Export failed. ${error.message || 'Please try again.'}`, 'error');
+        resetButtonLoading(exportBtn, 'Export image');
     }
 }
 
@@ -3249,8 +3825,19 @@ function saveToLocalStorage() {
     updateTierCounts(); // Update counts immediately for responsive UI
 }
 
+// Keep the coin list in the order the tray shows it, so a reload or a shared
+// link brings the tray back the same way
+function syncCoinOrderFromDOM() {
+    const poolOrder = Array.from(coinContainer.querySelectorAll('.coin'))
+        .map(el => el.dataset.coin)
+        .filter(symbol => coinSet.has(symbol));
+    const inPool = new Set(poolOrder);
+    coins = [...poolOrder, ...coins.filter(symbol => !inPool.has(symbol))];
+}
+
 // Actual save implementation
 function actualSaveToLocalStorage() {
+    syncCoinOrderFromDOM();
     const state = {
         coins: coins,
         customCoinData: customCoinData,
@@ -3361,22 +3948,12 @@ function loadFromLocalStorage() {
         // SECURITY: Restore and validate degen mode (must be boolean)
         if (typeof state.isDegenMode === 'boolean') {
             isDegenMode = state.isDegenMode;
-            if (isDegenMode) {
-                degenToggle.classList.add('active');
-            }
             updateTierLabels();
         }
 
-        // Restore theme preference
+        // Restore theme preference (applied by applyTheme in init)
         if (typeof state.isLightMode === 'boolean') {
             isLightMode = state.isLightMode;
-            if (isLightMode) {
-                document.body.classList.add('light-mode');
-                const themeIcon = themeToggle?.querySelector('.theme-icon');
-                if (themeIcon) {
-                    themeIcon.textContent = '☀️';
-                }
-            }
         }
 
         // SECURITY: Restore and validate coins list
@@ -3434,6 +4011,7 @@ function loadFromLocalStorage() {
 
 // Encode tier list to compact URL format
 function encodeShareableData(mode) {
+    syncCoinOrderFromDOM();
     const parts = ['3']; // Version 3
 
     // Encode tiers
@@ -3685,23 +4263,23 @@ async function copyTextWithFallback(text) {
 // open a pre-filled tweet tagging the reviewer
 async function submitForReview() {
     if (coins.length === 0) {
-        showNotification('Add the coins you hold first!');
+        showNotification('Add the coins you hold first.', 'warning');
         return;
     }
 
     const encoded = encodeShareableData('s');
     if (!encoded) {
-        showNotification('Failed to generate submission link');
+        showNotification('Could not create the submission link.', 'error');
         return;
     }
 
     const url = buildShareUrl(encoded);
     if (url.length > 2000) {
-        showNotification('Portfolio too large to submit via link. Try fewer coins.');
+        showNotification('Too many coins to fit in a link. Try fewer coins.', 'warning');
         return;
     }
 
-    setButtonLoading(submitBtn, 'PREPARING…');
+    setButtonLoading(submitBtn, 'Preparing…');
 
     // Keep a copy in the clipboard so it can also be DMed
     const copied = await copyTextWithFallback(url);
@@ -3717,16 +4295,16 @@ async function submitForReview() {
         twitterWindow.opener = null;
     }
 
-    setButtonSuccess(submitBtn, 'TWEET OPENED', 'SUBMIT FOR REVIEW');
+    setButtonSuccess(submitBtn, 'Opened X', 'Submit for review');
     showNotification(copied
-        ? 'Submission link copied too. you can also DM it instead.'
-        : 'Tweet opened. the submission link is in it.');
+        ? 'Post opened on X. The link is copied too, so you can DM it instead.'
+        : 'Post opened on X with your submission link in it.');
 }
 
 // Copy shareable link to clipboard
 async function copyShareableLink() {
     if (coins.length === 0) {
-        showNotification('Add some coins to your portfolio first!');
+        showNotification('Add some coins first.', 'warning');
         return;
     }
 
@@ -3742,7 +4320,7 @@ async function copyShareableLink() {
     const encoded = encodeShareableData(mode);
 
     if (!encoded) {
-        showNotification('Failed to generate shareable link');
+        showNotification('Could not create the link.', 'error');
         return;
     }
 
@@ -3750,22 +4328,22 @@ async function copyShareableLink() {
 
     // Check URL length - most browsers support up to ~2000 chars
     if (url.length > 2000) {
-        showNotification('Portfolio too large to share via link. Try using fewer coins.');
+        showNotification('Too many coins to fit in a link. Try fewer coins.', 'warning');
         return;
     }
 
     // Loading state on the button
-    setButtonLoading(copyLinkBtn, 'COPYING…');
+    setButtonLoading(copyLinkBtn, 'Copying…');
 
     const copied = await copyTextWithFallback(url);
     if (copied) {
-        setButtonSuccess(copyLinkBtn, 'COPIED', 'COPY LINK');
+        setButtonSuccess(copyLinkBtn, 'Copied', 'Copy link');
         showNotification(mode === 's'
-            ? `Submission link copied. send it to @${REVIEWER_X_HANDLE} on 𝕏!`
-            : 'Verdict link copied to clipboard!');
+            ? 'Link copied. Nothing is ranked yet, so it opens as a portfolio to rank.'
+            : 'Link to your tier list copied.');
     } else {
         // Last resort: show the URL in a dialog the user can copy manually
-        resetButtonLoading(copyLinkBtn, 'COPY LINK');
+        resetButtonLoading(copyLinkBtn, 'Copy link');
         showShareLinkFallback(url);
     }
 
@@ -3786,29 +4364,33 @@ function showShareLinkFallback(url) {
     overlay.className = 'confirm-modal-overlay share-fallback-overlay';
 
     const modal = document.createElement('div');
-    modal.className = 'confirm-modal';
-    modal.style.maxWidth = '500px';
+    modal.className = 'confirm-modal share-fallback';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Copy link');
 
     const message = document.createElement('p');
     message.className = 'confirm-modal-message';
-    message.textContent = 'Copy this link manually:';
+    message.textContent = 'Copy this link:';
 
     const input = document.createElement('input');
     input.type = 'text';
     input.readOnly = true;
     input.value = url;
-    input.style.cssText = 'width:100%;padding:12px;margin-bottom:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-family:monospace;font-size:12px;word-break:break-all;';
+    input.className = 'share-fallback-input';
+    input.setAttribute('aria-label', 'Link to your tier list');
 
     const buttons = document.createElement('div');
     buttons.className = 'confirm-modal-buttons';
 
     const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
     copyBtn.className = 'confirm-modal-btn confirm';
-    copyBtn.textContent = 'TRY COPY';
+    copyBtn.textContent = 'Copy';
     copyBtn.addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(url);
-            copyBtn.textContent = 'COPIED ✓';
+            copyBtn.textContent = 'Copied';
             setTimeout(() => { overlay.classList.add('hiding'); setTimeout(() => overlay.remove(), 300); }, 600);
         } catch {
             input.select();
@@ -3816,8 +4398,9 @@ function showShareLinkFallback(url) {
     });
 
     const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
     closeBtn.className = 'confirm-modal-btn cancel';
-    closeBtn.textContent = 'CLOSE';
+    closeBtn.textContent = 'Close';
     closeBtn.addEventListener('click', () => {
         overlay.classList.add('hiding');
         setTimeout(() => overlay.remove(), 300);
@@ -3908,7 +4491,7 @@ function loadFromShareableLink() {
     const data = decodeShareableData(encoded);
     if (!data || typeof data !== 'object') {
         console.error('Invalid shareable link data');
-        showNotification('Invalid shared link. Loading default state.');
+        showNotification('That shared link is broken, so your own list is shown instead.', 'warning');
         // Clear the invalid hash
         window.history.replaceState(null, '', window.location.pathname);
         return false;
@@ -3997,25 +4580,14 @@ function loadFromShareableLink() {
             });
         }
 
-        // Load degen mode
+        // Load degen mode (applied by updateTierLabels below)
         if (typeof data.d === 'boolean') {
             isDegenMode = data.d;
-            if (isDegenMode) {
-                degenToggle.classList.add('active');
-                degenToggle.setAttribute('aria-pressed', 'true');
-            }
         }
 
-        // Load light mode
+        // Load light mode (applied by applyTheme in init)
         if (typeof data.l === 'boolean') {
             isLightMode = data.l;
-            if (isLightMode) {
-                document.body.classList.add('light-mode');
-                const themeIcon = themeToggle?.querySelector('.theme-icon');
-                if (themeIcon) {
-                    themeIcon.textContent = '☀️';
-                }
-            }
         }
 
         // Load custom tier names
@@ -4052,7 +4624,7 @@ function loadFromShareableLink() {
         // refresh re-imports from the hash that is still in the URL.
 
         showNotification(viewMode === 'review'
-            ? 'Portfolio submission loaded. drag the coins into verdict tiers.'
+            ? 'Portfolio submission loaded. Rank the coins in Unranked.'
             : 'Shared tier list loaded.');
 
         return true;
@@ -4105,11 +4677,12 @@ function showNotification(message, type = 'success') {
 
     requestAnimationFrame(() => notification.classList.add('show'));
 
+    // Confirmations clear quickly; problems stay a little longer
     setTimeout(() => {
         notification.classList.add('hiding');
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
-    }, 5000);
+    }, type === 'success' ? 3200 : 5000);
 }
 
 // Initialize on load
@@ -4124,15 +4697,8 @@ function cleanup() {
         saveTimeout = null;
         actualSaveToLocalStorage();
     }
-    // Remove system theme change listener
-    if (window._themeMediaQuery) {
-        window._themeMediaQuery.removeEventListener('change', handleSystemThemeChange);
-        window._themeMediaQuery = null;
-    }
-
     // Clear caches
     searchCache.clear();
-    Object.keys(categoryCache).forEach(key => delete categoryCache[key]);
 
     // Clear any pending keyboard selection
     if (keyboardSelectedCoin) {
