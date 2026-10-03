@@ -633,6 +633,64 @@
   line-height: 1.4;
   color: #a9b7c2;
 }
+/* Coins waiting to be ranked, as in the tool's Unranked tray. */
+.previewTray {
+  display: block;
+  margin-top: 6px;
+  padding: 12px 14px 10px;
+  border-radius: 10px;
+  background: #11171d;
+  box-shadow: inset 0 0 0 1px #27333d;
+}
+.previewTrayLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9aaab7;
+}
+.previewCoins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 10px;
+}
+.previewCoin {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 34px;
+}
+.previewLogo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #23313d;
+  color: #b4c1ca;
+  font-size: 11px;
+  font-weight: 700;
+}
+.previewLogo::before {
+  content: attr(data-monogram);
+}
+.previewLogo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: contain;
+}
+.previewTicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #c4ced6;
+}
 .previewCaption {
   display: block;
   padding-top: 14px;
@@ -913,5 +971,12 @@
   }
   .previewHint {
     display: none;
+  }
+  .previewCoins {
+    gap: 6px 9px;
+  }
+  .previewLogo {
+    width: 30px;
+    height: 30px;
   }
 }

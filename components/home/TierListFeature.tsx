@@ -1,3 +1,5 @@
+import type { PreviewCoin } from "@/lib/coin-logos";
+import CoinLogo from "./CoinLogo";
 import styles from "./home.module.css";
 
 const tiers = [
@@ -9,7 +11,7 @@ const tiers = [
 
 // The builder is a standalone document served through a rewrite, so these
 // links stay plain anchors rather than next/link.
-export default function TierListFeature() {
+export default function TierListFeature({ coins }: { coins: PreviewCoin[] }) {
   return (
     <section
       className={styles.section}
@@ -60,6 +62,27 @@ export default function TierListFeature() {
                 )}
               </span>
             ))}
+            {coins.length > 0 && (
+              <span className={styles.previewTray}>
+                <span className={styles.previewTrayLabel}>Unranked</span>
+                <span className={styles.previewCoins}>
+                  {coins.map((coin) => (
+                    <span className={styles.previewCoin} key={coin.id}>
+                      {/* The monogram shows until the logo loads, and if it fails */}
+                      <span
+                        className={styles.previewLogo}
+                        data-monogram={coin.symbol.slice(0, 2)}
+                      >
+                        <CoinLogo src={coin.image} />
+                      </span>
+                      <span className={styles.previewTicker}>
+                        {coin.symbol}
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              </span>
+            )}
             <span className={styles.previewCaption}>
               Your research. Your rankings.
             </span>

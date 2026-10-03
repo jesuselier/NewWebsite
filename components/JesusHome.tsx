@@ -1,3 +1,4 @@
+import { getPreviewCoins } from "@/lib/coin-logos";
 import { getFullLatest } from "@/lib/youtube";
 import AttentionCycle from "./AttentionCycle";
 import { ContactStrip } from "./SiteSections";
@@ -13,7 +14,10 @@ import styles from "./home/home.module.css";
 // Pacing: who I am and what to watch first, a curated path, the story behind
 // the channel, the framework that grew out of it, what's new, then the tool.
 export default async function JesusHome() {
-  const videos = await getFullLatest(4);
+  const [videos, previewCoins] = await Promise.all([
+    getFullLatest(4),
+    getPreviewCoins(),
+  ]);
   return (
     <div className={`${newsreader.variable} ${styles.home}`}>
       <ScrollReveal />
@@ -22,7 +26,7 @@ export default async function JesusHome() {
       <Story />
       <AttentionCycle />
       <LatestUploads videos={videos} />
-      <TierListFeature />
+      <TierListFeature coins={previewCoins} />
       <ContactStrip />
     </div>
   );
