@@ -16,38 +16,38 @@ export const PREVIEW_COINS: readonly PreviewCoin[] = [
     id: "bitcoin",
     symbol: "BTC",
     name: "Bitcoin",
-    image: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png",
+    image: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png",
   },
   {
     id: "ethereum",
     symbol: "ETH",
     name: "Ethereum",
-    image: "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
+    image: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png",
   },
   {
     id: "ripple",
     symbol: "XRP",
     name: "XRP",
     image:
-      "https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png",
+      "https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png",
   },
   {
     id: "solana",
     symbol: "SOL",
     name: "Solana",
-    image: "https://assets.coingecko.com/coins/images/4128/large/solana.png",
+    image: "https://coin-images.coingecko.com/coins/images/4128/large/solana.png",
   },
   {
     id: "binancecoin",
     symbol: "BNB",
     name: "BNB",
-    image: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png",
+    image: "https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png",
   },
   {
     id: "dogecoin",
     symbol: "DOGE",
     name: "Dogecoin",
-    image: "https://assets.coingecko.com/coins/images/5/large/dogecoin.png",
+    image: "https://coin-images.coingecko.com/coins/images/5/large/dogecoin.png",
   },
 ];
 

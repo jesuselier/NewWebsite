@@ -25,6 +25,14 @@ function sanitizeCoinName(name) {
     return name.replace(/[^a-zA-Z0-9\s\-_.]/g, '').trim().substring(0, 20);
 }
 
+// Tickers corrected in the curated lists (October 2026). Older saved lists and
+// share links are read with the current ticker.
+const RENAMED_TICKERS = { RONIN: 'RON', GUNZ: 'GUN' };
+function readTicker(value) {
+    const symbol = sanitizeCoinName(value);
+    return RENAMED_TICKERS[symbol] || symbol;
+}
+
 // Validate and sanitize URLs - only allow trusted domains
 function sanitizeLogoUrl(url) {
     if (typeof url !== 'string') return '';
@@ -284,74 +292,74 @@ async function rateLimitedFetch(url, options = {}) {
 // Static coin data for each category (no API calls needed)
 const STATIC_CATEGORY_COINS = {
     'top-marketcap': [
-        { symbol: 'BTC', name: 'Bitcoin', id: 'bitcoin', image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
-        { symbol: 'ETH', name: 'Ethereum', id: 'ethereum', image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
-        { symbol: 'XRP', name: 'XRP', id: 'ripple', image: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png' },
-        { symbol: 'SOL', name: 'Solana', id: 'solana', image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
-        { symbol: 'BNB', name: 'BNB', id: 'binancecoin', image: 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png' },
-        { symbol: 'DOGE', name: 'Dogecoin', id: 'dogecoin', image: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png' },
-        { symbol: 'ADA', name: 'Cardano', id: 'cardano', image: 'https://assets.coingecko.com/coins/images/975/large/cardano.png' },
-        { symbol: 'TRX', name: 'TRON', id: 'tron', image: 'https://assets.coingecko.com/coins/images/1094/large/tron-logo.png' },
-        { symbol: 'LINK', name: 'Chainlink', id: 'chainlink', image: 'https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png' },
-        { symbol: 'AVAX', name: 'Avalanche', id: 'avalanche-2', image: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png' },
-        { symbol: 'SUI', name: 'Sui', id: 'sui', image: 'https://assets.coingecko.com/coins/images/26375/large/sui_asset.jpeg' },
-        { symbol: 'XLM', name: 'Stellar', id: 'stellar', image: 'https://assets.coingecko.com/coins/images/100/large/Stellar_symbol_black_RGB.png' },
-        { symbol: 'SHIB', name: 'Shiba Inu', id: 'shiba-inu', image: 'https://assets.coingecko.com/coins/images/11939/large/shiba.png' },
-        { symbol: 'ZEC', name: 'Zcash', id: 'zcash', image: 'https://coin-images.coingecko.com/coins/images/486/large/circle-zcash-color.png' },
-        { symbol: 'BCH', name: 'Bitcoin Cash', id: 'bitcoin-cash', image: 'https://assets.coingecko.com/coins/images/780/large/bitcoin-cash-circle.png' },
-        { symbol: 'LTC', name: 'Litecoin', id: 'litecoin', image: 'https://assets.coingecko.com/coins/images/2/standard/litecoin.png' },
-        { symbol: 'XMR', name: 'Monero', id: 'monero', image: 'https://assets.coingecko.com/coins/images/69/large/monero_logo.png' },
-        { symbol: 'HYPE', name: 'Hyperliquid', id: 'hyperliquid', image: 'https://assets.coingecko.com/coins/images/50882/standard/hyperliquid.jpg' },
-        { symbol: 'M', name: 'MemeCore', id: 'memecore', image: 'https://coin-images.coingecko.com/coins/images/53247/large/square-bg-transparent.png' },
+        { symbol: 'BTC', name: 'Bitcoin', id: 'bitcoin', image: 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png' },
+        { symbol: 'ETH', name: 'Ethereum', id: 'ethereum', image: 'https://coin-images.coingecko.com/coins/images/279/large/ethereum.png' },
+        { symbol: 'XRP', name: 'XRP', id: 'ripple', image: 'https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png' },
+        { symbol: 'SOL', name: 'Solana', id: 'solana', image: 'https://coin-images.coingecko.com/coins/images/4128/large/solana.png' },
+        { symbol: 'BNB', name: 'BNB', id: 'binancecoin', image: 'https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png' },
+        { symbol: 'DOGE', name: 'Dogecoin', id: 'dogecoin', image: 'https://coin-images.coingecko.com/coins/images/5/large/dogecoin.png' },
+        { symbol: 'ADA', name: 'Cardano', id: 'cardano', image: 'https://coin-images.coingecko.com/coins/images/975/large/cardano.png' },
+        { symbol: 'TRX', name: 'TRON', id: 'tron', image: 'https://coin-images.coingecko.com/coins/images/1094/large/photo_2026-04-13_09-59-16.png' },
+        { symbol: 'LINK', name: 'Chainlink', id: 'chainlink', image: 'https://coin-images.coingecko.com/coins/images/877/large/Chainlink_Logo_500.png' },
+        { symbol: 'AVAX', name: 'Avalanche', id: 'avalanche-2', image: 'https://coin-images.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png' },
+        { symbol: 'SUI', name: 'Sui', id: 'sui', image: 'https://coin-images.coingecko.com/coins/images/26375/large/sui-ocean-square.png' },
+        { symbol: 'XLM', name: 'Stellar', id: 'stellar', image: 'https://coin-images.coingecko.com/coins/images/100/large/fmpFRHHQ_400x400.jpg' },
+        { symbol: 'SHIB', name: 'Shiba Inu', id: 'shiba-inu', image: 'https://coin-images.coingecko.com/coins/images/11939/large/shiba.png' },
+        { symbol: 'ZEC', name: 'Zcash', id: 'zcash', image: 'https://coin-images.coingecko.com/coins/images/486/large/Brandmark-Yellow_%281%29.png' },
+        { symbol: 'BCH', name: 'Bitcoin Cash', id: 'bitcoin-cash', image: 'https://coin-images.coingecko.com/coins/images/780/large/bitcoin-cash-circle.png' },
+        { symbol: 'LTC', name: 'Litecoin', id: 'litecoin', image: 'https://coin-images.coingecko.com/coins/images/2/large/litecoin.png' },
+        { symbol: 'XMR', name: 'Monero', id: 'monero', image: 'https://coin-images.coingecko.com/coins/images/69/large/monero_logo.png' },
+        { symbol: 'HYPE', name: 'Hyperliquid', id: 'hyperliquid', image: 'https://coin-images.coingecko.com/coins/images/50882/large/hyperliquid.jpg' },
+        { symbol: 'M', name: 'MemeCore', id: 'memecore', image: 'https://coin-images.coingecko.com/coins/images/53247/large/square-bg-transparent.png', tone: 'dark' },
         { symbol: 'CC', name: 'Canton', id: 'canton-network', image: 'https://coin-images.coingecko.com/coins/images/70468/large/Canton-Ticker_%281%29.png' }
     ],
     'ai': [
-        { symbol: 'RENDER', name: 'Render', id: 'render-token', image: 'https://assets.coingecko.com/coins/images/11636/large/rndr.png' },
-        { symbol: 'TAO', name: 'Bittensor', id: 'bittensor', image: 'https://assets.coingecko.com/coins/images/28452/large/ARUsPeNQ_400x400.jpeg' },
-        { symbol: 'FET', name: 'Artificial Superintelligence Alliance', id: 'fetch-ai', image: 'https://assets.coingecko.com/coins/images/5681/standard/ASI.png' },
-        { symbol: 'GRT', name: 'The Graph', id: 'the-graph', image: 'https://assets.coingecko.com/coins/images/13397/large/Graph_Token.png' },
-        { symbol: 'AR', name: 'Arweave', id: 'arweave', image: 'https://assets.coingecko.com/coins/images/4343/large/oRt6SiEN_400x400.jpg' },
-        { symbol: 'AKT', name: 'Akash Network', id: 'akash-network', image: 'https://assets.coingecko.com/coins/images/12785/large/akash-logo.png' },
-        { symbol: 'AIOZ', name: 'AIOZ Network', id: 'aioz-network', image: 'https://assets.coingecko.com/coins/images/14631/large/aioz-logo-200.png' },
-        { symbol: 'FIL', name: 'Filecoin', id: 'filecoin', image: 'https://assets.coingecko.com/coins/images/12817/large/filecoin.png' },
-        { symbol: 'BAT', name: 'Basic Attention Token', id: 'basic-attention-token', image: 'https://assets.coingecko.com/coins/images/677/large/basic-attention-token.png' },
-        { symbol: 'THETA', name: 'Theta Network', id: 'theta-token', image: 'https://assets.coingecko.com/coins/images/2538/large/theta-token-logo.png' },
-        { symbol: 'ATH', name: 'Aethir', id: 'aethir', image: 'https://assets.coingecko.com/coins/images/36179/standard/logogram_circle_dark_green_vb_green_%281%29.png' },
-        { symbol: 'VIRTUAL', name: 'Virtuals Protocol', id: 'virtual-protocol', image: 'https://assets.coingecko.com/coins/images/34057/standard/LOGOMARK.png' }
+        { symbol: 'RENDER', name: 'Render', id: 'render-token', image: 'https://coin-images.coingecko.com/coins/images/11636/large/rndr.png' },
+        { symbol: 'TAO', name: 'Bittensor', id: 'bittensor', image: 'https://coin-images.coingecko.com/coins/images/28452/large/ARUsPeNQ_400x400.jpeg' },
+        { symbol: 'FET', name: 'Artificial Superintelligence Alliance', id: 'fetch-ai', image: 'https://coin-images.coingecko.com/coins/images/5681/large/ASI.png' },
+        { symbol: 'GRT', name: 'The Graph', id: 'the-graph', image: 'https://coin-images.coingecko.com/coins/images/13397/large/Graph_Token.png' },
+        { symbol: 'AR', name: 'Arweave', id: 'arweave', image: 'https://coin-images.coingecko.com/coins/images/4343/large/oRt6SiEN_400x400.jpg' },
+        { symbol: 'AKT', name: 'Akash Network', id: 'akash-network', image: 'https://coin-images.coingecko.com/coins/images/12785/large/akash-logo.png' },
+        { symbol: 'AIOZ', name: 'AIOZ Network', id: 'aioz-network', image: 'https://coin-images.coingecko.com/coins/images/14631/large/aioz-logo-200.png' },
+        { symbol: 'FIL', name: 'Filecoin', id: 'filecoin', image: 'https://coin-images.coingecko.com/coins/images/12817/large/filecoin.png' },
+        { symbol: 'BAT', name: 'Basic Attention Token', id: 'basic-attention-token', image: 'https://coin-images.coingecko.com/coins/images/677/large/basic-attention-token.png' },
+        { symbol: 'THETA', name: 'Theta Network', id: 'theta-token', image: 'https://coin-images.coingecko.com/coins/images/2538/large/theta-token-logo.png', tone: 'light' },
+        { symbol: 'ATH', name: 'Aethir', id: 'aethir', image: 'https://coin-images.coingecko.com/coins/images/36179/large/logogram_circle_dark_green_vb_green_%281%29.png' },
+        { symbol: 'VIRTUAL', name: 'Virtuals Protocol', id: 'virtual-protocol', image: 'https://coin-images.coingecko.com/coins/images/34057/large/LOGOMARK.png' }
     ],
     'rwa': [
-        { symbol: 'LINK', name: 'Chainlink', id: 'chainlink', image: 'https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png' },
-        { symbol: 'ONDO', name: 'Ondo', id: 'ondo-finance', image: 'https://assets.coingecko.com/coins/images/26580/large/ONDO.png' },
-        { symbol: 'HBAR', name: 'Hedera', id: 'hedera-hashgraph', image: 'https://assets.coingecko.com/coins/images/3688/large/hbar.png' },
-        { symbol: 'AVAX', name: 'Avalanche', id: 'avalanche-2', image: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png' },
-        { symbol: 'VET', name: 'VeChain', id: 'vechain', image: 'https://assets.coingecko.com/coins/images/1167/standard/VET.png' },
-        { symbol: 'XDC', name: 'XDC Network', id: 'xdce-crowd-sale', image: 'https://assets.coingecko.com/coins/images/2912/large/xdc-icon.png' },
-        { symbol: 'QNT', name: 'Quant', id: 'quant-network', image: 'https://assets.coingecko.com/coins/images/3370/large/5ZOu7brX_400x400.jpg' },
-        { symbol: 'INJ', name: 'Injective', id: 'injective-protocol', image: 'https://assets.coingecko.com/coins/images/12882/large/Secondary_Symbol.png' },
-        { symbol: 'IOTA', name: 'IOTA', id: 'iota', image: 'https://assets.coingecko.com/coins/images/692/standard/IOTA_Thumbnail_%281%29.png' }
+        { symbol: 'LINK', name: 'Chainlink', id: 'chainlink', image: 'https://coin-images.coingecko.com/coins/images/877/large/Chainlink_Logo_500.png' },
+        { symbol: 'ONDO', name: 'Ondo', id: 'ondo-finance', image: 'https://coin-images.coingecko.com/coins/images/26580/large/ONDO.png', tone: 'dark' },
+        { symbol: 'HBAR', name: 'Hedera', id: 'hedera-hashgraph', image: 'https://coin-images.coingecko.com/coins/images/3688/large/hbar.png' },
+        { symbol: 'AVAX', name: 'Avalanche', id: 'avalanche-2', image: 'https://coin-images.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png' },
+        { symbol: 'VET', name: 'VeChain', id: 'vechain', image: 'https://coin-images.coingecko.com/coins/images/1167/large/VET.png' },
+        { symbol: 'XDC', name: 'XDC Network', id: 'xdce-crowd-sale', image: 'https://coin-images.coingecko.com/coins/images/2912/large/xdc-icon.png' },
+        { symbol: 'QNT', name: 'Quant', id: 'quant-network', image: 'https://coin-images.coingecko.com/coins/images/3370/large/5ZOu7brX_400x400.jpg' },
+        { symbol: 'INJ', name: 'Injective', id: 'injective-protocol', image: 'https://coin-images.coingecko.com/coins/images/12882/large/Other_200x200.png' },
+        { symbol: 'IOTA', name: 'IOTA', id: 'iota', image: 'https://coin-images.coingecko.com/coins/images/692/large/IOTA_Thumbnail_%281%29.png' }
     ],
     'gaming': [
-        { symbol: 'IMX', name: 'Immutable', id: 'immutable-x', image: 'https://assets.coingecko.com/coins/images/17233/large/immutableX-symbol-BLK-RGB.png' },
-        { symbol: 'BEAM', name: 'Beam', id: 'beam-2', image: 'https://assets.coingecko.com/coins/images/32417/large/chain-logo.png' },
-        { symbol: 'GALA', name: 'Gala', id: 'gala', image: 'https://assets.coingecko.com/coins/images/12493/large/GALA-COINGECKO.png' },
-        { symbol: 'SAND', name: 'The Sandbox', id: 'the-sandbox', image: 'https://assets.coingecko.com/coins/images/12129/large/sandbox_logo.jpg' },
-        { symbol: 'AXS', name: 'Axie Infinity', id: 'axie-infinity', image: 'https://assets.coingecko.com/coins/images/13029/large/axie_infinity_logo.png' },
-        { symbol: 'MANA', name: 'Decentraland', id: 'decentraland', image: 'https://assets.coingecko.com/coins/images/878/large/decentraland-mana.png' },
-        { symbol: 'RONIN', name: 'Ronin', id: 'ronin', image: 'https://assets.coingecko.com/coins/images/20009/large/ronin.jpg' },
-        { symbol: 'PRIME', name: 'Echelon Prime', id: 'echelon-prime', image: 'https://assets.coingecko.com/coins/images/29053/large/prime-logo-small-border_%282%29.png' },
-        { symbol: 'GUNZ', name: 'GUNZ', id: 'gunz', image: 'https://assets.coingecko.com/coins/images/55027/standard/gunz.jpg' },
-        { symbol: 'NXPC', name: 'Nexpace', id: 'nexpace', image: 'https://assets.coingecko.com/coins/images/55703/standard/wk63iOZz_400x400.png' }
+        { symbol: 'IMX', name: 'Immutable', id: 'immutable-x', image: 'https://coin-images.coingecko.com/coins/images/17233/large/immutableX-symbol-BLK-RGB.png', tone: 'dark' },
+        { symbol: 'BEAM', name: 'Beam', id: 'beam-2', image: 'https://coin-images.coingecko.com/coins/images/32417/large/cgicon.png' },
+        { symbol: 'GALA', name: 'Gala', id: 'gala', image: 'https://coin-images.coingecko.com/coins/images/12493/large/GALA_token_image_-_200PNG.png' },
+        { symbol: 'SAND', name: 'The Sandbox', id: 'the-sandbox', image: 'https://coin-images.coingecko.com/coins/images/12129/large/sandbox_logo.jpg' },
+        { symbol: 'AXS', name: 'Axie Infinity', id: 'axie-infinity', image: 'https://coin-images.coingecko.com/coins/images/13029/large/axie_infinity_logo.png' },
+        { symbol: 'MANA', name: 'Decentraland', id: 'decentraland', image: 'https://coin-images.coingecko.com/coins/images/878/large/decentraland-mana.png' },
+        { symbol: 'RON', name: 'Ronin', id: 'ronin', image: 'https://coin-images.coingecko.com/coins/images/20009/large/photo_2024-04-06_22-52-24.jpg' },
+        { symbol: 'PRIME', name: 'Echelon Prime', id: 'echelon-prime', image: 'https://coin-images.coingecko.com/coins/images/29053/large/prime-logo-small-border_%282%29.png' },
+        { symbol: 'GUN', name: 'GUNZ', id: 'gunz', image: 'https://coin-images.coingecko.com/coins/images/55027/large/gunz.jpg' },
+        { symbol: 'NXPC', name: 'Nexpace', id: 'nexpace', image: 'https://coin-images.coingecko.com/coins/images/55703/large/wk63iOZz_400x400.png' }
     ],
     'meme': [
-        { symbol: 'DOGE', name: 'Dogecoin', id: 'dogecoin', image: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png' },
-        { symbol: 'SHIB', name: 'Shiba Inu', id: 'shiba-inu', image: 'https://assets.coingecko.com/coins/images/11939/large/shiba.png' },
-        { symbol: 'PEPE', name: 'Pepe', id: 'pepe', image: 'https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg' },
-        { symbol: 'WIF', name: 'dogwifhat', id: 'dogwifcoin', image: 'https://assets.coingecko.com/coins/images/33566/large/dogwifhat.jpg' },
-        { symbol: 'BONK', name: 'Bonk', id: 'bonk', image: 'https://assets.coingecko.com/coins/images/28600/large/bonk.jpg' },
-        { symbol: 'FLOKI', name: 'FLOKI', id: 'floki', image: 'https://assets.coingecko.com/coins/images/16746/large/PNG_image.png' },
-        { symbol: 'TRUMP', name: 'Official Trump', id: 'official-trump', image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/35336.png' },
-        { symbol: 'FARTCOIN', name: 'Fartcoin', id: 'fartcoin', image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/33597.png' },
-        { symbol: 'MOG', name: 'Mog Coin', id: 'mog-coin', image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/27659.png' }
+        { symbol: 'DOGE', name: 'Dogecoin', id: 'dogecoin', image: 'https://coin-images.coingecko.com/coins/images/5/large/dogecoin.png' },
+        { symbol: 'SHIB', name: 'Shiba Inu', id: 'shiba-inu', image: 'https://coin-images.coingecko.com/coins/images/11939/large/shiba.png' },
+        { symbol: 'PEPE', name: 'Pepe', id: 'pepe', image: 'https://coin-images.coingecko.com/coins/images/29850/large/pepe-token.jpeg' },
+        { symbol: 'WIF', name: 'dogwifhat', id: 'dogwifcoin', image: 'https://coin-images.coingecko.com/coins/images/33566/large/dogwifhat.jpg' },
+        { symbol: 'BONK', name: 'Bonk', id: 'bonk', image: 'https://coin-images.coingecko.com/coins/images/28600/large/bonk.jpg' },
+        { symbol: 'FLOKI', name: 'FLOKI', id: 'floki', image: 'https://coin-images.coingecko.com/coins/images/16746/large/PNG_image.png' },
+        { symbol: 'TRUMP', name: 'Official Trump', id: 'official-trump', image: 'https://coin-images.coingecko.com/coins/images/53746/large/trump.png' },
+        { symbol: 'FARTCOIN', name: 'Fartcoin', id: 'fartcoin', image: 'https://coin-images.coingecko.com/coins/images/50891/large/fart.jpg' },
+        { symbol: 'MOG', name: 'Mog Coin', id: 'mog-coin', image: 'https://coin-images.coingecko.com/coins/images/31059/large/MOG_LOGO_200x200.png' }
     ]
 };
 
@@ -2525,6 +2533,14 @@ function monogramPngDataUrl(symbol) {
     return canvas.toDataURL('image/png');
 }
 
+// A few curated logos are drawn dark (or light) on a transparent background.
+// They get a contrasting disc (see style.css), but only when the logo shown
+// is the curated one, so another coin with the same ticker is unaffected.
+function logoToneFor(symbol, url) {
+    const curated = findStaticCoin(symbol);
+    return curated && curated.tone && sanitizeLogoUrl(url || '') === curated.image ? curated.tone : '';
+}
+
 // Show a coin's real logo, falling back to its monogram if it is missing or fails
 function setLogoImage(img, symbol, url) {
     if (!img) return;
@@ -2532,13 +2548,18 @@ function setLogoImage(img, symbol, url) {
     img.onerror = function () {
         this.onerror = null;
         this.classList.add('is-monogram');
+        delete this.dataset.tone;
         this.src = monogramDataUrl(symbol);
     };
     if (safe) {
         img.classList.remove('is-monogram');
+        const tone = logoToneFor(symbol, safe);
+        if (tone) img.dataset.tone = tone;
+        else delete img.dataset.tone;
         if (img.getAttribute('src') !== safe) img.src = safe;
     } else {
         img.classList.add('is-monogram');
+        delete img.dataset.tone;
         img.src = monogramDataUrl(symbol);
     }
 }
@@ -3695,12 +3716,13 @@ async function createExportCanvas() {
             `;
 
             const logo = document.createElement('img');
+            const darkLogo = logoToneFor(coinName, customCoinData[coinName]?.logo) === 'dark';
             logo.style.cssText = `
                 width: 52px;
                 height: 52px;
                 object-fit: contain;
                 border-radius: 50%;
-                background: ${EXPORT_LOGO_BG};
+                background: ${darkLogo ? '#e6ecef' : EXPORT_LOGO_BG};
             `;
             logo.src = imageCache[coinName];
             logo.alt = coinName;
@@ -3918,7 +3940,7 @@ function loadFromLocalStorage() {
         if (state.customCoinData && typeof state.customCoinData === 'object') {
             customCoinData = {};
             Object.keys(state.customCoinData).forEach(key => {
-                const sanitizedKey = sanitizeCoinName(key);
+                const sanitizedKey = readTicker(key);
                 if (!sanitizedKey) return;
 
                 const data = state.customCoinData[key];
@@ -3931,6 +3953,17 @@ function loadFromLocalStorage() {
                 }
             });
         }
+
+        // Curated coins always show their current logo, including in lists
+        // saved before the logos were last refreshed
+        Object.keys(customCoinData).forEach(symbol => {
+            const curated = findStaticCoin(symbol);
+            const data = customCoinData[symbol];
+            if (curated && (!data.id || data.id === curated.id)) {
+                data.logo = curated.image;
+                data.id = curated.id;
+            }
+        });
 
         // Restore custom tier names
         if (state.customTierNames && typeof state.customTierNames === 'object') {
@@ -3960,8 +3993,8 @@ function loadFromLocalStorage() {
         if (Array.isArray(state.coins)) {
             coins = state.coins
                 .filter(coin => typeof coin === 'string')
-                .map(coin => sanitizeCoinName(coin))
-                .filter(coin => coin); // Remove empty strings
+                .map(coin => readTicker(coin))
+                .filter((coin, i, list) => coin && list.indexOf(coin) === i); // Drop empties and repeats
             renderCoins();
         }
 
@@ -3976,7 +4009,7 @@ function loadFromLocalStorage() {
 
                 if (Array.isArray(tierCoins) && tierContent) {
                     tierCoins.forEach(coinName => {
-                        const sanitizedCoinName = sanitizeCoinName(coinName);
+                        const sanitizedCoinName = readTicker(coinName);
                         if (!sanitizedCoinName) return;
 
                         // Use escaped selector for safety
@@ -4506,7 +4539,7 @@ function loadFromShareableLink() {
         // Load custom coin data first (for non-static coins, v1 and v3)
         if (data.c && typeof data.c === 'object') {
             Object.keys(data.c).forEach(symbol => {
-                const sanitizedSymbol = sanitizeCoinName(symbol);
+                const sanitizedSymbol = readTicker(symbol);
                 if (sanitizedSymbol && data.c[symbol]) {
                     customCoinData[sanitizedSymbol] = {
                         logo: sanitizeLogoUrl(data.c[symbol].l || ''),
@@ -4522,7 +4555,7 @@ function loadFromShareableLink() {
         const allCoins = new Set();
         if (Array.isArray(data.p)) {
             data.p.forEach(coin => {
-                const sanitized = sanitizeCoinName(coin);
+                const sanitized = readTicker(coin);
                 if (sanitized) allCoins.add(sanitized);
             });
         }
@@ -4530,7 +4563,7 @@ function loadFromShareableLink() {
             Object.values(data.t).forEach(tierCoins => {
                 if (Array.isArray(tierCoins)) {
                     tierCoins.forEach(coin => {
-                        const sanitized = sanitizeCoinName(coin);
+                        const sanitized = readTicker(coin);
                         if (sanitized) allCoins.add(sanitized);
                     });
                 }
@@ -4568,7 +4601,7 @@ function loadFromShareableLink() {
 
                 if (Array.isArray(tierCoins) && tierContent) {
                     tierCoins.forEach(coinName => {
-                        const sanitizedCoinName = sanitizeCoinName(coinName);
+                        const sanitizedCoinName = readTicker(coinName);
                         if (!sanitizedCoinName) return;
 
                         const coinEl = document.querySelector(`.coin[data-coin="${escapeSelector(sanitizedCoinName)}"]`);

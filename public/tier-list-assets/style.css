@@ -1105,6 +1105,31 @@ body.degen-mode .tier-letter {
     -webkit-user-drag: none;
 }
 
+/* A few logos are drawn dark (or light) on a transparent background. They
+   sit on a contrasting disc so they stay visible in either theme. */
+img[data-tone="dark"]:not(.is-monogram) {
+    background: #e6ecef;
+}
+
+body.light-mode img[data-tone="light"]:not(.is-monogram) {
+    background: #23313d;
+}
+
+/* A faint ring keeps the edge of very dark logos visible on the dark theme */
+.coin-logo:not(.is-monogram),
+.catalog-coin img:not(.is-monogram),
+.search-logo:not(.is-monogram),
+.tier-picker-logo:not(.is-monogram) {
+    box-shadow: 0 0 0 1px rgba(230, 236, 239, 0.12);
+}
+
+body.light-mode .coin-logo:not(.is-monogram),
+body.light-mode .catalog-coin img:not(.is-monogram),
+body.light-mode .search-logo:not(.is-monogram),
+body.light-mode .tier-picker-logo:not(.is-monogram) {
+    box-shadow: 0 0 0 1px rgba(19, 32, 42, 0.1);
+}
+
 .coin-text {
     max-width: 100%;
     overflow: hidden;

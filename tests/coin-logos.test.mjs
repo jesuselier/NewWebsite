@@ -78,6 +78,20 @@ test("bundled fallbacks are valid and match the tool's Top 20 list", () => {
   assert.deepEqual(PREVIEW_COINS, top.slice(0, PREVIEW_COINS.length));
 });
 
+test("every curated coin in the tool uses a current CoinGecko logo", () => {
+  const script = readFileSync(new URL("../public/tier-list-assets/script.js", import.meta.url), "utf8");
+  const block = /const STATIC_CATEGORY_COINS = \{([\s\S]*?)\n\};/.exec(script)?.[1] ?? "";
+  const entries = [...block.matchAll(/\{ symbol: '([^']+)', name: '[^']+', id: '([^']+)', image: '([^']+)'(?:, tone: '(dark|light)')? \}/g)];
+  const lines = block.split("\n").filter((line) => line.includes("symbol:"));
+  assert.ok(entries.length > 50);
+  assert.equal(entries.length, lines.length, "every entry has the expected shape");
+  for (const [, symbol, , image] of entries) {
+    assert.match(symbol, /^[A-Z0-9]{1,10}$/);
+    assert.equal(safeLogoUrl(image), image, symbol);
+    assert.ok(image.startsWith("https://coin-images.coingecko.com/coins/images/"), symbol);
+  }
+});
+
 test("fetches CoinGecko once per call and survives failures", async (t) => {
   const realFetch = globalThis.fetch;
   t.after(() => {
