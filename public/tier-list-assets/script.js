@@ -3092,6 +3092,10 @@ function closeHelpModal() {
 
 let cmdPaletteItems = [];
 let cmdPaletteActiveIndex = 0;
+// Where the pointer last moved over the results. Hover only picks a result
+// when the pointer really moves, so a mouse resting where the list opens
+// can't change which coin Enter or a number key ranks.
+let cmdPalettePointer = '';
 
 function toggleCommandPalette() {
     const overlay = document.getElementById('cmdPalette');
@@ -3110,6 +3114,7 @@ function openCommandPalette() {
     closeMenus();
     closeCatalog();
     input.value = '';
+    cmdPalettePointer = '';
     renderCommandPaletteResults('');
     setTimeout(() => input.focus(), 50);
 }
@@ -3228,30 +3233,40 @@ function renderCommandPaletteResults(query) {
         return;
     }
 
-    matches.forEach((coin, idx) => {
-        const item = document.createElement('div');
-        item.className = 'cmd-palette-item' + (idx === 0 ? ' active' : '');
-        item.dataset.index = idx;
-        item.setAttribute('role', 'option');
+    matches.forEach((coin, idx) => results.appendChild(createPaletteItem(coin, idx)));
+}
 
-        item.appendChild(createPaletteLogo(coin));
+function createPaletteItem(coin, idx) {
+    const item = document.createElement('div');
+    item.className = 'cmd-palette-item' + (idx === cmdPaletteActiveIndex ? ' active' : '');
+    item.dataset.index = idx;
+    item.setAttribute('role', 'option');
 
-        const info = document.createElement('div');
-        info.className = 'cmd-palette-info';
-        const name = document.createElement('span');
-        name.className = 'cmd-palette-name';
-        name.textContent = coin.name;
-        const sym = document.createElement('span');
-        sym.className = 'cmd-palette-symbol';
-        sym.textContent = coin.symbol;
-        info.appendChild(name);
-        info.appendChild(sym);
-        item.appendChild(info);
+    item.appendChild(createPaletteLogo(coin));
 
-        item.addEventListener('mouseenter', () => setCmdPaletteActive(idx));
-        item.addEventListener('click', () => commitCommandPaletteSelection(null));
-        results.appendChild(item);
+    const info = document.createElement('div');
+    info.className = 'cmd-palette-info';
+    const name = document.createElement('span');
+    name.className = 'cmd-palette-name';
+    name.textContent = coin.name;
+    const sym = document.createElement('span');
+    sym.className = 'cmd-palette-symbol';
+    sym.textContent = coin.symbol;
+    info.appendChild(name);
+    info.appendChild(sym);
+    item.appendChild(info);
+
+    item.addEventListener('mousemove', (e) => {
+        const at = `${e.screenX},${e.screenY}`;
+        if (at === cmdPalettePointer) return;
+        cmdPalettePointer = at;
+        if (idx !== cmdPaletteActiveIndex) setCmdPaletteActive(idx);
     });
+    item.addEventListener('click', () => {
+        cmdPaletteActiveIndex = idx;
+        commitCommandPaletteSelection(null);
+    });
+    return item;
 }
 
 async function fetchCommandPaletteRemote(query) {
@@ -3300,27 +3315,7 @@ function renderCommandPaletteList() {
         results.appendChild(empty);
         return;
     }
-    cmdPaletteItems.forEach((coin, idx) => {
-        const item = document.createElement('div');
-        item.className = 'cmd-palette-item' + (idx === cmdPaletteActiveIndex ? ' active' : '');
-        item.dataset.index = idx;
-        item.setAttribute('role', 'option');
-        item.appendChild(createPaletteLogo(coin));
-        const info = document.createElement('div');
-        info.className = 'cmd-palette-info';
-        const name = document.createElement('span');
-        name.className = 'cmd-palette-name';
-        name.textContent = coin.name;
-        const sym = document.createElement('span');
-        sym.className = 'cmd-palette-symbol';
-        sym.textContent = coin.symbol;
-        info.appendChild(name);
-        info.appendChild(sym);
-        item.appendChild(info);
-        item.addEventListener('mouseenter', () => setCmdPaletteActive(idx));
-        item.addEventListener('click', () => commitCommandPaletteSelection(null));
-        results.appendChild(item);
-    });
+    cmdPaletteItems.forEach((coin, idx) => results.appendChild(createPaletteItem(coin, idx)));
 }
 
 function setCmdPaletteActive(index) {

@@ -143,7 +143,7 @@ img {
 }
 
 .page {
-    width: min(1180px, calc(100% - 64px));
+    width: min(2120px, calc(100% - 64px));
     margin: 0 auto;
 }
 
@@ -230,29 +230,10 @@ img {
     align-items: flex-end;
     justify-content: space-between;
     gap: 24px 40px;
-    padding: 40px 0 24px;
-}
-
-.kicker {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--cyan);
-}
-
-.kicker::before {
-    content: "";
-    width: 32px;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.7;
+    padding: 32px 0 22px;
 }
 
 .tl-header h1 {
-    margin-top: 14px;
     font-family: var(--display);
     font-weight: 450;
     font-size: clamp(40px, 4.2vw, 56px);
@@ -263,7 +244,7 @@ img {
 
 .lede {
     margin-top: 12px;
-    max-width: 40em;
+    max-width: 48em;
     font-size: 16.5px;
     line-height: 1.6;
     color: var(--ink-soft);
@@ -1318,6 +1299,7 @@ body.is-touch-dragging {
     flex-wrap: wrap;
     align-content: flex-start;
     gap: 4px;
+    scrollbar-width: thin;
     min-height: 64px;
     max-height: clamp(128px, 27vh, 252px);
     overflow-y: auto;
@@ -1960,7 +1942,7 @@ button:focus-visible,
 @media (min-width: 1100px) {
     .workspace {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 312px;
+        grid-template-columns: minmax(0, 1fr) clamp(324px, 22vw, 480px);
         gap: 24px;
     }
 
@@ -2031,6 +2013,96 @@ button:focus-visible,
 
     .tray.is-collapsed .tray-head {
         margin-bottom: 12px;
+    }
+}
+
+/* ---------- Big monitors: use the room ---------- */
+
+@media (min-width: 1400px) {
+    /* Search and categories share one row */
+    .add-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px 28px;
+    }
+
+    .add-row {
+        flex: 1 1 auto;
+        max-width: 880px;
+    }
+
+    .browse {
+        margin-left: auto;
+        flex-wrap: nowrap;
+    }
+}
+
+@media (min-width: 1700px) {
+    .tier-row {
+        grid-template-columns: 128px minmax(0, 1fr);
+    }
+
+    .tier-letter {
+        font-size: 36px;
+    }
+
+    body.degen-mode .tier-letter {
+        font-size: 24px;
+    }
+
+    .tier-name {
+        font-size: 10.5px;
+    }
+
+    .tier-content {
+        min-height: 104px;
+        padding: 10px 12px;
+        gap: 6px;
+    }
+
+    .coin {
+        width: 76px;
+        padding: 8px 4px 7px;
+    }
+
+    .coin-logo {
+        width: 50px;
+        height: 50px;
+    }
+
+    .coin-text {
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 2200px) {
+    .tier-row {
+        grid-template-columns: 136px minmax(0, 1fr);
+    }
+
+    .tier-letter {
+        font-size: 40px;
+    }
+
+    .tier-name {
+        font-size: 11px;
+    }
+
+    .tier-content {
+        min-height: 116px;
+    }
+
+    .coin {
+        width: 84px;
+    }
+
+    .coin-logo {
+        width: 56px;
+        height: 56px;
+    }
+
+    .coin-text {
+        font-size: 12.5px;
     }
 }
 
@@ -2121,7 +2193,6 @@ button:focus-visible,
     }
 
     .tl-header h1 {
-        margin-top: 12px;
         font-size: clamp(36px, 10vw, 44px);
     }
 
