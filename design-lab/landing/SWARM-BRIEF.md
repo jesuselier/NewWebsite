@@ -33,7 +33,7 @@ What to carry over, translated into Swarm:
 - **A strip of short fact chips** at the top of the hero (pre-launch, 50 founding seats, weekly live calls, custom AI tools, card or ACH through Whop).
 - **Floating cards beside the hero** (theirs are testimonials). Swarm has none, so use quote cards with Jesus's real lines from the intro video with their timestamps, or agent-status cards labelled as illustrations.
 - **Small pill eyebrows** above each section headline (mono, uppercase, 1px border, radius 10px chip).
-- **The founder story in its own frame.** Theirs is an email; ours is a framed transcript card from the intro video with real timestamps (02:34, 02:50, 03:05), plus a portrait.
+- **The founder story in its own frame.** Theirs is an email; ours is a framed transcript card from the intro video with real timestamps (2:33, 2:48, 3:02, verbatim from `swarm-intro-transcript.md`), plus a portrait.
 - **What members get as a grid of product-mock cards**, each with a working mock on top, a small tag chip, a title and short lines. Swarm has 4 benefits, so a 2 x 2 grid (or 2 wide plus 2), never 3 equal icon cards. No dollar "value" tags: we have no values to show.
 - **Pricing as one centered card** (their #cta): a segmented plan switch (Founding, Standard, Yearly), a big price, a short checklist of the four benefits, a full-width gold "Join Swarm" button, and the Whop checkout placeholder right under it.
 - **Who it's for, how joining works, FAQ, final CTA, footer disclosure**, in that spirit.
@@ -71,7 +71,7 @@ The notes below come from a vidIQ watch-through of the video on October 16, 2026
 - **The promise:** "Most people need three cycles and a lot of pain to get there. I want to get you there in one."
 - **The thesis:** cycles are about attention, not crypto. The crowd's money goes to the riskiest bet on whatever everyone is excited about. Since 2023 that is AI. The money coming back is a more informed crowd that wants "real things, real revenue, real users".
 - **His cycles:** 2021 (first), 2023 (second), now (third). "I'm doing the same deep work on AI that I did on gaming."
-- **Closing line worth reusing:** "Being early and being wrong feel the same. I want you to be early and actually know exactly why."
+- **Closing line worth reusing** (verbatim, 3:51): "Being early and being wrong a lot of the time feels the same way. But I want you to be early and actually know exactly why." As a headline (not a quote) it may be shortened to "Being early and being wrong feel the same."
 
 ## His story as told in this video (use this version on Swarm-related copy)
 
