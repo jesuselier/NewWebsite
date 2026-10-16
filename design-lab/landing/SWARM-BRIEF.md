@@ -3,6 +3,14 @@
 ## Decisions (October 16, 2026)
 
 - **Direction picked: A, Core Glow** (Jesus, October 16, 2026, after the first look). His note: the agents' head-and-tapering-tail look "doesn't really make much sense" (it reads as sperm). Agents are now small hexagonal nodes that hop along the honeycomb's own edges, lighting each edge briefly as they pass; no tails, no swimming curves, everything on the grid. Directions B and C are kept for reference only.
+- **Jesus's notes on Core Glow (October 16, 2026, after round 2):**
+  - **New fact from Jesus: the custom AI tools are actively still being built.** That is a perk of being early: founding members get each tool as it is completed, and **prices will rise as the tools are completed.** Say this on the AI tools card, in pricing and in the FAQ. Never give completion dates.
+  - Use photos from martinezaccess.com: the professional portrait (`assets/jesus-interview.jpg`) for the founder card, the city portrait (`assets/jesus-city.jpg`) for small avatars. Do not use `jesus-studio-smile.jpg`.
+  - The watch list mock shows the word "Asset" on its rows (Asset 01, Asset 02, ...) instead of redaction bars. No real tickers.
+  - Scout states: "Flagged for review" makes no sense to him. Use SCANNING, ANALYZING and REPORTING (for example "Reporting to the watch list").
+  - Every gold "Join Swarm" button gets a highlight revolving around it so people focus on it. This is Jesus's explicit request and the one exception to the kit's no-glow rule; under reduced motion it is a static ring.
+  - The hero must not end in an empty band at the bottom of the first screen.
+  - No martinezaccess.com link in the footer.
 - **The page is 100% the Swarm offer.** It is the landing page for the agentic AI crypto trading community, not a personal site. Jesus appears as the founder (his story, his face, his voice) inside it. martinezaccess.com stays his personal site and links here.
 - **Because the whole page is a Swarm page, the Swarm brand kit applies to the whole page:** the `.swarm` wrapper goes on the page root, the Swarm og:image and Swarm icons go in its head. The three style directions differ in composition, motion language, narrative and texture, all inside the kit's colors and fonts.
 - **Domain:** Jesus bought `joinswarm.ai` on October 16, 2026 (Namecheap). Plan: add it to the existing Vercel project and route that host to the Swarm page, so martinezaccess.com is untouched. Until the Swarm page ships, previews live in the design lab.
