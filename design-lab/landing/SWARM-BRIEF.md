@@ -4,7 +4,7 @@
 
 - **The page is 100% the Swarm offer.** It is the landing page for the agentic AI crypto trading community, not a personal site. Jesus appears as the founder (his story, his face, his voice) inside it. martinezaccess.com stays his personal site and links here.
 - **Because the whole page is a Swarm page, the Swarm brand kit applies to the whole page:** the `.swarm` wrapper goes on the page root, the Swarm og:image and Swarm icons go in its head. The three style directions differ in composition, motion language, narrative and texture, all inside the kit's colors and fonts.
-- **Domain:** `joinswarm.ai` is the recommended domain (not yet bought). Until it exists, previews live in the design lab.
+- **Domain:** Jesus bought `joinswarm.ai` on October 16, 2026 (Namecheap). Plan: add it to the existing Vercel project and route that host to the Swarm page, so martinezaccess.com is untouched. Until the Swarm page ships, previews live in the design lab.
 - **Checkout:** Whop embedded checkout on the page. Jesus does not have the Whop plan IDs yet, so every page shows a clearly marked placeholder where the Whop checkout will mount, wired so that swapping in the three plan IDs later is a one-line change per plan.
 - **Taste reference from Jesus:** https://www.joinasymmetric.xyz/ (a paid trading community page). Reference only, never copy its layout, copy, assets or code. See "Taste notes" below.
 - **The graphics:** original 2D and 3D motion that amplifies the agentic feel: many independent agents sensing, deciding and converging on one signal, which is also the Hive Core logo's meaning.
