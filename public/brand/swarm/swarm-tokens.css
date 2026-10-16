@@ -1,0 +1,33 @@
+/* Swarm brand tokens. Scope these to the Swarm page (e.g. a .swarm wrapper);
+   they are not the martinezaccess.com site palette. */
+.swarm {
+  /* colour: Ink-first. ~85% ground/surface, ~10% text/hive, <=5% gold */
+  --swarm-ground: #0B0B0D;         /* page background */
+  --swarm-surface: #111114;        /* panels, cards */
+  --swarm-surface-raised: #16161A; /* raised cards, inputs, icon tiles */
+  --swarm-line: #232328;           /* 1px dividers and borders */
+  --swarm-hive-faint: #1C1C21;     /* background honeycomb fields only */
+  --swarm-hive: #55555B;           /* cell outlines only, never text */
+  --swarm-text: #EEEBE4;           /* headlines, body */
+  --swarm-text-muted: #8E8A80;     /* captions, labels (5.7:1 on ground) */
+  --swarm-gold: #F5C542;           /* the signal: core cell, ONE primary CTA, one highlight */
+  --swarm-gold-light: #FFF7CF;     /* core gradient highlight stop */
+  --swarm-gold-deep: #D99A1E;      /* core gradient outer stop, gold button hover */
+  --swarm-on-gold: #141416;        /* text on gold fills (11:1) */
+
+  /* type: load Unbounded 600, JetBrains Mono 500, Hanken Grotesk 400 (all on Google Fonts) */
+  --swarm-font-display: "Unbounded", system-ui, sans-serif;
+  --swarm-font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --swarm-font-body: "Hanken Grotesk", system-ui, sans-serif;
+
+  /* spacing */
+  --swarm-space-1: 4px;  --swarm-space-2: 8px;  --swarm-space-3: 16px;
+  --swarm-space-4: 24px; --swarm-space-5: 40px; --swarm-space-6: 56px;
+
+  /* radius */
+  --swarm-radius-sm: 10px; --swarm-radius-md: 18px; --swarm-radius-lg: 28px; --swarm-radius-full: 9999px;
+
+  background: var(--swarm-ground);
+  color: var(--swarm-text);
+  font-family: var(--swarm-font-body);
+}
