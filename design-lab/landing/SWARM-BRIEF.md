@@ -21,17 +21,24 @@
 - Not provided, so never invented: how many founding seats are left, member count, testimonials, results, a launch date, a refund policy beyond "cancel anytime".
 - The screenshot's checkout used a condensed italic display face. The brand kit's type (Unbounded, JetBrains Mono, Hanken Grotesk) wins on the page; the copy and prices above are what to follow.
 
-## Taste notes: joinasymmetric.xyz (principles only)
+## Taste: build it like joinasymmetric.xyz (updated October 16, 2026)
 
-What makes it feel good, as principles to learn from:
-- Product mocks are the content: every benefit is shown as a working piece of the product (a live stream with chat, a vault of interviews, a tool mid-scan, a live position tracker), not described with icons.
-- Proof is close to every claim, and every claim is concrete.
-- The founder story is a personal, first-person piece set apart from the sales copy.
-- One primary call to action, repeated at natural stopping points, with "Cancel anytime" under it.
-- Atmosphere behind the hero (light and depth), very dark ground, one saturated accent.
-- Pricing is laid out as an itemized reveal ending on one price.
+Jesus looked at the first Swarm page and said it "looks way different than https://www.joinasymmetric.xyz/#cta". **He wants the Swarm page to look and flow like that page**: same kind of structure, pacing, density and energy, in the Swarm brand kit (ink, one gold signal, Unbounded / Hanken Grotesk / JetBrains Mono, honeycomb field) and with our own words, photos and graphics. Never copy its text, images, logos, icons or code. Reference screenshots: `scratchpad/taste/asym-tile0.png` to `asym-tile5.png` (whole page) and `scratchpad/taste2/cta-d.png`, `cta-p.png` (pricing at desktop and phone).
 
-What not to take: its blue light-beam hero, serif-italic accent words, tilted testimonial cards, email-format story, value-stack dollar figures, or any wording. Swarm has no testimonials, member counts or results yet, so none appear.
+What to carry over, translated into Swarm:
+
+- **Centered, single-column flow.** Big centered two-line headlines, centered body copy (max about 60ch), centered CTA with "Cancel anytime." under it, repeated after most sections.
+- **Two-tone headlines.** Their second line is an accent; in Swarm the kit allows no gold text, so set the setup line in `--swarm-text-muted` and the punchline in `--swarm-text` (or the reverse), both Unbounded 600.
+- **Hero atmosphere.** Their hero has light falling from above. Swarm's atmosphere is the Hive Core's own glow and the honeycomb field with agents converging on it (the only glow the kit allows).
+- **A strip of short fact chips** at the top of the hero (pre-launch, 50 founding seats, weekly live calls, custom AI tools, card or ACH through Whop).
+- **Floating cards beside the hero** (theirs are testimonials). Swarm has none, so use quote cards with Jesus's real lines from the intro video with their timestamps, or agent-status cards labelled as illustrations.
+- **Small pill eyebrows** above each section headline (mono, uppercase, 1px border, radius 10px chip).
+- **The founder story in its own frame.** Theirs is an email; ours is a framed transcript card from the intro video with real timestamps (02:34, 02:50, 03:05), plus a portrait.
+- **What members get as a grid of product-mock cards**, each with a working mock on top, a small tag chip, a title and short lines. Swarm has 4 benefits, so a 2 x 2 grid (or 2 wide plus 2), never 3 equal icon cards. No dollar "value" tags: we have no values to show.
+- **Pricing as one centered card** (their #cta): a segmented plan switch (Founding, Standard, Yearly), a big price, a short checklist of the four benefits, a full-width gold "Join Swarm" button, and the Whop checkout placeholder right under it.
+- **Who it's for, how joining works, FAQ, final CTA, footer disclosure**, in that spirit.
+
+Still never: invented testimonials, member counts, wins, results, seats-left counts, value-stack dollars, or their exact wording. Their blue, serif italic and drop-shadow glows are not used; the kit's ink, gold core glow and fonts replace them.
 
 ## The video
 
