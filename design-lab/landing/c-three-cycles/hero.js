@@ -38,8 +38,8 @@ const T = {
 };
 // camera: tilt from straight down, azimuth of the camera foot around the core, distance as a share of D0
 const CAM = {
-  desktop: { tilt0: 64, tilt1: 58, az0: -3, az1: -9, d0: 0.5, d1: 0.56 },
-  phone: { tilt0: 60, tilt1: 55, az0: -3, az1: -8, d0: 0.5, d1: 0.56 },
+  desktop: { tilt0: 46, tilt1: 42, az0: -2, az1: -6, d0: 0.56, d1: 0.6, zf: 0.4, sx: 70 },
+  phone: { tilt0: 44, tilt1: 40, az0: -2, az1: -5, d0: 0.56, d1: 0.6, zf: 0.22, sx: 20 },
 };
 const C01 = (h) => [((h >> 16) & 255) / 255, ((h >> 8) & 255) / 255, (h & 255) / 255];
 const FAINT = C01(0x1c1c21), HIVE = C01(0x55555b), MUTED = C01(0x8e8a80), TEXT = C01(0xeeebe4), GOLD = C01(0xf5c542);
@@ -126,15 +126,17 @@ function measure() {
   const R = readR(), P = 1.95 * R, S = 7.5 * R;
   const core = { x: Math.round(cr.left + cr.width / 2 - sr.left), y: Math.round(cr.top + cr.height / 2 - sr.top) };
   const D0 = (H / 2) / Math.tan(15 * DEG); // FOV 30 at the final eye, 1 unit = 1 CSS px on NOW
-  const zf = phone ? 0.2 : 0.26; // plane spacing as a share of the hero height
+  const zf = (phone ? CAM.phone : CAM.desktop).zf; // plane spacing as a share of the hero height
   const z = [2 * zf, zf, 0].map((f) => f * H);
   const s = z.map((zz) => (D0 - zz) / D0);
   const maxD = Math.hypot(Math.max(core.x, W - core.x), Math.max(core.y, H - core.y));
-  const L = { W, H, phone, R, P, S, core, D0, z, s, patch: 2, maxD, dpr: Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 2) };
+  // the 2021 and 2023 planes show a tray of cells: three rows, patchW pitches either side of the axis
+  const L = { W, H, phone, R, P, S, core, D0, z, s, patchW: phone ? 2.1 : 3.4, maxD, dpr: Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 2) };
   bandsOf(L);
   return L;
 }
 
+const inPatch = (L, c) => Math.abs(c.r) <= 1 && Math.abs(c.x - L.core.x) <= L.patchW * L.P + 0.5;
 function placeDom(L) {
   Object.assign(markEl.style, { width: L.S + 'px', height: L.S + 'px', transform: `translate(${L.core.x - L.S / 2}px, ${L.core.y - L.S / 2}px)` });
   const g = L.R * 15;
@@ -151,6 +153,7 @@ function camAt(L, t) {
     az: lerp(lerp(C.az0, C.az1, h), C.az1 - 4, e) * DEG,
     dist: L.D0 * lerp(lerp(C.d0, C.d1, h), 1, e),
     qz: L.z[1] * (1 - e), // look at the middle of the stack, then at the core
+    sx: (L.phone ? CAM.phone : CAM.desktop).sx * (1 - e), // lens shift that centres the stack in the band
   };
 }
 // camera basis exactly as THREE.Object3D.lookAt builds it for a camera (up = +y)
@@ -160,7 +163,7 @@ function viewOf(c) {
   let zx = px, zy = py, zz = pz - c.qz; const zl = Math.hypot(zx, zy, zz) || 1; zx /= zl; zy /= zl; zz /= zl;
   let xx = zz, xz = -zx; const xl = Math.hypot(xx, xz) || 1; xx /= xl; xz /= xl;
   const yx = zy * xz, yy = zz * xx - zx * xz, yz = -zy * xx;
-  return { px, py, pz, xx, xz, yx, yy, yz, zx, zy, zz, f: c.dist, c };
+  return { px, py, pz, xx, xz, yx, yy, yz, zx, zy, zz, f: c.dist, c, sx: c.sx || 0 };
 }
 // world -> CSS px (lens shift puts the look target on the core's layout position; f = distance: dolly zoom)
 function proj(V, L, x, y, z, o) {
@@ -169,7 +172,7 @@ function proj(V, L, x, y, z, o) {
   const cy = dx * V.yx + dy * V.yy + dz * V.yz;
   const cz = -(dx * V.zx + dy * V.zy + dz * V.zz);
   const k = V.f / Math.max(1, cz);
-  o[0] = L.core.x + cx * k; o[1] = L.core.y - cy * k; o[2] = cz;
+  o[0] = L.core.x + V.sx + cx * k; o[1] = L.core.y - cy * k; o[2] = cz;
   return o;
 }
 const wxOf = (L, x, z) => (x - L.core.x) * ((L.D0 - z) / L.D0);
@@ -188,11 +191,13 @@ function makeWorld(L, seed = 7) {
     const ring = (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2;
     const inView = x > -P && x < W + P && y > -P && y < H + P;
     const inTilt = x > -W * 0.95 && x < W + P * 2 && y > -H * 0.6 && y < H * 1.3;
-    if (!inTilt && ring > L.patch) continue;
     const c = { q, r, x, y, ring, d: Math.hypot(x - core.x, y - core.y), inView, inTilt, ping: [0, 0, 0], pingT: [-1, -1, -1] };
+    c.patch = inPatch(L, c);
+    if (!inTilt && !c.patch) continue;
     cells.push(c); map.set(q + ',' + r, c);
-    if (ring >= 1 && ring <= L.patch) patchCells.push(c);
-    if (inTilt && ring >= 1 && ring <= 26) nowCand.push(c);
+    if (ring >= 1 && c.patch) patchCells.push(c);
+    // NOW-plane agents work near the core, so every committed agent can land before the 4.4 s resolve
+    if (inTilt && ring >= 1 && c.d <= P * (L.phone ? 6.5 : 9.5)) nowCand.push(c);
   }
   const coreCell = map.get('0,0');
   const NEIGH = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]].map(([q, r]) => map.get(q + ',' + r));
@@ -347,9 +352,9 @@ function sceneOf(L, world) {
   for (const k of [2, 1, 0]) {
     const s = L.s[k];
     for (const c of world.cells) {
-      if (k === 2 ? !c.inTilt : c.ring > L.patch) continue;
+      if (k === 2 ? !c.inTilt : !c.patch) continue;
       byPlane[k].push({
-        k, c, r0: [0, 110, 230][k] + c.ring * 40, // 2021 reveals first, ring by ring
+        k, c, r0: [0, 110, 230][k] + (k < 2 ? Math.abs(c.q + c.r / 2) * 55 : c.ring * 40), // 2021 reveals first
         fade: k === 2 ? Math.max(0.12, 1 - smooth(0.22 * L.maxD, L.maxD, c.d)) : 1, // upper planes: crisp grates
         wx: (c.x - L.core.x) * s, wy: -(c.y - L.core.y) * s, z: L.z[k],
         rr: L.R * 0.97 * s, w: (c.ring === 0 ? 2.0 : k < 2 ? 1.25 : 1.0) * s, fill: k < 2,
@@ -371,7 +376,6 @@ function frameOf(t, st) {
     nb: smooth(T.nb0, T.resolve, t),
     mark: 1 - smooth(T.labelsOut0 + 300, T.settle1 - 150, t),
     coreA: Math.max(st.charge, smooth(T.consensusEnd, T.resolve, t)) * (1 - markOn),
-    spA: 0.7 * smooth(T.labelsIn, T.labelsIn + 500, t) * (1 - smooth(T.labelsOut0, T.settle1 - 300, t)),
     occl: t < T.settle0 + 650,
     upper: t <= T.settle1 + 420,
     dim: st.resolved ? lerp(1, 0.55, smooth(st.resolveT, st.resolveT + 900, t)) : 1,
@@ -384,7 +388,9 @@ function cellStyle(L, e, F, sx, sy) {
   const reveal = smooth(e.r0, e.r0 + 300, F.t);
   const planeA = kk < 2 ? F.pastA : 1;
   let a = reveal * e.fade * planeA;
-  let mh = kk === 0 ? 0.85 * F.sep : kk === 1 ? 0.6 * F.sep : 0, cm = 0;
+  // while the planes hang apart, each tray (NOW's too) is outlined a step brighter than the field
+  let mh = kk === 0 ? 0.85 * F.sep : kk === 1 ? 0.6 * F.sep : cc.patch ? 0.42 * F.sep : 0, cm = 0;
+  if (kk === 2 && cc.patch) a = Math.max(a, reveal * F.sep);
   if (cc.ring === 0) { cm = F.mark * reveal; a = Math.max(a, cm * planeA); }
   const lit = cc.ping[kk];
   if (lit > 0) { mh = Math.max(mh, lit * 0.9); a = Math.max(a, lit * 0.85 * reveal * planeA); }
@@ -423,13 +429,15 @@ function agentsFrame(L, world, V, F, B) {
     const tl = (scout ? 5 : 7) / Math.max(0.3, k);
     const tx = hx - a.dw[0] * tl, ty = hy - a.dw[1] * tl, tz = hz - (a.dw[2] || 0) * tl;
     proj(V, L, tx, ty, tz, AO2);
-    const vis = Math.min(textVis(L, AO[0], AO[1], 3), textVis(L, AO2[0], AO2[1], 1)) * solidVis(L, AO[0], AO[1], 3);
+    let vis = Math.min(textVis(L, AO[0], AO[1], 3), textVis(L, AO2[0], AO2[1], 1)) * solidVis(L, AO[0], AO[1], 3);
+    // nothing crawls over the official mark once it is on
+    if (F.markOn > 0) vis *= 1 - F.markOn * (1 - smooth(L.P * 1.6, L.P * 2.1, Math.hypot(AO[0] - L.core.x, AO[1] - L.core.y)));
     if (vis <= 0.003) { B.on[i] = 0; continue; }
     B.on[i] = 1; B.scout[i] = scout ? 1 : 0; B.bucket[i] = a.z <= 0.5 ? 2 : a.z <= zMid ? 1 : 0;
     B.hw[i * 3] = hx; B.hw[i * 3 + 1] = hy; B.hw[i * 3 + 2] = hz;
     B.tw[i * 3] = tx; B.tw[i * 3 + 1] = ty; B.tw[i * 3 + 2] = tz;
     B.hs[i * 2] = AO[0]; B.hs[i * 2 + 1] = AO[1]; B.ts[i * 2] = AO2[0]; B.ts[i * 2 + 1] = AO2[1];
-    B.size[i] = (scout ? 3 : 3.6) * Math.min(1.35, Math.max(0.85, k));
+    B.size[i] = (scout ? 3 : 3.4) * Math.min(1.3, Math.max(0.85, k));
     B.aHead[i] = (scout ? 0.8 * F.dim : 1) * wake * vis;
     B.aTick[i] = (scout ? 0.42 * F.dim : 0.62) * wake * vis;
   }
@@ -455,14 +463,15 @@ function updateDom(L, t, st, V) {
     let op = smooth(T.labelsIn + 150 * k, T.labelsIn + 150 * k + 420, t) * (1 - smooth(T.labelsOut0, T.labelsOut1, t));
     if (op <= 0.001) { if (labelO[k] !== 0) { el.style.opacity = '0'; labelO[k] = 0; } continue; }
     if (!labelW[k]) { labelW[k] = el.offsetWidth; labelH[k] = el.offsetHeight; }
-    const s = L.s[k], ey = (2 * L.P * SQ3 / 2 + L.R) * s, ex = (2 * L.P + L.R * 0.87) * s;
+    const s = L.s[k], ey = (L.P * SQ3 / 2 + L.R) * s, ex = (L.patchW * L.P + L.R * 0.87) * s;
     let top = 1e9, bot = -1e9, cxs = 0;
     for (const [wx, wy] of [[0, ey], [0, -ey], [ex, 0], [-ex, 0]]) {
       proj(V, L, wx, wy, L.z[k], PJ); top = Math.min(top, PJ[1]); bot = Math.max(bot, PJ[1]);
     }
     proj(V, L, 0, 0, L.z[k], PJ); cxs = PJ[0];
+    // always above its tray; if the tray rises toward the chips, the label stays put and fades instead of jumping
     let y = top - 10 - labelH[k];
-    if (chips && y < chips.b + 6) y = bot + 10;
+    if (chips && y < chips.b + 6) { y = chips.b + 6; op *= clamp01(1 - (y + labelH[k] - (top - 4)) / 10); }
     const x = cxs - labelW[k] / 2;
     // never on the type
     const q = { l: x, t: y, r: x + labelW[k], b: y + labelH[k] };
@@ -520,12 +529,6 @@ function make2D(L, world, scene) {
         if (s.a > 0.004) { g.globalAlpha = s.a; g.strokeStyle = s.plain ? FAINT_CSS : css(s.r, s.g, s.b); g.lineWidth = Math.max(1, e.w / L.s[k]); g.stroke(); }
       }
       if (F.occl) drawAgents2D(g, B, N, k);
-    }
-    if (F.spA > 0.004) {
-      proj(V, L, 0, 0, 0, o); const x0 = o[0], y0 = o[1];
-      proj(V, L, 0, 0, L.z[0], o);
-      g.globalAlpha = F.spA; g.strokeStyle = MUTED_CSS; g.lineWidth = 1;
-      g.beginPath(); g.moveTo(x0, y0); g.lineTo(o[0], o[1]); g.stroke();
     }
     if (F.coreA > 0.004) {
       g.globalAlpha = F.coreA; g.strokeStyle = '#F5C542'; g.lineWidth = 1.5;
@@ -602,13 +605,10 @@ function buildGL(THREE, L, world, scene) {
       ent.push({ e, f0, v0: addRing(e.wx, e.wy, e.z, e.rr, e.w) });
     }
   }
-  const spV0 = pos.length / 3;
-  pos.push(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-  idx.push(spV0, spV0 + 1, spV0 + 2, spV0 + 2, spV0 + 1, spV0 + 3);
   const allIdx = idx.length;
   const fGeo = new THREE.BufferGeometry();
   const fPos = new Float32Array(pos);
-  const fPosA = new THREE.BufferAttribute(fPos, 3).setUsage(THREE.DynamicDrawUsage);
+  const fPosA = new THREE.BufferAttribute(fPos, 3);
   fGeo.setAttribute('position', fPosA);
   fGeo.setIndex(idx);
   const fCol = new Float32Array((pos.length / 3) * 4);
@@ -643,13 +643,13 @@ function buildGL(THREE, L, world, scene) {
   const heads = new THREE.Points(hGeo, headMat); heads.frustumCulled = false; heads.renderOrder = 2; scene3.add(heads);
 
   const PO = [0, 0, 0];
-  let spLast = 1;
   const put = (v0, n, r, g, b, a) => { let o = v0 * 4; for (let i = 0; i < n; i++, o += 4) { fCol[o] = r; fCol[o + 1] = g; fCol[o + 2] = b; fCol[o + 3] = a; } };
 
   function render(F, V) {
     cam.position.set(V.px, V.py, V.pz); cam.up.set(0, 1, 0); cam.lookAt(0, 0, V.c.qz); cam.updateMatrixWorld(true);
     const n = 4, k = n / V.f;
-    cam.projectionMatrix.makePerspective(-L.core.x * k, (L.W - L.core.x) * k, L.core.y * k, -(L.H - L.core.y) * k, n, V.f * 4);
+    const ox = L.core.x + V.sx;
+    cam.projectionMatrix.makePerspective(-ox * k, (L.W - ox) * k, L.core.y * k, -(L.H - L.core.y) * k, n, V.f * 4);
     cam.projectionMatrixInverse.copy(cam.projectionMatrix).invert();
 
     for (const x of ent) {
@@ -665,13 +665,6 @@ function buildGL(THREE, L, world, scene) {
       if (x.f0 >= 0) put(x.f0, 7, 0.0431, 0.0431, 0.051, s.fa);
     }
     put(goldV0, 12, GOLD[0], GOLD[1], GOLD[2], F.coreA);
-    if (F.spA > 0 || spLast > 0) {
-      const px = -Math.sin(V.c.az) * 0.5, py = Math.cos(V.c.az) * 0.5, zt = L.z[0];
-      fPos.set([px, py, 0, -px, -py, 0, px, py, zt, -px, -py, zt], spV0 * 3);
-      fPosA.clearUpdateRanges(); fPosA.addUpdateRange(spV0 * 3, 12); fPosA.needsUpdate = true;
-      for (let i = 0; i < 4; i++) put(spV0 + i, 1, MUTED[0], MUTED[1], MUTED[2], F.spA * (i < 2 ? 0.55 : 1));
-    }
-    spLast = F.spA;
     fColA.needsUpdate = true;
     fGeo.setDrawRange(0, F.upper ? allIdx : nowIdx);
     trailMat.depthTest = F.occl; headMat.depthTest = F.occl;
@@ -702,9 +695,10 @@ function buildGL(THREE, L, world, scene) {
 async function main() {
   // a module script runs after first paint; the 3D bytes were preloaded and are evaluated after the first frame
   await nextFrame();
-  // the clear bands follow the real headline glyphs, so wait for Unbounded (never longer than 600 ms)
+  // the clear bands follow the real headline glyphs: give Unbounded a moment (never more than 250 ms); if it
+  // lands later, the bands and the core follow it (fonts.ready below) and the masks are evaluated every frame
   const headFont = document.fonts && document.fonts.load ? document.fonts.load('600 56px "Unbounded"').catch(() => null) : Promise.resolve();
-  await Promise.race([headFont, sleep(600)]);
+  await Promise.race([headFont, sleep(250)]);
   await nextFrame();
   let L = measure();
   placeDom(L);
@@ -735,17 +729,20 @@ async function main() {
     return;
   }
 
-  let clock = 0, tSim = 0, last = null, raf = 0, running = false, lastDraw = 0, visible = true;
-  threeP.then((T3) => {
-    if (!T3) return;
-    THREE = T3;
+  let clock = 0, tSim = 0, last = null, raf = 0, running = false, lastDraw = 0, visible = true, glTried = false;
+  // Both renderers draw the same projection. The story plays on the 2D canvas from first paint; Three.js takes
+  // over once the story has settled, so building its buffers and shaders (slow under software GL) never stalls
+  // the motion, and the idle patrol afterwards runs on the GPU.
+  threeP.then((T3) => { if (T3) THREE = T3; });
+  const handOver = () => {
+    glTried = true;
     gl = buildGL(THREE, L, world, scene);
     if (!gl) return;
     glAt = performance.now();
     const [F, V] = frameAt(tSim); gl.render(F, V);
     requestAnimationFrame(() => gl && gl.el.classList.add('on'));
     document.body.dataset.heroGl = String(Math.round(glAt));
-  });
+  };
 
   const frame = (now) => {
     raf = 0;
@@ -756,6 +753,7 @@ async function main() {
     while (tSim + STEP <= clock && n < 64) { world.stepAt(tSim, STEP); tSim += STEP; n++; }
     if (n === 64) clock = tSim;
     const settled = tSim > T.still + 400;
+    if (settled && THREE && !gl && !glTried) { handOver(); last = performance.now(); }
     if (!settled || now - lastDraw > 32) {
       const [F, V] = frameAt(tSim);
       if (gl) { gl.render(F, V); if (now - glAt < 700) r2d.render(F, V); }

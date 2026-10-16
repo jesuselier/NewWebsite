@@ -1,5 +1,5 @@
 // Swarm | Three Cycles: page components (classic script, deferred).
-// Crowd under the curve, the YOU tick, founder timeline, agent swimlanes, watch list, live call bars,
+// Crowd under the curve and the YOU marker, agent swimlanes, watch list, live call bars,
 // plan switch and the Whop checkout stub. No words are drawn into any canvas.
 (function () {
   'use strict';
