@@ -24,14 +24,15 @@
   const T = { ringMs: 20, wake: 120, commit0: 980, commit1: 1400, arrive: 2320, resolveMin: 2200, resolveMax: 2780, markIn: 380, glowIn: 1000, tilt: 2350 };
   const DT = 1000 / 60;
   const MASK = 0.13;
+  // the scout card follows the hero's three phases: scan the field, analyze while consensus forms, report once it lands
   const STATES = [
-    ['SCANNING', 'Scanning', 'the watch list'],
-    ['WATCHING', 'Watching', 'where attention is moving'],
-    ['FLAGGED FOR REVIEW', 'Flagged', 'a change on the watch list for Jesus to review']
+    ['SCANNING', 'Scanning', 'the market', 'Scanning'],
+    ['ANALYZING', 'Analyzing', 'a setup', 'Analyzing'],
+    ['REPORTING', 'Reporting', 'to the watch list', 'Reporting']
   ];
 
   let W, Hc, DPR, phone, tablet, R, core, maxD, RAD, TH0, PD, L, V, walk, dist, parent, hops, innerNext, glowEl, tintCv, lastG = -1, lastTilt = '';
-  let rects, Sx, rnd, resolved, resolveT, absorbed, routed, flashT, pinged, simT, END, fieldKey, phaseIdx, lastDot;
+  let rects, floorY = 1e9, Sx, rnd, resolved, resolveT, absorbed, routed, flashT, pinged, simT, END, fieldKey, phaseIdx, lastDot;
 
   /* ---------- the copy, in screen space ---------- */
   function measure() {
@@ -44,6 +45,9 @@
       else add(el.getBoundingClientRect(), 6);
     });
     if (window.scrollY < 10) document.querySelectorAll('.nav-logo, .nav .btn-line').forEach(el => add(el.getBoundingClientRect(), 6));
+    // the members rail closes the first screen on wide layouts: agents stay above its line
+    const rail = hero.querySelector('.hero-rail .hr-in');
+    floorY = rail && rail.offsetParent !== null ? rail.getBoundingClientRect().top - hr.top : 1e9;
   }
   // 1 in the open, MASK behind the copy, with a soft 22px edge; everything fades out at the bottom of the art
   function maskAt(x, y) {
@@ -53,7 +57,7 @@
       const dd = dx > 0 || dy > 0 ? Math.hypot(dx, dy) : 0;
       if (dd < d) { d = dd; if (!d) break; }
     }
-    return (MASK + (1 - MASK) * sm(0, 22, d)) * (1 - sm(Hc - 150, Hc - 8, y));
+    return (MASK + (1 - MASK) * sm(0, 22, d)) * (1 - sm(Hc - 150, Hc - 8, y)) * (floorY < 1e8 ? 1 - sm(floorY - 64, floorY - 6, y) : 1);
   }
 
   /* ---------- the opening camera: a receding plane that straightens out ---------- */
@@ -109,7 +113,7 @@
       drawField(g, L, c => c.ring >= 2 ? 0.26 * Math.exp(-(c.d * c.d) / (k * k)) * fieldAlpha(c, 1e9) : 0, { color: COL.gold }); }
 
     // where agents may walk, and what crossing the copy costs (routes go around it)
-    walk = V.map(v => !v.core && !v.perim && v.ring >= 2 && v.x > -0.14 * W && v.x < 1.14 * W && v.y > -4 * P && v.y < Hc + P);
+    walk = V.map(v => !v.core && !v.perim && v.ring >= 2 && v.x > -0.14 * W && v.x < 1.14 * W && v.y > -4 * P && v.y < Math.min(Hc + P, floorY - 8));
     const cost = V.map(v => maskAt(v.x, v.y) < 0.6 ? 2 : 1);
     dist = new Float64Array(V.length).fill(Infinity);
     parent = new Int32Array(V.length).fill(-1);
@@ -146,7 +150,7 @@
     // the swarm: spread across the whole first screen, thinning toward the edges and behind the copy
     const N = phone ? 86 : (tablet ? 136 : 196);
     const pool = [];
-    V.forEach((v, i) => { if (walk[i] && v.ring >= 3 && v.x > 6 && v.x < W - 6 && v.y > 8 && v.y < Hc - 40) pool.push(i); });
+    V.forEach((v, i) => { if (walk[i] && v.ring >= 3 && v.x > 6 && v.x < W - 6 && v.y > 8 && v.y < Math.min(Hc - 40, floorY - 40)) pool.push(i); });
     Sx = sim(L, 23, 600);
     const used = new Set();
     for (let n = 0; n < N && pool.length; n++) {
@@ -329,10 +333,10 @@
     if (idx === phaseIdx) return;
     phaseIdx = idx;
     if (card) {
-      const [state, verb, obj] = STATES[idx];
+      const [state, verb, obj, label] = STATES[idx];
       card.dataset.state = state;
       const st = card.querySelector('#sc-state'), vb = card.querySelector('#sc-verb'), ob = card.querySelector('#sc-obj');
-      if (st) st.textContent = state.toLowerCase();
+      if (st) st.textContent = label;
       if (vb) vb.textContent = verb;
       if (ob) ob.textContent = obj;
     }

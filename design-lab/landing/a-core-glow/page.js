@@ -30,6 +30,22 @@
   const onScroll = () => { if (nav) nav.classList.toggle('scrolled', window.scrollY > 8); };
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
+  /* ---------- the gold Join Swarm ring: pure CSS motion; offscreen buttons are paused ---------- */
+  if ('IntersectionObserver' in window && !S.reduce) {
+    const ringIO = new IntersectionObserver(es => { for (const e of es) e.target.classList.toggle('ring-off', !e.isIntersecting); }, { rootMargin: '80px 0px' });
+    $$('.btn-gold').forEach(b => ringIO.observe(b));
+  }
+
+  // frame-accurate captures (?t= with window.__heroSeek): the frozen ring lights move with the seek time
+  if (S.freeze != null && !S.reduce && typeof window.__heroSeek === 'function' && document.getAnimations) {
+    const heroSeek = window.__heroSeek;
+    window.__heroSeek = t => {
+      const r = heroSeek(t);
+      document.getAnimations().forEach(a => { if (a.animationName && a.animationName.indexOf('ring-') === 0) { a.pause(); a.currentTime = t; } });
+      return r;
+    };
+  }
+
   /* ---------- play-once helper ---------- */
   function once(el, fn, threshold = 0.4) {
     if (!el) return;
@@ -58,26 +74,29 @@
 
   /* ---------- agent console ---------- */
   const conRows = $$('#console .crow'), conSegs = $$('#console .con-seg i'), conLog = $('#con-log');
+  // three states only: SCANNING, ANALYZING, REPORTING; the console ends with all three on screen
+  const conInit = [['SCANNING', 'Scanning', 'the market'], ['SCANNING', 'Scanning', 'the watch list'], ['ANALYZING', 'Analyzing', 'a setup'], ['SCANNING', 'Scanning', 'for what changed']];
   const conSteps = [
-    [900, 2, 'FLAGGED FOR REVIEW', 'Flagged', 'a change for Jesus to review'],
-    [1900, 0, 'WATCHING', 'Watching', 'a name on the watch list'],
-    [2900, 3, 'SYNCING', 'Preparing', 'notes for the weekly live call'],
-    [3900, 1, 'SCANNING', 'Reading', 'where attention is moving']
+    [900, 0, 'ANALYZING', 'Analyzing', 'what changed this week'],
+    [1900, 3, 'ANALYZING', 'Analyzing', 'where attention is moving'],
+    [2900, 1, 'SCANNING', 'Scanning', 'the market'],
+    [3900, 2, 'REPORTING', 'Reporting', 'to the watch list']
   ];
   const logSteps = [
-    [600, 'S02', 'Watching', 'where attention is moving'],
-    [1500, 'S03', 'Flagged for review', 'a change for Jesus to review'],
-    [2500, 'S01', 'Watching', 'a name on the watch list'],
-    [3500, 'S04', 'Syncing', 'notes for the weekly live call'],
-    [4400, 'S02', 'Scanning', 'what changed this week']
+    [500, 'S02', 'Scanning', 'the watch list'],
+    [900, 'S01', 'Analyzing', 'what changed this week'],
+    [1900, 'S04', 'Analyzing', 'where attention is moving'],
+    [2900, 'S02', 'Scanning', 'the market'],
+    [3900, 'S03', 'Reporting', 'to the watch list']
   ];
+  const stateLabel = st => st.charAt(0) + st.slice(1).toLowerCase();
   function applyCon(st, fade) {
     const [, i, state, verb, obj] = st, r = conRows[i]; if (!r) return;
     const set = () => {
-      r.dataset.state = state; r.querySelector('.cst').textContent = state.toLowerCase();
+      r.dataset.state = state; r.querySelector('.cst').textContent = stateLabel(state);
       r.querySelector('.cverb').textContent = verb; r.querySelector('.cobj').textContent = obj; r.classList.remove('swap');
       conRows.forEach(x => x.classList.toggle('hot', x === r));
-      const lab = $(`.slabel[data-s="${i}"]`); $$('.slabel').forEach(l => l.classList.toggle('flag', l === lab && state === 'FLAGGED FOR REVIEW'));
+      const lab = $(`.slabel[data-s="${i}"]`); $$('.slabel').forEach(l => l.classList.toggle('hot', l === lab && state === 'REPORTING'));
     };
     if (fade) { r.classList.add('swap'); later(200, set); } else set();
   }
@@ -91,13 +110,13 @@
     while (conLog.children.length > 5) conLog.lastElementChild.remove();
     if (anim) requestAnimationFrame(() => requestAnimationFrame(() => li.classList.remove('enter')));
   }
-  function settleSpinners() { conRows.forEach(r => { const sp = r.querySelector('.spin'); setSpin(sp, -1); sp.classList.toggle('done', r.dataset.state !== 'IDLE'); }); }
+  function settleSpinners() { conRows.forEach(r => { const sp = r.querySelector('.spin'); setSpin(sp, -1); sp.classList.add('done'); }); }
   function setSeg(n) { conSegs.forEach((s, i) => s.classList.toggle('on', i < n)); }
   function playConsole(final) {
     if (final) { conSteps.forEach(s => applyCon(s, false)); logSteps.forEach(s => pushLog(s[1], s[2], s[3], false)); setSeg(3); settleSpinners(); conRows.forEach(r => r.classList.remove('hot')); return; }
     let k = 0;
     conRows.forEach(r => r.querySelector('.spin').classList.remove('done'));
-    const iv = setInterval(() => { k = (k + 1) % 6; conRows.forEach((r, j) => setSpin(r.querySelector('.spin'), r.dataset.state === 'IDLE' ? -1 : (k + j * 2) % 6)); }, 80);
+    const iv = setInterval(() => { k = (k + 1) % 6; conRows.forEach((r, j) => setSpin(r.querySelector('.spin'), (k + j * 2) % 6)); }, 80);
     conSteps.forEach(s => later(s[0], () => applyCon(s, true)));
     logSteps.forEach(s => later(s[0], () => pushLog(s[1], s[2], s[3], true)));
     later(1200, () => setSeg(2)); later(3000, () => setSeg(3));
@@ -256,8 +275,7 @@
   if (replay) replay.addEventListener('click', () => {
     if (!toolsScene) return;
     replay.hidden = true;
-    const init = [['SCANNING', 'Scanning', 'the watch list'], ['WATCHING', 'Watching', 'where attention is moving'], ['SYNCING', 'Comparing', "with last week's review"], ['IDLE', 'Waiting', 'for the next scan']];
-    conRows.forEach((r, i) => applyCon([0, i, ...init[i]], false));
+    conRows.forEach((r, i) => applyCon([0, i, ...conInit[i]], false));
     playConsole(false);
     toolsScene.replay(() => { replay.hidden = false; });
   });
