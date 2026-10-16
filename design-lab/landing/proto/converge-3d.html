@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Swarm Hive 3D</title>
+<style>
+  html,body{margin:0;height:100%;background:#0B0B0D;overflow:hidden}
+  #stage{position:relative;width:100vw;height:100vh}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #mark{position:absolute;opacity:0;pointer-events:none;transition:opacity 240ms cubic-bezier(.2,.7,.2,1)}
+  #mark.on{opacity:1}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+<div id="stage"><img id="mark" src="../brand/swarm/logo/swarm-mark.svg" alt=""></div>
+<script type="module">
+import * as THREE from 'three';
+// Instanced hex rings (outlines) + instanced dark plates rise and fall with "attention".
+// Agents are Points above the field. The camera starts tilted and settles top-down at a
+// distance where 1 world unit = 1 CSS px, so the official SVG lands on the core cell exactly.
+const params = new URLSearchParams(location.search);
+const FIXED_T = params.has('t') ? +params.get('t') : null;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const mark = document.getElementById('mark');
+const T = { scanEnd: 2400, settle0: 2400, settle1: 3900, resolve: 4400 };
+let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+const W = innerWidth, H = innerHeight, phone = W <= 640, DPR = Math.min(devicePixelRatio || 1, 2);
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'low-power' });
+renderer.setPixelRatio(DPR); renderer.setSize(W, H); renderer.setClearColor(0x0B0B0D, 1);
+document.getElementById('stage').prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const FOV = 30, dist = (H / 2) / Math.tan(THREE.MathUtils.degToRad(FOV / 2));   // 1 unit = 1 CSS px at z = 0
+const cam = new THREE.PerspectiveCamera(FOV, W / H, 10, dist * 3);
+
+const R = phone ? 22 : 34, P = 1.95 * R, S = R / 0.133333;
+const core = phone ? { x: W * 0.5, y: H * 0.34 } : { x: W * 0.70, y: H * 0.50 };
+// world: origin at the core cell, +y up (screen y flipped)
+const toWorld = (x, y) => new THREE.Vector2(x - core.x, -(y - core.y));
+Object.assign(mark.style, { width: S + 'px', height: S + 'px', left: (core.x - S / 2) + 'px', top: (core.y - S / 2) + 'px' });
+
+function hexShape(r) { const s = new THREE.Shape(); for (let k = 0; k < 6; k++) { const a = Math.PI / 180 * (60 * k + 90); const x = r * Math.cos(a), y = r * Math.sin(a); k ? s.lineTo(x, y) : s.moveTo(x, y); } s.closePath(); return s; }
+const ringShape = hexShape(R * 0.97 + 0.5); ringShape.holes.push(hexShape(R * 0.97 - 0.5));
+const ringGeo = new THREE.ShapeGeometry(ringShape);
+const plateGeo = new THREE.ShapeGeometry(hexShape(R * 0.97 - 0.5));
+
+const cells = [], SQ3 = Math.sqrt(3);
+const maxD = Math.hypot(Math.max(core.x, W - core.x), Math.max(core.y, H - core.y)) * 1.25;
+const rq = Math.ceil(maxD / P) + 1;
+for (let q = -rq; q <= rq; q++) for (let r = -rq; r <= rq; r++) {
+  const x = P * (q + r / 2), y = -P * (SQ3 / 2) * r;   // world coords
+  const d = Math.hypot(x, y); if (d > maxD) continue;
+  cells.push({ q, r, x, y, d, ring: (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2, h: rnd(), ping: -1 });
+}
+const n = cells.length;
+const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false });
+const plateMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const rings = new THREE.InstancedMesh(ringGeo, ringMat, n), plates = new THREE.InstancedMesh(plateGeo, plateMat, n);
+scene.add(plates, rings);
+const FAINT = new THREE.Color(0x1C1C21), HIVE = new THREE.Color(0x55555B), GROUND = new THREE.Color(0x0B0B0D), SURF = new THREE.Color(0x111114), GOLD = new THREE.Color(0xF5C542);
+
+// agents
+const N = phone ? 120 : 360;
+const agents = [];
+for (let i = 0; i < N; i++) { const c = cells[(rnd() * n) | 0]; agents.push({ x: c.x, y: c.y, vx: 0, vy: 0, z: 18 + rnd() * 30, t: cells[(rnd() * n) | 0], commit: rnd() < 0.72, alive: true, delay: 200 + rnd() * 600 }); }
+const pgeo = new THREE.BufferGeometry(); const ppos = new Float32Array(N * 3); pgeo.setAttribute('position', new THREE.BufferAttribute(ppos, 3));
+const pts = new THREE.Points(pgeo, new THREE.PointsMaterial({ color: 0xEEEBE4, size: 2.2, sizeAttenuation: false, transparent: true, opacity: 0.85 }));
+scene.add(pts);
+
+const m4 = new THREE.Matrix4(), col = new THREE.Color();
+const NB = new Set(['1,0', '1,-1', '0,-1', '-1,0', '-1,1', '0,1']);
+function update(t, dt) {
+  const s = dt / 1000, consensus = sm(T.scanEnd, T.settle1, t), flat = sm(T.settle0, T.settle1, t);
+  // agents: independent seek with arrival, then commit to the core
+  for (const a of agents) {
+    if (!a.alive || t < a.delay) continue;
+    if (a.commit && t > T.scanEnd && a.t.ring !== 0) a.t = cells[0].ring === 0 ? cells[0] : cells.find(c => c.ring === 0);
+    const ox = a.t.x - a.x, oy = a.t.y - a.y, d = Math.hypot(ox, oy) || 1e-6;
+    const vmax = P * 2.2 * (1 + 1.2 * consensus), sp = Math.min(vmax, vmax * d / (P * 0.9));
+    a.vx += ((ox / d) * sp - a.vx) * 3.2 * s + (rnd() - 0.5) * (1 - consensus) * vmax * 1.2 * s;
+    a.vy += ((oy / d) * sp - a.vy) * 3.2 * s + (rnd() - 0.5) * (1 - consensus) * vmax * 1.2 * s;
+    a.x += a.vx * s; a.y += a.vy * s; a.z += (6 - a.z) * flat * 2 * s;
+    if (d < R * 0.4) { if (a.t.ring === 0) a.alive = false; else { if (a.t.ping < 0 && !(consensus > 0 && a.t.ring < 3)) a.t.ping = t; a.t = cells[(rnd() * n) | 0]; } }
+  }
+  for (let i = 0; i < N; i++) { const a = agents[i]; const v = a.alive && t >= a.delay; ppos[i * 3] = v ? a.x : 1e6; ppos[i * 3 + 1] = a.y; ppos[i * 3 + 2] = a.z; }
+  pgeo.attributes.position.needsUpdate = true;
+  // cells: height = attention (wave from the core outward, then flattening), color = ping / neighbour state
+  cells.forEach((c, i) => {
+    const reveal = sm(c.ring * 45, c.ring * 45 + 300, t);
+    const fade = Math.max(0.15, 1 - sm(0.25 * maxD, maxD, c.d));
+    const swell = Math.sin(c.d * 0.012 - t * 0.0016 + c.h * 2.0) * 0.5 + 0.5;
+    const h = (1 - flat) * reveal * (6 + 34 * swell * c.h);
+    m4.makeTranslation(c.x, c.y, h); plates.setMatrixAt(i, m4); rings.setMatrixAt(i, m4);
+    let lit = 0; if (c.ping >= 0) { const e = t - c.ping; lit = e < 120 ? e / 120 : e < 280 ? 1 : Math.max(0, 1 - (e - 280) / 520); if (e > 800) c.ping = -1; }
+    const nb = NB.has(c.q + ',' + c.r) ? sm(T.settle1 - 500, T.resolve, t) : 0;
+    if (c.ring === 0) { col.copy(GROUND).lerp(GOLD, sm(T.settle1 - 600, T.resolve, t) * (1 - sm(T.resolve, T.resolve + 240, t))); }
+    else col.copy(GROUND).lerp(FAINT, reveal * fade).lerp(HIVE, Math.max(lit * 0.85, nb));
+    rings.setColorAt(i, col);
+    plates.setColorAt(i, col.copy(GROUND).lerp(SURF, (1 - flat) * reveal * fade * 0.9));
+  });
+  rings.instanceMatrix.needsUpdate = plates.instanceMatrix.needsUpdate = true;
+  rings.instanceColor.needsUpdate = plates.instanceColor.needsUpdate = true;
+  // camera: tilted orbit -> exact top-down at the registered distance
+  const tilt = THREE.MathUtils.degToRad(52) * (1 - flat), yaw = THREE.MathUtils.degToRad(-18) * (1 - flat) + 0.15 * Math.sin(t * 0.0003) * (1 - flat);
+  // the camera looks at the screen centre (in world coords) so the final frame is identical to the 2D layout
+  const look = toWorld(W / 2, H / 2);
+  cam.position.set(look.x + Math.sin(yaw) * Math.sin(tilt) * dist, look.y - Math.cos(yaw) * Math.sin(tilt) * dist, Math.cos(tilt) * dist);
+  cam.up.set(0, 1, 0); cam.lookAt(look.x, look.y, 0);
+  mark.classList.toggle('on', t >= T.resolve);
+}
+if (FIXED_T !== null || reduce) {
+  const target = reduce ? T.resolve + 400 : FIXED_T;
+  for (let t = 0; t <= target; t += 1000 / 60) update(t, 1000 / 60);
+  renderer.render(scene, cam); if (reduce) mark.style.transition = 'none';
+  document.body.dataset.ready = '1';
+} else {
+  let start = null, last = 0;
+  renderer.setAnimationLoop((now) => { if (start === null) { start = now; last = now; } update(now - start, Math.min(50, now - last)); last = now; renderer.render(scene, cam); });
+}
+</script>
+</body>
+</html>

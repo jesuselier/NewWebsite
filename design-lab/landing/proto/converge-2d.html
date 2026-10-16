@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Swarm Converge 2D</title>
+<style>
+  html,body{margin:0;height:100%;background:#0B0B0D;overflow:hidden}
+  #stage{position:relative;width:100vw;height:100vh}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #mark{position:absolute;opacity:0;pointer-events:none;transition:opacity 240ms cubic-bezier(.2,.7,.2,1)}
+  #mark.on{opacity:1}
+  #hud{position:absolute;left:16px;bottom:16px;font:500 11px/1.6 ui-monospace,monospace;letter-spacing:.32em;color:#8E8A80;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="field"></canvas>
+  <canvas id="agents"></canvas>
+  <img id="mark" src="../brand/swarm/logo/swarm-mark.svg" alt="">
+  <div id="hud"></div>
+</div>
+<script>
+// Prototype: independent agents scan the honeycomb, reach consensus, converge on the core cell,
+// then the official mark SVG fades in on top at exact registration. No text is drawn on canvas.
+const C = { ground:'#0B0B0D', hiveFaint:'#1C1C21', hive:'#55555B', muted:'#8E8A80', text:'#EEEBE4', gold:'#F5C542' };
+const params = new URLSearchParams(location.search);
+const FIXED_T = params.has('t') ? +params.get('t') : null;   // render a deterministic frame at t ms
+const PERF = params.has('perf');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// seeded rng so frames are reproducible
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+const field = document.getElementById('field'), fctx = field.getContext('2d');
+const layer = document.getElementById('agents'), ctx = layer.getContext('2d');
+const mark = document.getElementById('mark'), hud = document.getElementById('hud');
+
+let W, H, DPR, phone, R, P, core, cells, cellMap, agents, maxD;
+const SQ3 = Math.sqrt(3);
+// timeline (ms)
+const T = { fieldIn: 600, scanEnd: 2400, consensusEnd: 3600, resolve: 4400, fade: 240 };
+
+function setup() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight; phone = W <= 640;
+  for (const c of [field, layer]) { c.width = W * DPR; c.height = H * DPR; }
+  // cell size: mark registration. swarm-mark.svg: hex circumradius = 0.13333 of image size, pitch = 0.26 of size.
+  R = phone ? 22 : 34;            // field circumradius in CSS px
+  P = 1.95 * R;                   // center pitch, identical ratio to the mark (39 / 20)
+  const S = R / 0.133333;         // mark <img> size that registers 1:1 with the field
+  core = phone ? { x: W * 0.5, y: H * 0.34 } : { x: W * 0.70, y: H * 0.50 };
+  mark.style.width = mark.style.height = S + 'px';
+  mark.style.left = (core.x - S / 2) + 'px'; mark.style.top = (core.y - S / 2) + 'px';
+  maxD = Math.hypot(Math.max(core.x, W - core.x), Math.max(core.y, H - core.y));
+  // build cells (axial, pointy-top) around the core
+  cells = []; cellMap = new Map();
+  const rq = Math.ceil(maxD / P) + 2;
+  for (let q = -rq; q <= rq; q++) for (let r = -rq; r <= rq; r++) {
+    const x = core.x + P * (q + r / 2), y = core.y + P * (SQ3 / 2) * r;
+    if (x < -P || x > W + P || y < -P || y > H + P) continue;
+    const ring = (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2;
+    const d = Math.hypot(x - core.x, y - core.y);
+    const c = { q, r, x, y, ring, d, ping: 0, pingT: -1 };
+    cells.push(c); cellMap.set(q + ',' + r, c);
+  }
+  // agents
+  const N = phone ? 90 : 260;
+  agents = [];
+  for (let i = 0; i < N; i++) {
+    // boot in place: each agent wakes on a random field cell (no marching entry)
+    const c0 = cells[Math.floor(rnd() * cells.length)];
+    const x = c0.x + (rnd() - 0.5) * R, y = c0.y + (rnd() - 0.5) * R;
+    const a = {
+      x, y, vx: 0, vy: 0, mode: 'travel', target: null, dwell: 0,
+      commit: rnd() < 0.72,          // ~72% of agents agree; the rest stay scouts
+      delay: 200 + rnd() * 600,      // staggered wake-up
+      hist: [], alive: true, lane: null
+    };
+    pickTarget(a, 0);
+    agents.push(a);
+  }
+}
+
+function hexPath(g, x, y, r) {
+  g.beginPath();
+  for (let k = 0; k < 6; k++) { const ang = Math.PI / 180 * (60 * k - 90); const px = x + r * Math.cos(ang), py = y + r * Math.sin(ang); k ? g.lineTo(px, py) : g.moveTo(px, py); }
+  g.closePath();
+}
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+function pickTarget(a, t) {
+  // independent sensing: random cell, biased toward the core as time passes
+  const bias = smooth(800, T.scanEnd, t);
+  let best = null, tries = 0;
+  while (tries++ < 12) {
+    const c = cells[Math.floor(rnd() * cells.length)];
+    if (c.ring === 0) continue;
+    if (a.commit && rnd() < bias && c.ring > 3) continue;
+    if (c.x < R || c.x > W - R || c.y < R || c.y > H - R) continue;
+    best = c; break;
+  }
+  a.target = best || cells[1];
+}
+
+const NEIGH = [[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+let charge = 0, resolved = false, resolveT = 0;
+
+function step(t, dt) {
+  const s = dt / 1000;
+  const consensus = smooth(T.scanEnd, T.consensusEnd, t);
+  const vmaxBase = P * (phone ? 2.0 : 2.2);                // px per second while scanning
+  const scoutSlow = resolved ? 0.6 : 1;
+  // bucket for neighbor queries (spatial hash, cell = P)
+  const grid = new Map();
+  for (const a of agents) if (a.alive) { const k = ((a.x / P) | 0) + ',' + ((a.y / P) | 0); (grid.get(k) || grid.set(k, []).get(k)).push(a); }
+  let activePings = 0; for (const c of cells) if (c.pingT >= 0) activePings++;
+  const pingCap = phone ? 4 : 8;
+
+  for (const a of agents) {
+    if (!a.alive || t < a.delay) continue;
+    // goals
+    if (a.commit && t > T.scanEnd && a.mode !== 'final') {
+      // consensus: commit to the nearest of the 6 neighbour cells (6 lanes), then the core
+      if (!a.lane) {
+        let bi = 0, bd = 1e9; NEIGH.forEach(([q, r], i) => { const c = cellMap.get(q + ',' + r); const d = Math.hypot(c.x - a.x, c.y - a.y); if (d < bd) { bd = d; bi = i; } });
+        a.lane = cellMap.get(NEIGH[bi][0] + ',' + NEIGH[bi][1]);
+        a.target = a.lane; a.mode = 'commit';
+      }
+      if (t > T.consensusEnd - 200 && Math.hypot(a.lane.x - a.x, a.lane.y - a.y) < R * 1.2) { a.mode = 'final'; a.target = cellMap.get('0,0'); }
+    }
+    let tx = a.target.x, ty = a.target.y;
+    const ox = tx - a.x, oy = ty - a.y, dist = Math.hypot(ox, oy) || 1e-6;
+    const vmax = a.mode === 'travel' ? vmaxBase * scoutSlow : vmaxBase * (1 + 1.2 * consensus);
+    // Reynolds arrival
+    const slowR = P * 0.9;
+    const sp = Math.min(vmax, vmax * dist / slowR);
+    let dvx = ox / dist * sp - a.vx, dvy = oy / dist * sp - a.vy;
+    // separation always; alignment and cohesion grow with consensus
+    let sx = 0, sy = 0, ax = 0, ay = 0, cx = 0, cy = 0, n = 0;
+    const gx = (a.x / P) | 0, gy = (a.y / P) | 0;
+    for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
+      const b = grid.get((gx + i) + ',' + (gy + j)); if (!b) continue;
+      for (const o of b) { if (o === a) continue; const dx = a.x - o.x, dy = a.y - o.y, d2 = dx * dx + dy * dy;
+        if (d2 < (0.42 * P) ** 2 && d2 > 0) { const d = Math.sqrt(d2); sx += dx / d / d; sy += dy / d / d; }
+        if (d2 < (1.1 * P) ** 2) { ax += o.vx; ay += o.vy; cx += o.x; cy += o.y; n++; } }
+    }
+    let fx = dvx * 3.2 + sx * vmax * 9;
+    let fy = dvy * 3.2 + sy * vmax * 9;
+    if (n && a.mode !== 'travel') { fx += (ax / n - a.vx) * 1.4 * consensus; fy += (ay / n - a.vy) * 1.4 * consensus; fx += (cx / n - a.x) * 0.6 * consensus; fy += (cy / n - a.y) * 0.6 * consensus; }
+    // wander noise, fades out as consensus forms
+    const w = (1 - consensus) * vmax * 1.2; fx += (rnd() - 0.5) * w; fy += (rnd() - 0.5) * w;
+    a.vx += fx * s; a.vy += fy * s;
+    const v = Math.hypot(a.vx, a.vy), lim = vmax * 1.15; if (v > lim) { a.vx *= lim / v; a.vy *= lim / v; }
+    a.x += a.vx * s; a.y += a.vy * s;
+    a.hist.push(a.x, a.y); if (a.hist.length > 16) a.hist.splice(0, 2);
+
+    // sensing: dwell on arrival, ping the cell outline
+    if (a.mode === 'travel' && dist < R * 0.35) {
+      a.dwell += dt;
+      if (a.dwell > 120 && a.target.pingT < 0 && activePings < pingCap && !(resolved && a.target.ring < 2)) { a.target.pingT = t; activePings++; }
+      if (a.dwell > 260 + rnd() * 340) { a.dwell = 0; pickTarget(a, t); }
+    }
+    if (a.mode === 'final' && dist < R * 0.45) { a.alive = false; charge = Math.min(1, charge + 1 / commitCount()); }
+  }
+  // pings: 120ms rise, 160ms hold, 520ms fade
+  for (const c of cells) if (c.pingT >= 0) { const e = t - c.pingT; c.ping = e < 120 ? e / 120 : e < 280 ? 1 : Math.max(0, 1 - (e - 280) / 520); if (e > 800) { c.pingT = -1; c.ping = 0; } }
+  if (!resolved && (charge >= 0.9 || t >= T.resolve)) { resolved = true; resolveT = t; }
+}
+let _cc = 0; function commitCount() { return _cc || (_cc = agents.filter(a => a.commit).length); }
+
+function drawField(t) {
+  const g = fctx; g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
+  g.lineWidth = 1; g.strokeStyle = C.hiveFaint;
+  for (const c of cells) {
+    if (c.ring === 0) continue;
+    const reveal = smooth(c.ring * 45, c.ring * 45 + 300, t);
+    const fade = 1 - smooth(0.25 * maxD, 1.0 * maxD, c.d);
+    const a = reveal * Math.max(0.12, fade);
+    if (a <= 0.01) continue;
+    g.globalAlpha = a; hexPath(g, c.x, c.y, R * 0.97); g.stroke();
+  }
+  g.globalAlpha = 1;
+}
+
+function drawLayer(t) {
+  const g = ctx; g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
+  // pings (sensing): outline brightens to hive grey
+  g.lineWidth = 1;
+  for (const c of cells) if (c.ping > 0) { g.globalAlpha = c.ping * 0.85; g.strokeStyle = C.hive; hexPath(g, c.x, c.y, R * 0.97); g.stroke(); }
+  // six neighbours: hive grey once consensus forms
+  const nb = smooth(T.scanEnd + 400, T.resolve, t);
+  if (nb > 0) { g.lineWidth = 1.5; g.strokeStyle = C.hive; for (const [q, r] of NEIGH) { const c = cellMap.get(q + ',' + r); g.globalAlpha = nb; hexPath(g, c.x, c.y, R * 0.97); g.stroke(); } }
+  // core: gold outline only, its strength = accumulated agent charge; the gradient and glow come only from the official SVG
+  const coreFade = resolved ? Math.max(0, 1 - (t - resolveT) / T.fade) : 1;
+  const coreA = Math.max(charge, smooth(T.consensusEnd, T.resolve, t)) * coreFade;
+  if (coreA > 0) { g.globalAlpha = coreA; g.lineWidth = 1.5; g.strokeStyle = C.gold; hexPath(g, core.x, core.y, R * 0.82); g.stroke(); }
+  // agents: 2px marks with a short trail
+  for (const a of agents) {
+    if (!a.alive || t < a.delay || a.hist.length < 4) continue;
+    const scout = a.mode === 'travel';
+    const wake = smooth(a.delay, a.delay + 300, t);
+    g.globalAlpha = (scout ? 0.28 : 0.42) * wake; g.strokeStyle = C.muted; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(a.hist[0], a.hist[1]); for (let i = 2; i < a.hist.length; i += 2) g.lineTo(a.hist[i], a.hist[i + 1]); g.stroke();
+    g.globalAlpha = (scout ? 0.8 : 1) * wake; g.fillStyle = scout ? C.muted : C.text; g.fillRect(a.x - 1, a.y - 1, 2, 2);
+  }
+  g.globalAlpha = 1;
+  mark.classList.toggle('on', resolved);
+}
+
+setup();
+let fieldCached = false;
+function frame(t, dt) {
+  step(t, dt);
+  if (!fieldCached || t < 1200) { drawField(t); fieldCached = t >= 1200; }
+  drawLayer(t);
+}
+
+if (FIXED_T !== null || reduce) {
+  const target = reduce ? T.resolve + 300 : FIXED_T;
+  const t0 = performance.now();
+  for (let t = 0; t <= target; t += 1000 / 60) frame(t, 1000 / 60);
+  if (reduce) { mark.style.transition = 'none'; }
+  hud.textContent = `t ${target}ms · agents ${agents.length} · sim ${(performance.now() - t0).toFixed(0)}ms total`;
+  document.body.dataset.ready = '1';
+} else {
+  let start = null, last = 0, times = [], n = 0;
+  const loop = (now) => {
+    if (start === null) { start = now; last = now; }
+    const t = now - start, dt = Math.min(50, now - last); last = now;
+    const a = performance.now(); frame(t, dt); const b = performance.now();
+    if (PERF) { times.push(b - a); if (times.length === 300) { times.sort((x, y) => x - y); hud.textContent = `agents ${agents.length} · p50 ${times[150].toFixed(2)}ms · p95 ${times[285].toFixed(2)}ms`; document.body.dataset.perf = times[150].toFixed(2) + '/' + times[285].toFixed(2); } }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
