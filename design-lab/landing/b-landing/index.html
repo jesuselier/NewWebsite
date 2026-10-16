@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'">
+<title>Swarm | Landing</title>
+<meta name="description" content="Swarm is Jesus Martinez's AI crypto trading community for the new era: custom AI tools, his watch list, weekly live calls and multi-cycle traders.">
+<meta property="og:title" content="Swarm: AI Crypto Trading Community">
+<meta property="og:description" content="Most people need three cycles. I want to get you there in one.">
+<meta property="og:image" content="https://www.joinswarm.ai/brand/swarm/social/swarm-og-1200x630.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.joinswarm.ai/brand/swarm/social/swarm-og-1200x630.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../brand/swarm/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../brand/swarm/icons/apple-touch-icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&family=JetBrains+Mono:wght@500&family=Unbounded:wght@600&display=swap">
+<link rel="stylesheet" href="../brand/swarm/swarm-tokens.css">
+<link rel="modulepreload" href="sim.js">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<style>
+:root { color-scheme: dark; }
+html { background: #0B0B0D; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+*, *::before, *::after { box-sizing: border-box; }
+body.swarm {
+  margin: 0; background: #0B0B0D; color: var(--swarm-text);
+  font: 400 18px/1.55 var(--swarm-font-body); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  --g: 56px; --nav: 64px; --R: 34px; --sec: 128px;
+}
+@media (max-width: 1099px) { body.swarm { --R: 28px; --g: 32px; --sec: 112px; } }
+@media (max-width: 640px) { body.swarm { --R: 22px; --g: 16px; --sec: 80px; font-size: 16px; } }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--swarm-text); outline-offset: 3px; border-radius: 6px; }
+.wrap { padding-left: max(var(--g), env(safe-area-inset-left, 0px)); padding-right: max(var(--g), env(safe-area-inset-right, 0px)); }
+.inner { max-width: 1200px; margin: 0 auto; }
+.skip { position: absolute; left: 16px; top: -60px; z-index: 50; background: var(--swarm-text); color: var(--swarm-on-gold); padding: 10px 14px; border-radius: 10px; font-weight: 600; }
+.skip:focus { top: 12px; }
+.mono { font-family: var(--swarm-font-mono); font-weight: 500; }
+.label { font: 500 11px/1.5 var(--swarm-font-mono); letter-spacing: .32em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.need { display: inline-block; font: 500 11px/1.4 var(--swarm-font-mono); letter-spacing: .04em; color: var(--swarm-text-muted); background: var(--swarm-surface-raised); border: 1px dashed var(--swarm-hive); border-radius: 10px; padding: 3px 8px; vertical-align: middle; white-space: normal; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- nav ---------- */
+.nav { position: fixed; inset: 0 0 auto 0; z-index: 40; height: var(--nav); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid transparent; transition: background-color .25s, border-color .25s; }
+.nav.solid { background: #0B0B0D; border-bottom-color: var(--swarm-line); }
+.nav .brand img { height: 34px; width: auto; margin-left: -9px; }
+.nav-right { display: flex; align-items: center; gap: 22px; }
+.nav-link { font: 600 15px/1 var(--swarm-font-body); color: var(--swarm-text); text-decoration: none; opacity: .86; padding: 10px 2px; }
+.nav-link:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font: 600 16px/1 var(--swarm-font-body); border-radius: 18px; cursor: pointer; border: 0; }
+.btn-outline { height: 42px; padding: 0 18px; border: 1px solid var(--swarm-line); color: var(--swarm-text); background: transparent; font-size: 15px; }
+.btn-outline:hover { border-color: var(--swarm-hive); }
+.btn-gold { height: 56px; min-width: 220px; padding: 0 30px; background: var(--swarm-gold); color: var(--swarm-on-gold); font-size: 17px; transition: background-color .18s; }
+.btn-gold:hover { background: var(--swarm-gold-deep); }
+.btn-gold .arrow { width: 16px; height: 10px; position: relative; }
+.btn-gold .arrow::before { content: ""; position: absolute; left: 0; right: 2px; top: 4px; height: 2px; background: currentColor; }
+.btn-gold .arrow::after { content: ""; position: absolute; right: 1px; top: 1px; width: 6px; height: 6px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; transform: rotate(45deg); }
+@media (max-width: 640px) {
+  .nav-link { display: none; }
+  .btn-gold { height: 52px; width: 100%; max-width: 420px; }
+  .nav .brand img { height: 30px; }
+}
+.cta { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.cancel { margin: 0; font: 400 14px/1.4 var(--swarm-font-body); color: var(--swarm-text-muted); }
+.cta-stop { padding-top: 64px; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; min-height: var(--hero-h, 100svh); overflow: hidden; display: flex; flex-direction: column; isolation: isolate; }
+.hero-stage { position: absolute; inset: 0; z-index: -1; background: #0B0B0D; }
+.hero-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero-canvas { opacity: 0; transition: opacity .5s ease; }
+.hero-canvas.on { opacity: 1; }
+#heroMark { position: absolute; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; will-change: opacity; }
+.hero-inner { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: var(--nav); padding-bottom: 72px; }
+.core-anchor { width: calc(var(--R) * 7); height: calc(var(--R) * 7 + 12px); margin-top: 10px; flex: none; }
+.chips { list-style: none; margin: 0 0 26px; padding: 0 6px; display: flex; align-items: center; height: 36px; border: 1px solid var(--swarm-line); border-radius: 10px; background: #0B0B0D; max-width: 100%; overflow: hidden; position: relative; }
+.chips-track { display: flex; align-items: center; flex: none; }
+.chips li { display: flex; align-items: center; gap: 10px; padding: 0 12px; white-space: nowrap; font: 500 11px/1 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.chips li strong { color: var(--swarm-text); font-weight: 500; }
+.hexdot { width: 9px; height: 10px; flex: none; }
+.chips .dup { display: none; }
+.h-hero, .h2 { font-family: var(--swarm-font-display); font-weight: 600; margin: 0; letter-spacing: -0.012em; }
+.h-hero { font-size: clamp(30px, 3.95vw, 58px); line-height: 1.1; max-width: 1180px; }
+.h-hero span, .h2 span { display: block; }
+.mute { color: var(--swarm-text-muted); }
+.hero-sub { max-width: 60ch; margin: 22px auto 0; color: var(--swarm-text-muted); font-size: 18px; line-height: 1.55; }
+.hero .cta { margin-top: 30px; }
+.watch { margin-top: 18px; display: inline-flex; align-items: center; gap: 10px; color: var(--swarm-text); text-decoration: none; font: 600 15px/1 var(--swarm-font-body); padding: 8px 4px; }
+.watch:hover .w-text { text-decoration: underline; text-underline-offset: 4px; }
+.watch .mono { font-size: 12px; letter-spacing: .12em; color: var(--swarm-text-muted); }
+.play { width: 30px; height: 30px; border: 1px solid var(--swarm-hive); border-radius: 50%; position: relative; flex: none; }
+.play::after { content: ""; position: absolute; left: 11px; top: 9px; border-left: 10px solid var(--swarm-text); border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
+.float-quote { position: absolute; right: max(var(--g), env(safe-area-inset-right, 0px)); top: calc(var(--nav) + 44px); width: 300px; margin: 0; padding: 20px 22px 18px; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 28px; text-align: left; opacity: 0; transform: translateY(8px); transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1); }
+.float-quote.on { opacity: 1; transform: none; }
+.fq-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.hexav { width: 38px; height: 44px; flex: none; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: var(--swarm-hive); padding: 1px; }
+.hexav img { width: 100%; height: 100%; object-fit: cover; object-position: 52% 28%; clip-path: inherit; }
+.fq-who { font: 600 14px/1.2 var(--swarm-font-body); }
+.fq-who .label { display: block; margin-top: 4px; font-size: 10px; letter-spacing: .24em; }
+.float-quote blockquote { margin: 0; font: 400 17px/1.45 var(--swarm-font-body); color: var(--swarm-text); }
+.fq-link { display: inline-block; margin-top: 12px; font: 500 11px/1 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); text-decoration: none; padding: 4px 0; }
+.fq-link:hover { color: var(--swarm-text); }
+.hud { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: space-between; align-items: center; gap: 16px; pointer-events: none; }
+.hud > * { pointer-events: auto; }
+.status { display: flex; align-items: center; gap: 12px; font: 500 11px/1 var(--swarm-font-mono); letter-spacing: .28em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.status b { font-weight: 500; color: var(--swarm-text); }
+.seg { display: flex; gap: 4px; }
+.seg i { width: 18px; height: 4px; border: 1px solid var(--swarm-hive); border-radius: 2px; }
+.seg i.on { background: var(--swarm-text-muted); border-color: var(--swarm-text-muted); }
+.pause { display: inline-flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 14px; background: #0B0B0D; color: var(--swarm-text-muted); border: 1px solid var(--swarm-line); border-radius: 18px; font: 500 11px/1 var(--swarm-font-mono); letter-spacing: .22em; text-transform: uppercase; cursor: pointer; }
+.pause:hover { color: var(--swarm-text); border-color: var(--swarm-hive); }
+.pause .ic { width: 9px; height: 10px; position: relative; }
+.pause .ic::before, .pause .ic::after { content: ""; position: absolute; top: 0; bottom: 0; width: 3px; background: currentColor; }
+.pause .ic::before { left: 0; } .pause .ic::after { right: 0; }
+.pause[aria-pressed="true"] .ic::before { width: 0; height: 0; background: none; border-left: 9px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+.pause[aria-pressed="true"] .ic::after { display: none; }
+@media (max-width: 1099px) { .float-quote { display: none; } }
+@media (max-width: 640px) {
+  .chips { width: 100%; justify-content: flex-start; padding: 0; }
+  .chips .dup { display: flex; }
+  .chips-track.run { animation: marquee 26s linear infinite; }
+  .chips:hover .chips-track, .chips:focus-within .chips-track, body.paused .chips-track { animation-play-state: paused; }
+  .hero-sub { font-size: 16px; margin-top: 16px; }
+  .hero .cta { margin-top: 24px; width: 100%; }
+  .hero-inner { padding-bottom: 64px; }
+  .status .phase-word { display: none; }
+}
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ---------- sections ---------- */
+.sec { padding-top: var(--sec); padding-bottom: var(--sec); position: relative; }
+.sec + .sec { padding-top: 0; }
+.head { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 1040px; margin: 0 auto; }
+.pill { display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px 6px 11px; border: 1px solid var(--swarm-line); border-radius: 10px; font: 500 11px/1.4 var(--swarm-font-mono); letter-spacing: .32em; text-transform: uppercase; color: var(--swarm-text-muted); margin-bottom: 24px; }
+.pill .hexdot { width: 8px; height: 9px; }
+.h2 { font-size: clamp(27px, 3.15vw, 46px); line-height: 1.14; }
+.lede { max-width: 60ch; margin: 22px auto 0; color: var(--swarm-text-muted); text-align: center; }
+.lede strong { color: var(--swarm-text); font-weight: 600; }
+.panel { background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 28px; }
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+.reveal.in { opacity: 1; transform: none; }
+.nomotion .reveal { opacity: 1; transform: none; transition: none; }
+
+/* curve */
+.curve-wrap { margin: 56px auto 0; max-width: 1200px; padding: 28px 28px 0; position: relative; }
+.curve-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 8px; }
+.curve-canvas-box { position: relative; height: 340px; }
+.curve-canvas-box canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.lanes { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--swarm-line); }
+.lane { padding: 22px 22px 28px; text-align: left; }
+.lane + .lane { border-left: 1px solid var(--swarm-line); }
+.lane .label { color: var(--swarm-text); }
+.lane .label span { color: var(--swarm-text-muted); }
+.lane p { margin: 10px 0 0; color: var(--swarm-text-muted); font-size: 16px; line-height: 1.5; }
+.lane-tag { display: inline-block; margin-top: 14px; font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--swarm-text-muted); border: 1px solid var(--swarm-line); border-radius: 10px; padding: 6px 9px; }
+.pullquote { max-width: 34ch; margin: 64px auto 0; text-align: center; font: 400 24px/1.45 var(--swarm-font-body); color: var(--swarm-text); }
+.pullquote cite { display: block; margin-top: 14px; font-style: normal; }
+@media (max-width: 760px) {
+  .curve-wrap { padding: 20px 16px 0; }
+  .curve-canvas-box { height: 260px; }
+  .lanes { grid-template-columns: 1fr; }
+  .lane { padding: 18px 4px 20px; }
+  .lane + .lane { border-left: 0; border-top: 1px solid var(--swarm-line); }
+  .pullquote { font-size: 20px; }
+  .curve-top .label:last-child { display: none; }
+}
+
+/* why now band */
+.band { margin: 56px auto 0; max-width: 1200px; position: relative; overflow: hidden; height: 440px; background: #0B0B0D; }
+.band canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.band-label { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); white-space: nowrap; padding: 7px 12px; background: #0B0B0D; border: 1px solid var(--swarm-line); border-radius: 10px; font: 500 11px/1 var(--swarm-font-mono); letter-spacing: .28em; text-transform: uppercase; color: var(--swarm-text); transition: color .4s, border-color .4s; will-change: transform; }
+.band-label.dim { color: var(--swarm-text-muted); }
+.band-foot { position: absolute; left: 24px; right: 24px; bottom: 18px; display: flex; justify-content: space-between; gap: 16px; pointer-events: none; }
+.band-quote { max-width: 60ch; margin: 40px auto 0; text-align: center; color: var(--swarm-text-muted); }
+.band-quote q { color: var(--swarm-text); }
+@media (max-width: 640px) { .band { height: 340px; } .band-foot { flex-direction: column; gap: 6px; left: 16px; bottom: 14px; } }
+
+/* video poster */
+.poster { display: grid; grid-template-columns: 5fr 7fr; max-width: 1120px; margin: 56px auto 0; aspect-ratio: 16 / 9; overflow: hidden; text-decoration: none; color: inherit; }
+.poster-side { padding: 40px 36px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; border-right: 1px solid var(--swarm-line); }
+.poster-side .lockup { width: 230px; margin: -14px 0 0 -14px; }
+.poster-title { font: 600 clamp(24px, 2.4vw, 34px)/1.12 var(--swarm-font-display); margin: 0 0 12px; }
+.poster-play { display: flex; align-items: center; gap: 14px; }
+.poster-play .play { width: 58px; height: 58px; border-color: var(--swarm-text); }
+.poster-play .play::after { left: 22px; top: 19px; border-left-width: 16px; border-top-width: 10px; border-bottom-width: 10px; }
+.poster:hover .poster-play .play { background: var(--swarm-surface-raised); }
+.poster-photo { position: relative; overflow: hidden; }
+.poster-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; transition: transform .8s cubic-bezier(.2,.7,.2,1); }
+.poster:hover .poster-photo img { transform: scale(1.025); }
+.poster-photo .tc { position: absolute; right: 16px; bottom: 16px; background: #0B0B0D; color: var(--swarm-text); border-radius: 10px; padding: 7px 10px; font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .12em; }
+@media (max-width: 860px) {
+  .poster { grid-template-columns: 1fr; aspect-ratio: auto; }
+  .poster-photo { order: -1; aspect-ratio: 16 / 9; }
+  .poster-side { border-right: 0; border-top: 1px solid var(--swarm-line); padding: 24px 20px; gap: 22px; }
+  .poster-side .lockup { width: 180px; }
+}
+
+/* founder */
+.founder { display: grid; grid-template-columns: 5fr 7fr; gap: 28px; max-width: 1200px; margin: 56px auto 0; align-items: start; }
+.portrait { position: relative; margin: 0; border-radius: 28px; overflow: hidden; border: 1px solid var(--swarm-line); aspect-ratio: 4 / 5; background: var(--swarm-surface); }
+.portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+.portrait figcaption { position: absolute; left: 14px; bottom: 14px; right: 14px; display: flex; justify-content: space-between; gap: 8px; }
+.portrait figcaption span { background: #0B0B0D; border-radius: 10px; padding: 7px 10px; font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--swarm-text); }
+.transcript { padding: 0; overflow: hidden; }
+.tr-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 26px; border-bottom: 1px solid var(--swarm-line); flex-wrap: wrap; }
+.tr-body { padding: 26px 26px 6px; }
+.tr-row { display: grid; grid-template-columns: 72px 1fr; gap: 16px; margin-bottom: 22px; }
+.ts { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .1em; color: var(--swarm-text-muted); text-decoration: none; border: 1px solid var(--swarm-line); border-radius: 10px; padding: 7px 0; text-align: center; height: max-content; margin-top: 2px; }
+.ts:hover { color: var(--swarm-text); border-color: var(--swarm-hive); }
+.tr-row p { margin: 0; font-size: 17px; line-height: 1.6; color: var(--swarm-text-muted); }
+.tr-row p strong { color: var(--swarm-text); font-weight: 600; }
+.cycles { display: grid; grid-template-columns: repeat(3, 1fr); margin: 4px 26px 0; position: relative; padding: 22px 0 6px; }
+.cycles::before { content: ""; position: absolute; left: 16.66%; right: 16.66%; top: 39px; height: 1px; background: var(--swarm-hive); }
+.cyc { display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; }
+.cyc svg { width: 30px; height: 34px; background: var(--swarm-surface); }
+.cyc .label { letter-spacing: .26em; }
+.cyc.now .label { color: var(--swarm-text); }
+.tr-foot { padding: 18px 26px 22px; border-top: 1px solid var(--swarm-line); margin-top: 18px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; }
+.tr-foot p { margin: 0; font: 500 12px/1.5 var(--swarm-font-mono); color: var(--swarm-text-muted); letter-spacing: .02em; }
+@media (max-width: 900px) {
+  .founder { grid-template-columns: 1fr; }
+  .portrait { aspect-ratio: 4 / 4.2; }
+  .tr-head, .tr-body { padding-left: 18px; padding-right: 18px; }
+  .tr-row { grid-template-columns: 1fr; gap: 10px; }
+  .ts { width: 66px; }
+  .tr-row p { font-size: 16px; }
+  .cycles { margin: 4px 10px 0; }
+  .tr-foot { padding: 16px 18px 20px; }
+}
+
+/* members get */
+.grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 1200px; margin: 56px auto 0; perspective: 1400px; }
+.card { display: flex; flex-direction: column; overflow: hidden; transform-style: preserve-3d; transition: transform .35s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+.mock { position: relative; height: 330px; border-bottom: 1px solid var(--swarm-line); padding: 18px 20px; overflow: hidden; background: #0E0E11; }
+.mock .illo { position: absolute; top: 16px; right: 18px; font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .28em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.mock-h { font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .28em; text-transform: uppercase; color: var(--swarm-text-muted); margin-top: 28px; }
+.card-body { padding: 24px 26px 28px; text-align: left; }
+.tag { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--swarm-line); border-radius: 10px; padding: 5px 9px; font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .28em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.card h3 { font: 600 22px/1.2 var(--swarm-font-display); margin: 16px 0 8px; }
+.card p { margin: 0; color: var(--swarm-text-muted); font-size: 17px; }
+.card p + p { margin-top: 10px; }
+.bar { display: inline-block; height: 10px; border-radius: 10px; background: var(--swarm-line); vertical-align: middle; }
+/* trace */
+.trace { position: absolute; inset: 52px 20px 48px 20px; }
+.trace svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.scouts { position: absolute; left: 0; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: space-between; width: 46%; }
+.scout { display: flex; align-items: center; gap: 9px; height: 30px; padding: 0 10px; border: 1px solid var(--swarm-line); border-radius: 10px; background: #0E0E11; font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--swarm-text); transition: opacity .3s, border-color .3s; position: relative; z-index: 1; }
+.scout .st { margin-left: auto; color: var(--swarm-text-muted); letter-spacing: .1em; }
+.scout.pruned { opacity: .38; }
+.spin { width: 12px; height: 13px; flex: none; }
+.spin circle { fill: var(--swarm-hive); }
+.spin circle.on { fill: var(--swarm-text); }
+.node { position: absolute; width: 14px; height: 16px; }
+.out { position: absolute; right: 0; width: 34%; border: 1px solid var(--swarm-line); border-radius: 18px; background: var(--swarm-surface); padding: 12px 12px 14px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; z-index: 1; }
+.out.on { opacity: 1; transform: none; }
+.out .label { font-size: 9px; letter-spacing: .22em; color: var(--swarm-text); display: block; margin-bottom: 10px; }
+.out .bar { display: block; margin-top: 8px; height: 8px; }
+.phase { position: absolute; left: 20px; right: 20px; bottom: 16px; display: flex; align-items: center; gap: 12px; font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .24em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.phase .seg i { width: 22px; }
+.phase b { color: var(--swarm-text); font-weight: 500; }
+/* watch list */
+.wl { position: absolute; left: 20px; right: 20px; top: 56px; }
+.wl-row { display: grid; grid-template-columns: 30px 1fr 1.3fr 118px; gap: 12px; align-items: center; height: 40px; border-top: 1px solid var(--swarm-line); font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .14em; color: var(--swarm-text-muted); }
+.wl-row.hd { height: 30px; border-top: 0; letter-spacing: .24em; text-transform: uppercase; font-size: 9px; }
+.wl-row .bar { height: 9px; }
+.chip { justify-self: start; display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border: 1px solid var(--swarm-line); border-radius: 10px; font: 500 9px/1 var(--swarm-font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--swarm-text-muted); white-space: nowrap; transition: opacity .2s; }
+.chip.watching { color: var(--swarm-text); border-color: var(--swarm-hive); }
+.chip.new { color: var(--swarm-on-gold); background: var(--swarm-text); border-color: var(--swarm-text); }
+.chip.removed { text-decoration: line-through; opacity: .7; }
+.chip.fade { opacity: 0; }
+.wl-row.focus { background: #121216; }
+/* live call */
+.call { position: absolute; left: 20px; right: 20px; top: 52px; bottom: 18px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; }
+.call-frame { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid var(--swarm-line); }
+.call-frame img { width: 100%; height: 100%; object-fit: cover; object-position: 45% 30%; }
+.call-frame .onair { position: absolute; left: 10px; top: 10px; background: #0B0B0D; border-radius: 10px; padding: 6px 8px; font: 500 9px/1 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text); }
+.eq { position: absolute; left: 10px; bottom: 10px; right: 10px; height: 30px; display: flex; align-items: flex-end; gap: 3px; background: #0B0B0D; border-radius: 10px; padding: 6px 9px; }
+.eq i { flex: 1; background: var(--swarm-text-muted); border-radius: 1px; height: 30%; transform-origin: bottom; }
+.eq.run i { animation: eq 1.1s ease-in-out infinite alternate; }
+body.paused .eq.run i { animation-play-state: paused; }
+@keyframes eq { from { transform: scaleY(.25); } to { transform: scaleY(2.6); } }
+.call-side { display: flex; flex-direction: column; gap: 9px; border: 1px solid var(--swarm-line); border-radius: 18px; padding: 12px; background: var(--swarm-surface); min-width: 0; }
+.call-side .label { font-size: 9px; letter-spacing: .2em; }
+.pr-row { display: flex; align-items: center; gap: 8px; height: 22px; }
+.pr-row .bar { height: 8px; }
+.next { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--swarm-line); display: flex; flex-direction: column; gap: 7px; }
+.next .need { font-size: 10px; }
+/* trader room */
+.room { position: absolute; left: 20px; right: 20px; top: 56px; bottom: 18px; display: flex; flex-direction: column; }
+.msgs { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; overflow: hidden; }
+.msg { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; transition: opacity .4s, transform .4s; }
+.msg.enter { opacity: 0; transform: translateY(6px); }
+.msg svg { width: 26px; height: 30px; }
+.msg .who { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; flex-wrap: wrap; }
+.msg .who .bar { height: 8px; }
+.msg .t { font: 500 9px/1 var(--swarm-font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--swarm-text-muted); border: 1px solid var(--swarm-line); border-radius: 10px; padding: 4px 6px; }
+.msg .lines .bar { display: block; height: 8px; margin-top: 6px; background: #1E1E23; }
+.typing { display: flex; align-items: center; gap: 8px; height: 22px; margin-top: 10px; font: 500 9px/1 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.typing .dots { display: flex; gap: 4px; }
+.typing .dots i { width: 5px; height: 5px; background: var(--swarm-hive); border-radius: 1px; }
+.typing.run .dots i { animation: blink 1.2s infinite; }
+.typing.run .dots i:nth-child(2) { animation-delay: .2s; } .typing.run .dots i:nth-child(3) { animation-delay: .4s; }
+body.paused .typing.run .dots i { animation-play-state: paused; }
+@keyframes blink { 0%, 100% { background: var(--swarm-hive); } 50% { background: var(--swarm-text-muted); } }
+@media (max-width: 900px) {
+  .grid4 { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .mock { height: 318px; padding: 14px; }
+  .mock .illo { top: 14px; right: 14px; font-size: 9px; letter-spacing: .2em; }
+  .trace { inset: 48px 14px 44px 14px; }
+  .scout { font-size: 9px; padding: 0 7px; gap: 6px; height: 28px; letter-spacing: .08em; }
+  .scout .st { display: none; }
+  .scouts { width: 42%; }
+  .out { width: 38%; padding: 10px; }
+  .wl { left: 14px; right: 14px; }
+  .wl-row { grid-template-columns: 24px 1fr 104px; }
+  .wl-row > :nth-child(3) { display: none; }
+  .call { left: 14px; right: 14px; grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .call-side .pr-row, .call-side > .label { display: none; }
+  .call-side { padding: 10px 12px; }
+  .next { margin-top: 0; padding-top: 0; border-top: 0; }
+  .room { left: 14px; right: 14px; }
+  .card-body { padding: 20px 18px 24px; }
+  .card h3 { font-size: 20px; }
+  .card p { font-size: 16px; }
+}
+
+/* who it's for */
+.who { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 1120px; margin: 56px auto 0; }
+.who .panel { padding: 30px 30px 32px; text-align: left; display: flex; flex-direction: column; }
+.who h3 { font: 600 clamp(20px, 2vw, 28px)/1.15 var(--swarm-font-display); text-transform: uppercase; letter-spacing: .06em; margin: 22px 0 14px; }
+.who p { margin: 0; color: var(--swarm-text-muted); }
+.who p q { color: var(--swarm-text); }
+.track { display: flex; align-items: center; gap: 0; margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--swarm-line); }
+.track .stop { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: none; }
+.track .stop svg { width: 22px; height: 25px; }
+.track .stop .label { font-size: 9px; letter-spacing: .22em; }
+.track .stop.you .label { color: var(--swarm-text); }
+.track .ln { flex: 1; height: 1px; background: var(--swarm-hive); margin: 0 8px 22px; }
+.track .ln.dash { background: none; border-top: 1px dashed var(--swarm-hive); }
+@media (max-width: 760px) { .who { grid-template-columns: 1fr; } .who .panel { padding: 24px 20px 26px; } }
+
+/* pricing */
+#join { scroll-margin-top: 72px; }
+.seg-switch { display: inline-grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border: 1px solid var(--swarm-line); border-radius: 18px; background: #0B0B0D; margin-top: 36px; width: min(480px, 100%); }
+.seg-switch button { height: 44px; border: 0; border-radius: 14px; background: transparent; color: var(--swarm-text-muted); font: 600 15px/1 var(--swarm-font-body); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.seg-switch button[aria-checked="true"] { background: var(--swarm-surface-raised); color: var(--swarm-text); box-shadow: inset 0 0 0 1px var(--swarm-hive); }
+.seg-switch button .mini { font: 500 9px/1 var(--swarm-font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--swarm-text-muted); border: 1px solid var(--swarm-line); border-radius: 10px; padding: 4px 6px; }
+.price-card { width: min(480px, 100%); margin: 14px auto 0; padding: 30px 30px 26px; text-align: left; }
+.pc-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.price { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; }
+.price .amt { font: 500 64px/1 var(--swarm-font-mono); letter-spacing: -0.02em; color: var(--swarm-text); }
+.price .amt.gold { color: var(--swarm-gold); }
+.price .unit { font: 500 18px/1 var(--swarm-font-mono); color: var(--swarm-text-muted); }
+.pnote { margin: 12px 0 0; color: var(--swarm-text); font-size: 17px; }
+.psub { margin: 4px 0 0; color: var(--swarm-text-muted); font-size: 15px; }
+.src { display: block; margin-top: 10px; font: 500 10px/1.4 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.incl { margin: 24px 0 0; padding: 22px 0 0; border-top: 1px solid var(--swarm-line); }
+.incl ul { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 12px; }
+.incl li { display: grid; grid-template-columns: 20px 1fr; gap: 12px; font-size: 16px; line-height: 1.4; }
+.incl li svg { width: 18px; height: 20px; margin-top: 0; }
+.price-card .btn-gold { width: 100%; margin-top: 26px; min-width: 0; }
+.price-card .cancel { text-align: center; margin-top: 10px; }
+.checkout { width: min(480px, 100%); margin: 18px auto 0; min-height: 440px; border: 1px dashed var(--swarm-hive); border-radius: 28px; padding: 26px 26px 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 90px; }
+.checkout.armed { border-color: var(--swarm-text-muted); }
+.co-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
+.co-head .label { color: var(--swarm-text); }
+.checkout h3 { margin: 4px 0 0; font: 600 20px/1.25 var(--swarm-font-display); }
+.checkout p { margin: 0; color: var(--swarm-text-muted); font-size: 16px; }
+.skel { display: grid; gap: 10px; margin-top: 6px; }
+.skel span { display: block; height: 46px; border-radius: 18px; background: var(--swarm-surface-raised); border: 1px solid var(--swarm-line); position: relative; }
+.skel span::before { content: attr(data-l); position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font: 500 10px/1 var(--swarm-font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.skel span.split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: none; border: 0; }
+.skel span.split i { display: block; height: 46px; border-radius: 18px; background: var(--swarm-surface-raised); border: 1px solid var(--swarm-line); }
+.skel span.pay { background: #1E1E23; }
+.risk { width: min(480px, 100%); margin: 20px auto 0; font-size: 13px; line-height: 1.5; color: var(--swarm-text-muted); text-align: center; }
+@media (max-width: 640px) { .price-card { padding: 24px 20px 22px; } .price .amt { font-size: 56px; } .checkout { padding: 22px 18px; } .seg-switch button { font-size: 14px; } .seg-switch button .mini { display: none; } }
+
+/* steps */
+.steps { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; max-width: 1120px; margin: 64px auto 0; padding: 0; position: relative; counter-reset: s; }
+.steps::before { content: ""; position: absolute; left: calc(100% / 6); right: calc(100% / 6); top: 26px; height: 1px; background: var(--swarm-hive); }
+.steps li { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 22px; position: relative; }
+.steps .hx { width: 46px; height: 52px; position: relative; display: grid; place-items: center; background: #0B0B0D; }
+.steps .hx svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.steps .hx span { position: relative; font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .08em; color: var(--swarm-text); }
+.steps h3 { font: 600 20px/1.25 var(--swarm-font-display); margin: 22px 0 8px; }
+.steps p { margin: 0; color: var(--swarm-text-muted); font-size: 16px; max-width: 30ch; }
+.steps .need { margin-top: 10px; }
+@media (max-width: 760px) {
+  .steps { grid-template-columns: 1fr; gap: 34px; }
+  .steps::before { left: 23px; right: auto; top: 26px; bottom: 26px; width: 1px; height: auto; }
+  .steps li { display: grid; grid-template-columns: 46px 1fr; column-gap: 18px; text-align: left; align-items: start; padding: 0; }
+  .steps li .hx { grid-row: span 3; }
+  .steps h3 { margin: 4px 0 6px; font-size: 18px; }
+  .steps .need { justify-self: start; }
+}
+
+/* faq */
+.faq { max-width: 820px; margin: 56px auto 0; border-top: 1px solid var(--swarm-line); }
+.faq details { border-bottom: 1px solid var(--swarm-line); }
+.faq summary { list-style: none; cursor: pointer; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 4px; font: 600 18px/1.35 var(--swarm-font-body); text-align: left; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary .pm { width: 14px; height: 14px; position: relative; flex: none; }
+.faq summary .pm::before, .faq summary .pm::after { content: ""; position: absolute; left: 0; right: 0; top: 6px; height: 2px; background: var(--swarm-text-muted); transition: transform .25s; }
+.faq summary .pm::after { transform: rotate(90deg); }
+.faq details[open] summary .pm::after { transform: rotate(0deg); }
+.faq .ans { padding: 0 4px 22px; color: var(--swarm-text-muted); max-width: 64ch; }
+.faq .ans p { margin: 0; }
+@media (max-width: 640px) { .faq summary { font-size: 16px; } }
+
+/* final */
+.final { position: relative; overflow: hidden; }
+.final canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.final .h2 { font-size: clamp(27px, 3.4vw, 50px); }
+.final .cta { margin-top: 40px; }
+.inside { margin-top: 22px; font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .32em; text-transform: uppercase; color: var(--swarm-text); }
+
+/* footer */
+.foot { border-top: 1px solid var(--swarm-line); padding-top: 56px; padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+.foot-top { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
+.foot-top img { width: 220px; margin-left: -12px; }
+.foot-links { display: flex; gap: 26px; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; }
+.foot-links a { font: 600 15px/1 var(--swarm-font-body); text-decoration: none; color: var(--swarm-text); padding: 8px 0; display: inline-block; }
+.foot-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.disclosure { max-width: 1200px; margin: 34px auto 0; padding-top: 26px; border-top: 1px solid var(--swarm-line); display: grid; grid-template-columns: 1fr 1fr; gap: 10px 48px; }
+.disclosure p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--swarm-text-muted); }
+.foot-bottom { max-width: 1200px; margin: 26px auto 0; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+@media (max-width: 760px) { .disclosure { grid-template-columns: 1fr; } .foot-top img { width: 180px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+.nomotion *, .nomotion *::before, .nomotion *::after { animation: none !important; transition: none !important; }
+</style>
+</head>
+<body class="swarm">
+<a class="skip" href="#main">Skip to content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="hx" viewBox="0 0 20 22"><path d="M10 1.2 L18.4 6.1 L18.4 15.9 L10 20.8 L1.6 15.9 L1.6 6.1 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="hxcheck" viewBox="0 0 20 22"><path d="M10 1.2 L18.4 6.1 L18.4 15.9 L10 20.8 L1.6 15.9 L1.6 6.1 Z" fill="none" stroke="#55555B" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.2 11.2 L8.9 13.8 L13.9 8.4" fill="none" stroke="#EEEBE4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav wrap" id="nav">
+  <a class="brand" href="#top" aria-label="Swarm, back to top"><img src="../brand/swarm/logo/swarm-wordmark-for-dark-bg.svg" alt="Swarm" width="126" height="34"></a>
+  <nav class="nav-right" aria-label="Primary">
+    <a class="nav-link" href="https://youtu.be/n15W6X84IGg" target="_blank" rel="noopener">Watch the intro</a>
+    <a class="btn btn-outline" href="#join">Join Swarm</a>
+  </nav>
+</header>
+
+<main id="main">
+<!-- 1. HERO -->
+<section class="hero" id="top" aria-labelledby="hero-h">
+  <div class="hero-stage" id="heroStage">
+    <img id="heroMark" src="../brand/swarm/logo/swarm-mark.svg" alt="" width="255" height="255">
+  </div>
+  <div class="hero-inner wrap">
+    <div class="core-anchor" id="coreAnchor" aria-hidden="true"></div>
+    <div class="chips" id="chips">
+      <ul class="chips-track" aria-label="Swarm at a glance" style="list-style:none;margin:0;padding:0">
+        <li><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg><strong>Pre-launch</strong></li>
+        <li><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>50 founding seats</li>
+        <li><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Custom AI tools</li>
+        <li><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Weekly live portfolio reviews</li>
+        <li><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Card or ACH through Whop</li>
+        <li class="dup" aria-hidden="true"><svg class="hexdot"><use href="#hx"/></svg><strong>Pre-launch</strong></li>
+        <li class="dup" aria-hidden="true"><svg class="hexdot"><use href="#hx"/></svg>50 founding seats</li>
+        <li class="dup" aria-hidden="true"><svg class="hexdot"><use href="#hx"/></svg>Custom AI tools</li>
+        <li class="dup" aria-hidden="true"><svg class="hexdot"><use href="#hx"/></svg>Weekly live portfolio reviews</li>
+        <li class="dup" aria-hidden="true"><svg class="hexdot"><use href="#hx"/></svg>Card or ACH through Whop</li>
+      </ul>
+    </div>
+    <h1 class="h-hero" id="hero-h"><span class="mute">Most people need three cycles.</span> <span>I want to get you there in one.</span></h1>
+    <p class="hero-sub">Swarm is my AI crypto trading community for the new era: custom AI tools I build and maintain, my watch list, weekly live calls, and traders who have made it through several cycles.</p>
+    <div class="cta">
+      <a class="btn btn-gold" href="#join" data-gold>Join Swarm <span class="arrow" aria-hidden="true"></span></a>
+      <p class="cancel">Cancel anytime.</p>
+    </div>
+    <a class="watch" href="https://youtu.be/n15W6X84IGg" target="_blank" rel="noopener"><span class="play" aria-hidden="true"></span><span class="w-text">Watch the intro</span> <span class="mono">4:05</span><span class="visually-hidden"> (opens YouTube in a new tab)</span></a>
+  </div>
+  <figure class="float-quote" id="floatQuote">
+    <div class="fq-head">
+      <div class="hexav"><img src="../assets/jesus-studio-smile.jpg" alt="" width="1920" height="1080"></div>
+      <div class="fq-who">Jesus Martinez<span class="label">Welcome to Swarm · 00:40</span></div>
+    </div>
+    <blockquote>&ldquo;Crypto cycles aren't really about crypto. They're about attention.&rdquo;</blockquote>
+    <a class="fq-link" href="https://youtu.be/n15W6X84IGg?t=40" target="_blank" rel="noopener">Watch from 00:40<span class="visually-hidden"> (opens YouTube in a new tab)</span></a>
+  </figure>
+  <div class="hud wrap">
+    <div class="status" aria-live="off"><span class="phase-word">Swarm //</span> <b id="phaseWord">Scanning</b><span class="seg" aria-hidden="true"><i id="seg1"></i><i id="seg2"></i><i id="seg3"></i></span></div>
+    <button class="pause" type="button" id="pauseBtn" aria-pressed="false"><span class="ic" aria-hidden="true"></span><span class="pause-text">Pause motion</span></button>
+  </div>
+</section>
+
+<!-- 2. THE CURVE -->
+<section class="sec wrap" id="curve" aria-labelledby="curve-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>The crypto curve</span>
+    <h2 class="h2" id="curve-h"><span class="mute">Every cycle has three kinds of people.</span> <span>Most only learn it the expensive way.</span></h2>
+  </div>
+  <div class="curve-wrap panel reveal">
+    <div class="curve-top">
+      <span class="label">The crowd, one cycle</span>
+      <span class="label">Illustration · not live data</span>
+    </div>
+    <div class="curve-canvas-box"><canvas id="curveCanvas" role="img" aria-label="A bell curve with a crowd of agents under it in three lanes. Left: they move as one herd. Middle: they twitch and keep stepping out early. Right: they hold still, all pointing the same way, then step out together."></canvas></div>
+    <div class="lanes">
+      <div class="lane"><span class="label">Left curve <span>· first cycle</span></span><p>Buys because everyone is buying. Has no idea when to sell.</p><span class="lane-tag">Moves with the herd</span></div>
+      <div class="lane"><span class="label">Mid curve <span>· second cycle</span></span><p>Got burned last time. Overthinks every move and sells too early.</p><span class="lane-tag">Steps out early</span></div>
+      <div class="lane"><span class="label">Right curve <span>· third cycle</span></span><p>Looks like left curve from the outside, because both are buying. Knows what it's buying, why, and when to get out.</p><span class="lane-tag">Holds, then exits together</span></div>
+    </div>
+  </div>
+  <blockquote class="pullquote reveal">&ldquo;Most people need three cycles and a lot of pain to get there. I want to get you there in one.&rdquo;<cite class="label">Jesus · Welcome to Swarm</cite></blockquote>
+  <div class="cta cta-stop reveal">
+    <a class="btn btn-gold" href="#join" data-gold>Join Swarm <span class="arrow" aria-hidden="true"></span></a>
+    <p class="cancel">Cancel anytime.</p>
+  </div>
+</section>
+
+<!-- 3. WHY NOW -->
+<section class="sec wrap" id="why" aria-labelledby="why-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Why this cycle</span>
+    <h2 class="h2" id="why-h"><span class="mute">Crypto cycles aren't really about crypto.</span> <span>They're about attention.</span></h2>
+    <p class="lede">The crowd's money goes to the riskiest bet on whatever everyone is excited about. In 2020 that was games. <strong>Since 2023, it's been AI.</strong> And the money coming back this time is a more informed crowd.</p>
+  </div>
+  <div class="band panel reveal" id="band">
+    <span class="band-label dim" id="bandA">2020 · Games</span>
+    <span class="band-label dim" id="bandB">Since 2023 · AI</span>
+    <div class="band-foot"><span class="label">Where the crowd's attention went</span><span class="label">Source // Welcome to Swarm, JM Crypto, Oct 16 2026</span></div>
+  </div>
+  <p class="band-quote reveal">It wants <q>real things, real revenue, real users.</q> That's the crowd Swarm is built for.</p>
+</section>
+
+<!-- 4. WATCH THE INTRO -->
+<section class="sec wrap" id="intro" aria-labelledby="intro-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Welcome to Swarm · 4:05</span>
+    <h2 class="h2" id="intro-h"><span class="mute">Hear it from me first.</span> <span>Four minutes on why I built this.</span></h2>
+  </div>
+  <a class="poster panel reveal" href="https://youtu.be/n15W6X84IGg" target="_blank" rel="noopener" aria-label="Watch Welcome To Swarm, AI Agentic Trading, 4 minutes 5 seconds, on YouTube (opens in a new tab)">
+    <div class="poster-side">
+      <img class="lockup" src="../brand/swarm/logo/swarm-horizontal-for-dark-bg.svg" alt="Swarm" width="230" height="70">
+      <div>
+        <p class="poster-title">Welcome to Swarm</p>
+        <span class="label">AI agentic trading · JM Crypto</span>
+      </div>
+      <div class="poster-play"><span class="play" aria-hidden="true"></span><span><span class="fq-who" style="display:block">Watch on YouTube</span><span class="label">4:05 · Oct 16 2026</span></span></div>
+    </div>
+    <div class="poster-photo"><img src="../assets/jesus-studio-smile.jpg" alt="Jesus Martinez in his studio" width="1920" height="1080" loading="lazy"><span class="tc">4:05</span></div>
+  </a>
+</section>
+
+<!-- 5. FOUNDER -->
+<section class="sec wrap" id="founder" aria-labelledby="founder-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>The founder</span>
+    <h2 class="h2" id="founder-h"><span class="mute">2021 was my first cycle.</span> <span>This is my third.</span></h2>
+  </div>
+  <div class="founder">
+    <figure class="portrait reveal">
+      <img src="../assets/jesus-interview.jpg" alt="Jesus Martinez, founder of Swarm, at a podcast microphone" width="1200" height="1800" loading="lazy">
+      <figcaption><span>Jesus Martinez</span><span>Founder</span></figcaption>
+    </figure>
+    <article class="transcript panel reveal" aria-label="Transcript excerpt from Welcome to Swarm">
+      <div class="tr-head"><span class="label" style="color:var(--swarm-text)">Welcome to Swarm · Transcript</span><span class="label">JM Crypto · Oct 16 2026</span></div>
+      <div class="tr-body">
+        <div class="tr-row"><a class="ts" href="https://youtu.be/n15W6X84IGg?t=154" target="_blank" rel="noopener" aria-label="Watch from 2 minutes 34 seconds">02:34</a><p>In 2021 I was working as a server and studying economics. <strong>My brother had just lost everything trading.</strong> For his birthday I gave him three Axies. Two months later they were worth tens of thousands of dollars, and it helped him get back on his feet.</p></div>
+        <div class="tr-row"><a class="ts" href="https://youtu.be/n15W6X84IGg?t=170" target="_blank" rel="noopener" aria-label="Watch from 2 minutes 50 seconds">02:50</a><p><strong>It wasn't luck.</strong> I grew up playing video games, so I understood how these game economies worked. I did the same with other crypto games, and that's how the channel started.</p></div>
+        <div class="tr-row"><a class="ts" href="https://youtu.be/n15W6X84IGg?t=185" target="_blank" rel="noopener" aria-label="Watch from 3 minutes 5 seconds">03:05</a><p>I stayed through the bear market. 2023 was my second cycle. Now I'm in my third, and <strong>I'm doing the same deep work on AI that I did on gaming.</strong> That's why I built Swarm.</p></div>
+      </div>
+      <div class="cycles" aria-label="Three cycles">
+        <div class="cyc"><svg viewBox="0 0 20 22" aria-hidden="true" style="color:#55555B"><use href="#hx"/></svg><span class="label">2021 · 1st</span></div>
+        <div class="cyc"><svg viewBox="0 0 20 22" aria-hidden="true" style="color:#55555B"><use href="#hx"/></svg><span class="label">2023 · 2nd</span></div>
+        <div class="cyc now"><svg viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1.2 L18.4 6.1 L18.4 15.9 L10 20.8 L1.6 15.9 L1.6 6.1 Z" fill="#EEEBE4"/></svg><span class="label">Now · 3rd</span></div>
+      </div>
+      <div class="tr-foot"><p>My story, not a typical result and not a promise of yours.</p><span class="need">[CONFIRM: quotes against official captions]</span></div>
+    </article>
+  </div>
+  <div class="cta cta-stop reveal">
+    <a class="btn btn-gold" href="#join" data-gold>Join Swarm <span class="arrow" aria-hidden="true"></span></a>
+    <p class="cancel">Cancel anytime.</p>
+  </div>
+</section>
+
+<!-- 6. MEMBERS GET -->
+<section class="sec wrap" id="get" aria-labelledby="get-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Swarm · Members get</span>
+    <h2 class="h2" id="get-h"><span class="mute">Here's what you get.</span> <span>Built for the new era of crypto.</span></h2>
+  </div>
+  <div class="grid4">
+    <!-- 1 custom AI tools: decision trace -->
+    <article class="card panel reveal" data-tilt>
+      <div class="mock" id="traceMock">
+        <span class="illo">Illustration · not live data</span>
+        <div class="mock-h">Agent trace // one call</div>
+        <div class="trace" id="trace">
+          <svg id="traceSvg" aria-hidden="true"></svg>
+          <div class="scouts">
+            <div class="scout" data-s="0"><svg class="spin" viewBox="0 0 12 13" aria-hidden="true"></svg>Scout 01<span class="st">Scanning</span></div>
+            <div class="scout" data-s="1"><svg class="spin" viewBox="0 0 12 13" aria-hidden="true"></svg>Scout 02<span class="st">Watching</span></div>
+            <div class="scout" data-s="2"><svg class="spin" viewBox="0 0 12 13" aria-hidden="true"></svg>Scout 03<span class="st">Scanning</span></div>
+            <div class="scout" data-s="3"><svg class="spin" viewBox="0 0 12 13" aria-hidden="true"></svg>Scout 04<span class="st">Syncing</span></div>
+            <div class="scout" data-s="4"><svg class="spin" viewBox="0 0 12 13" aria-hidden="true"></svg>Scout 05<span class="st">Scanning</span></div>
+            <div class="scout" data-s="5"><svg class="spin" viewBox="0 0 12 13" aria-hidden="true"></svg>Scout 06<span class="st">Watching</span></div>
+          </div>
+          <svg class="node" id="traceNode" viewBox="0 0 20 22" aria-hidden="true" style="color:#55555B"><use href="#hx"/></svg>
+          <div class="out" id="traceOut"><span class="label">Watch list update // members</span><span class="bar" style="width:86%"></span><span class="bar" style="width:62%"></span><span class="bar" style="width:74%"></span></div>
+        </div>
+        <div class="phase"><span>Phase</span><b id="tracePhase">Scanning</b><span class="seg" aria-hidden="true"><i id="tp1"></i><i id="tp2"></i><i id="tp3"></i></span></div>
+      </div>
+      <div class="card-body">
+        <span class="tag"><svg class="hexdot" aria-hidden="true" style="width:7px;height:8px"><use href="#hx"/></svg>Members get</span>
+        <h3>Custom AI tools</h3>
+        <p>Built and maintained by me to trade the markets.</p>
+      </div>
+    </article>
+    <!-- 2 watch list -->
+    <article class="card panel reveal" data-tilt>
+      <div class="mock" id="wlMock">
+        <span class="illo">Illustration · not live data</span>
+        <div class="wl" id="wl">
+          <div class="wl-row hd"><span>#</span><span>Asset</span><span>Why it's on the list</span><span>Status</span></div>
+          <div class="wl-row"><span>01</span><span class="bar" style="width:62%"></span><span class="bar" style="width:84%"></span><span class="chip watching">Watching</span></div>
+          <div class="wl-row"><span>02</span><span class="bar" style="width:44%"></span><span class="bar" style="width:70%"></span><span class="chip new">New this week</span></div>
+          <div class="wl-row"><span>03</span><span class="bar" style="width:56%"></span><span class="bar" style="width:92%"></span><span class="chip watching">Watching</span></div>
+          <div class="wl-row"><span>04</span><span class="bar" style="width:38%"></span><span class="bar" style="width:66%"></span><span class="chip watching">Watching</span></div>
+          <div class="wl-row"><span>05</span><span class="bar" style="width:50%"></span><span class="bar" style="width:58%"></span><span class="chip removed">Removed</span></div>
+          <div class="wl-row"><span>06</span><span class="bar" style="width:30%"></span><span class="bar" style="width:78%"></span><span class="chip watching">Watching</span></div>
+        </div>
+        <div class="phase"><span>Watch list // members only</span></div>
+      </div>
+      <div class="card-body">
+        <span class="tag"><svg class="hexdot" aria-hidden="true" style="width:7px;height:8px"><use href="#hx"/></svg>Members get</span>
+        <h3>My watch list</h3>
+        <p>So you always know what I'm looking at.</p>
+      </div>
+    </article>
+    <!-- 3 live calls -->
+    <article class="card panel reveal" data-tilt>
+      <div class="mock">
+        <span class="illo">Illustration · not live data</span>
+        <div class="call">
+          <div class="call-frame">
+            <img src="../assets/jesus-studio-arms.jpg" alt="" width="1920" height="1080" loading="lazy">
+            <span class="onair">Weekly · live portfolio review</span>
+            <div class="eq" id="eq" aria-hidden="true"></div>
+          </div>
+          <div class="call-side">
+            <span class="label">On screen · member portfolio</span>
+            <div class="pr-row"><span class="bar" style="width:70%"></span></div>
+            <div class="pr-row"><span class="bar" style="width:52%"></span></div>
+            <div class="pr-row"><span class="bar" style="width:84%"></span></div>
+            <div class="pr-row"><span class="bar" style="width:40%"></span><span class="chip watching" style="margin-left:auto">Reviewing</span></div>
+            <div class="next"><span class="label" style="color:var(--swarm-text)">Next call</span><span class="need">[DATA NEEDED: day and time]</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="tag"><svg class="hexdot" aria-hidden="true" style="width:7px;height:8px"><use href="#hx"/></svg>Members get</span>
+        <h3>Weekly live calls</h3>
+        <p>Live portfolio reviews, every week.</p>
+      </div>
+    </article>
+    <!-- 4 multi-cycle traders -->
+    <article class="card panel reveal" data-tilt>
+      <div class="mock" id="roomMock">
+        <span class="illo">Illustration · not live data</span>
+        <div class="room">
+          <div class="mock-h" style="margin-top:0;margin-bottom:12px">Room // multi-cycle traders</div>
+          <div class="msgs" id="msgs"></div>
+          <div class="typing" id="typing"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Someone is writing</span></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="tag"><svg class="hexdot" aria-hidden="true" style="width:7px;height:8px"><use href="#hx"/></svg>Members get</span>
+        <h3>Multi-cycle traders</h3>
+        <p>Traders who have made it through several cycles, sharing how they see the market right now.</p>
+      </div>
+    </article>
+  </div>
+  <div class="cta cta-stop reveal">
+    <a class="btn btn-gold" href="#join" data-gold>Join Swarm <span class="arrow" aria-hidden="true"></span></a>
+    <p class="cancel">Cancel anytime.</p>
+  </div>
+</section>
+
+<!-- 7. WHO IT'S FOR -->
+<section class="sec wrap" id="who" aria-labelledby="who-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Who it's for</span>
+    <h2 class="h2" id="who-h"><span class="mute">I built Swarm for two people.</span> <span>Maybe you're one of them.</span></h2>
+  </div>
+  <div class="who">
+    <div class="panel reveal">
+      <span class="label">If this is your first cycle</span>
+      <h3>Skip the expensive lesson</h3>
+      <p><q>This saves you from learning it the expensive way.</q></p>
+      <div class="track" aria-hidden="true">
+        <div class="stop you"><svg viewBox="0 0 20 22"><path d="M10 1.2 L18.4 6.1 L18.4 15.9 L10 20.8 L1.6 15.9 L1.6 6.1 Z" fill="#EEEBE4"/></svg><span class="label">You</span></div>
+        <span class="ln dash"></span>
+        <div class="stop"><svg viewBox="0 0 20 22" style="color:#55555B"><use href="#hx"/></svg><span class="label">Burned</span></div>
+        <span class="ln dash"></span>
+        <div class="stop"><svg viewBox="0 0 20 22" style="color:#8E8A80"><use href="#hx"/></svg><span class="label">Right curve</span></div>
+      </div>
+    </div>
+    <div class="panel reveal">
+      <span class="label">If it's your second</span>
+      <h3>Get back in with a plan</h3>
+      <p>Burned and waiting on the sideline? <q>This is how you get back in with a plan.</q></p>
+      <div class="track" aria-hidden="true">
+        <div class="stop"><svg viewBox="0 0 20 22" style="color:#55555B"><use href="#hx"/></svg><span class="label">First</span></div>
+        <span class="ln"></span>
+        <div class="stop you"><svg viewBox="0 0 20 22"><path d="M10 1.2 L18.4 6.1 L18.4 15.9 L10 20.8 L1.6 15.9 L1.6 6.1 Z" fill="#EEEBE4"/></svg><span class="label">You</span></div>
+        <span class="ln dash"></span>
+        <div class="stop"><svg viewBox="0 0 20 22" style="color:#8E8A80"><use href="#hx"/></svg><span class="label">Right curve</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. PRICING AND CHECKOUT -->
+<section class="sec wrap" id="join" aria-labelledby="join-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>// Pre-launch · Join the swarm</span>
+    <h2 class="h2" id="join-h"><span>Early on purpose.</span></h2>
+    <p class="lede">The first 50 founding seats lock in $49/month forever. After that it goes to $99/month. Cancel anytime.</p>
+    <div class="seg-switch" role="radiogroup" aria-label="Choose a plan" id="planSwitch">
+      <button type="button" role="radio" aria-checked="true" data-plan="founding">Founding</button>
+      <button type="button" role="radio" aria-checked="false" data-plan="standard" tabindex="-1">Standard</button>
+      <button type="button" role="radio" aria-checked="false" data-plan="yearly" tabindex="-1">Yearly <span class="mini">2 mo free</span></button>
+    </div>
+  </div>
+  <div class="price-card panel" aria-live="polite">
+    <div class="pc-top"><span class="label" id="planName" style="color:var(--swarm-text)">Founding monthly</span><span class="label" id="planSeats">50 seats only</span></div>
+    <div class="price"><span class="amt gold" id="planAmt">$49</span><span class="unit" id="planUnit">/mo</span></div>
+    <p class="pnote" id="planNote">Forever. Cancel whenever. 50 seats only.</p>
+    <p class="psub" id="planSub">Renews at $49.00 per month.</p>
+    <span class="src">Source // pre-launch checkout, Oct 16 2026</span>
+    <div class="incl">
+      <span class="label">Everything inside Swarm</span>
+      <ul>
+        <li><svg aria-hidden="true"><use href="#hxcheck"/></svg><span>Custom AI tools I build and maintain</span></li>
+        <li><svg aria-hidden="true"><use href="#hxcheck"/></svg><span>My watch list</span></li>
+        <li><svg aria-hidden="true"><use href="#hxcheck"/></svg><span>Weekly live calls with live portfolio reviews</span></li>
+        <li><svg aria-hidden="true"><use href="#hxcheck"/></svg><span>Traders who have made it through several cycles</span></li>
+      </ul>
+    </div>
+    <button class="btn btn-gold" type="button" id="joinBtn" data-gold>Join Swarm <span class="arrow" aria-hidden="true"></span></button>
+    <p class="cancel">Card or ACH through Whop. Cancel anytime.</p>
+  </div>
+  <div class="checkout" id="checkout" tabindex="-1" aria-labelledby="coTitle">
+    <div class="co-head"><span class="label" id="coPlan">Checkout · Founding monthly</span><span class="need">[DATA NEEDED: Whop plan IDs]</span></div>
+    <h3 id="coTitle">Checkout opens here soon.</h3>
+    <p>Payment runs through Whop, by card or bank transfer (ACH).</p>
+    <div class="skel" aria-hidden="true">
+      <span data-l="Email"></span>
+      <span data-l="Card or bank (ACH)"></span>
+      <span class="split"><i></i><i></i></span>
+      <span class="pay" data-l="Whop pay button"></span>
+    </div>
+    <p class="label" id="coState" style="font-size:10px">Whop embed not mounted · preview</p>
+  </div>
+  <p class="risk">Swarm is education and research, not financial advice. Crypto is volatile and you can lose money, including all of it. Cancel anytime.</p>
+</section>
+
+<!-- 9. HOW JOINING WORKS -->
+<section class="sec wrap" id="how" aria-labelledby="how-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>How joining works</span>
+    <h2 class="h2" id="how-h"><span class="mute">Three steps in.</span> <span>Then I'll see you inside.</span></h2>
+  </div>
+  <ol class="steps reveal">
+    <li><div class="hx"><svg viewBox="0 0 20 22" aria-hidden="true" style="color:#55555B"><use href="#hx"/></svg><span>01</span></div><h3>Pick your plan</h3><p>Founding, Standard or Yearly. Same Swarm inside every plan.</p></li>
+    <li><div class="hx"><svg viewBox="0 0 20 22" aria-hidden="true" style="color:#55555B"><use href="#hx"/></svg><span>02</span></div><h3>Pay through Whop</h3><p>By card or bank transfer (ACH). Cancel anytime.</p></li>
+    <li><div class="hx"><svg viewBox="0 0 20 22" aria-hidden="true" style="color:#55555B"><use href="#hx"/></svg><span>03</span></div><h3>Get access</h3><p>You're in. Your access details come right after checkout.</p><span class="need">[DATA NEEDED: where Swarm lives]</span></li>
+  </ol>
+</section>
+
+<!-- 10. FAQ -->
+<section class="sec wrap" id="faq" aria-labelledby="faq-h">
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Questions</span>
+    <h2 class="h2" id="faq-h"><span class="mute">Ask the hard ones first.</span> <span>Here are the straight answers.</span></h2>
+  </div>
+  <div class="faq reveal">
+    <details><summary>Is this financial advice, and will the AI trade for me?<span class="pm" aria-hidden="true"></span></summary><div class="ans"><p>No. Swarm is education and research, not financial advice. The AI tools help you research and check your thinking. You make your own decisions with your own money. <span class="need">[CONFIRM: the tools do not place trades]</span></p></div></details>
+    <details><summary>I've never invested. Is this for me?<span class="pm" aria-hidden="true"></span></summary><div class="ans"><p>Yes. If this is your first cycle, Swarm is built to save you from learning it the expensive way. You see what I'm watching and how I think about it, and you can bring your questions to the weekly live calls.</p></div></details>
+    <details><summary>I got burned last cycle. Why is this different?<span class="pm" aria-hidden="true"></span></summary><div class="ans"><p>If you've been waiting on the sideline, this is how you get back in with a plan: my watch list, weekly live portfolio reviews, and traders who have made it through several cycles sharing how they see the market right now.</p></div></details>
+    <details><summary>What do I get each week?<span class="pm" aria-hidden="true"></span></summary><div class="ans"><p>A weekly live call with live portfolio reviews, plus the custom AI tools I build and maintain, my watch list, and the multi-cycle traders inside. <span class="need">[DATA NEEDED: call day and time]</span></p></div></details>
+    <details><summary>What does "$49 forever" mean?<span class="pm" aria-hidden="true"></span></summary><div class="ans"><p>The first 50 founding seats lock in $49/month for as long as you stay subscribed. Once those seats are gone, new members pay $99/month. <span class="need">[CONFIRM: what happens if a founder cancels and rejoins]</span></p></div></details>
+    <details><summary>How do I pay, and can I cancel?<span class="pm" aria-hidden="true"></span></summary><div class="ans"><p>Checkout runs through Whop, by card or bank transfer (ACH). You can cancel anytime. <span class="need">[DATA NEEDED: refund policy]</span></p></div></details>
+    <details><summary>Where does Swarm happen?<span class="pm" aria-hidden="true"></span></summary><div class="ans"><p><span class="need">[DATA NEEDED: where Swarm lives, for example the Whop app or Discord]</span></p></div></details>
+    <details><summary>When does Swarm launch?<span class="pm" aria-hidden="true"></span></summary><div class="ans"><p>Swarm is in pre-launch now, and founding seats are open. <span class="need">[DATA NEEDED: launch date]</span></p></div></details>
+  </div>
+</section>
+
+<!-- 11. FINAL CTA -->
+<section class="sec wrap final" id="final" aria-labelledby="final-h">
+  <canvas id="finalField" aria-hidden="true"></canvas>
+  <div class="head reveal">
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Jesus · Welcome to Swarm · 03:51</span>
+    <h2 class="h2" id="final-h"><span class="mute">Being early and being wrong feel the same.</span> <span>I want you to be early and actually know exactly why.</span></h2>
+    <div class="cta">
+      <a class="btn btn-gold" href="#join" data-gold>Join Swarm <span class="arrow" aria-hidden="true"></span></a>
+      <p class="cancel">Cancel anytime.</p>
+    </div>
+    <p class="inside">I'll see you inside.</p>
+  </div>
+</section>
+</main>
+
+<!-- 12. FOOTER -->
+<footer class="foot wrap">
+  <div class="foot-top">
+    <img src="../brand/swarm/logo/swarm-horizontal-for-dark-bg.svg" alt="Swarm" width="220" height="67" loading="lazy">
+    <ul class="foot-links">
+      <li><a href="https://martinezaccess.com" target="_blank" rel="noopener">martinezaccess.com</a></li>
+      <li><a href="https://www.youtube.com/@jm_crypto" target="_blank" rel="noopener">JM Crypto on YouTube</a></li>
+      <li><a href="https://x.com/JesusMartinez" target="_blank" rel="noopener">@JesusMartinez on X</a></li>
+    </ul>
+  </div>
+  <div class="disclosure">
+    <p>Swarm is an educational community. Nothing here is financial, investment, tax or legal advice, or a recommendation to buy or sell anything.</p>
+    <p>Crypto assets are volatile and can lose most or all of their value. Only use money you can afford to lose.</p>
+    <p>Past results, including Jesus's, do not predict future results.</p>
+    <p>AI tools can be wrong. Treat what they show as information to check, not instructions.</p>
+    <p>Payments are processed by Whop.</p>
+    <p><span class="need">[DATA NEEDED: Terms, Privacy and Refund policy links, legal entity name]</span></p>
+  </div>
+  <div class="foot-bottom"><span class="label">joinswarm.ai</span><span class="label">Design lab preview · direction B</span></div>
+</footer>
+
+<script type="module" src="page.js"></script>
+</body>
+</html>

@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'">
+<title>Swarm | Core Glow</title>
+<meta name="description" content="Swarm is Jesus Martinez's AI crypto trading community for the new era: custom AI tools, his watch list, weekly live calls and multi-cycle traders. Pre-launch, 50 founding seats.">
+<meta name="theme-color" content="#0B0B0D">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Swarm: AI Crypto Trading Community">
+<meta property="og:description" content="Most people need three cycles. I want to get you there in one. Pre-launch, 50 founding seats.">
+<meta property="og:url" content="https://www.joinswarm.ai/">
+<meta property="og:image" content="https://www.joinswarm.ai/brand/swarm/social/swarm-og-1200x630.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.joinswarm.ai/brand/swarm/social/swarm-og-1200x630.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../brand/swarm/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../brand/swarm/icons/apple-touch-icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&family=JetBrains+Mono:wght@500&family=Unbounded:wght@600&display=swap">
+<link rel="stylesheet" href="../brand/swarm/swarm-tokens.css">
+<link rel="stylesheet" href="core-glow.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script>
+(function(){var d=document.documentElement,q=new URLSearchParams(location.search),r=q.get('reduce')==='1';try{r=r||matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}var t=q.has('t')?Math.max(0,parseFloat(q.get('t'))||0):null;d.classList.add('js');if(r)d.classList.add('reduce');if(t!==null)d.classList.add('frozen');window.SWARM={reduce:r,freeze:t};})();
+</script>
+</head>
+<body class="swarm">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="nav-logo" href="#top"><img src="../brand/swarm/logo/swarm-wordmark-for-dark-bg.svg" alt="Swarm" width="141" height="38"></a>
+    <nav class="nav-r" aria-label="Primary">
+      <a class="nav-link" href="https://youtu.be/n15W6X84IGg" target="_blank" rel="noopener">Watch the intro</a>
+      <a class="btn-line" href="#join">Join Swarm</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- 1. HERO -->
+<section class="hero" id="top" aria-labelledby="hero-h">
+  <div class="hero-art" aria-hidden="true">
+    <canvas id="hero-field"></canvas>
+    <canvas id="hero-agents"></canvas>
+    <img id="hero-mark" src="../brand/swarm/logo/swarm-mark.svg" alt="">
+  </div>
+  <div id="core-anchor" aria-hidden="true"></div>
+
+  <div class="wrap hero-copy">
+    <div class="facts-wrap" data-avoid>
+      <div class="facts-track">
+        <ul class="facts" aria-label="Swarm at a glance">
+          <li>Pre-launch</li>
+          <li>50 founding seats</li>
+          <li>Custom AI tools</li>
+          <li>Weekly live portfolio reviews</li>
+          <li>Card or ACH through Whop</li>
+        </ul>
+      </div>
+    </div>
+    <h1 id="hero-h" data-avoid><span class="m">Most people need three cycles.</span> <span class="b">I want to get you there in one.</span></h1>
+    <p class="hero-sub" data-avoid>Swarm is my AI crypto trading community for the new era: custom AI tools I build and maintain, my watch list, weekly live calls, and traders who have made it through several cycles.</p>
+    <div class="cta" data-avoid>
+      <a class="btn-gold" href="#join">Join Swarm</a>
+      <p class="cancel">Cancel anytime.</p>
+    </div>
+    <a class="watch" href="https://youtu.be/n15W6X84IGg" target="_blank" rel="noopener" data-avoid><span class="tri" aria-hidden="true"></span>Watch the intro <span class="dur">4:05</span><span class="sr-only"> (opens YouTube in a new tab)</span></a>
+  </div>
+
+  <div class="hero-hud wrap">
+    <div class="status" aria-hidden="true"><span>Swarm // <b id="hero-phase">Scanning</b></span><span class="seg" id="hero-seg"><i class="on"></i><i></i><i></i></span></div>
+    <button class="motion-btn" type="button" aria-pressed="false" data-motion-toggle><span class="mi" aria-hidden="true"></span><span class="ml">Pause motion</span></button>
+  </div>
+
+  <div class="qcards">
+    <figure class="qcard q1">
+      <blockquote><p>"Crypto cycles aren't really about crypto. They're about attention."</p></blockquote>
+      <figcaption>Jesus · Welcome to Swarm · <a href="https://youtu.be/n15W6X84IGg?t=40" target="_blank" rel="noopener">00:40</a></figcaption>
+    </figure>
+    <figure class="qcard q2">
+      <blockquote><p>"Being early and being wrong feel the same."</p></blockquote>
+      <figcaption>Jesus · Welcome to Swarm · <a href="https://youtu.be/n15W6X84IGg?t=231" target="_blank" rel="noopener">03:51</a></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 2. THE CURVE -->
+<section class="sec curve" id="curve" aria-labelledby="curve-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">The crypto curve</p>
+      <h2 class="h2" id="curve-h"><span class="m">Every cycle has three kinds of people.</span> <span class="b">Most only learn it the expensive way.</span></h2>
+    </div>
+
+    <figure class="crowd" id="crowd">
+      <div class="crowd-stage">
+        <canvas id="crowd-canvas" aria-hidden="true"></canvas>
+        <div class="you" id="crowd-you" aria-hidden="true"><span class="yl"></span><span class="yt">You</span></div>
+      </div>
+      <div class="zone-tags" aria-hidden="true"><span data-ztag="0">Left</span><span data-ztag="1">Mid</span><span data-ztag="2">Right</span></div>
+      <div class="zones">
+        <div class="zone" data-zone="0">
+          <h3>Left curve <span>First cycle</span></h3>
+          <p>Buys because everyone is buying. Has no idea when to sell.</p>
+        </div>
+        <div class="zone" data-zone="1">
+          <h3>Mid curve <span>Second cycle</span></h3>
+          <p>Got burned. Overthinks every move and sells too early.</p>
+        </div>
+        <div class="zone" data-zone="2">
+          <h3>Right curve <span>Third cycle</span></h3>
+          <p>Looks like the left curve from outside, because both are buying. But knows what it's buying, why, and when to get out.</p>
+        </div>
+      </div>
+      <figcaption class="fig-foot">
+        <span class="mono-s">Illustration · each mark is one person in the cycle</span>
+        <button class="motion-btn" type="button" aria-pressed="false" data-motion-toggle><span class="mi" aria-hidden="true"></span><span class="ml">Pause motion</span></button>
+      </figcaption>
+    </figure>
+
+    <p class="promise">Most people need three cycles and a lot of pain to get there. <span>I want to get you there in one.</span></p>
+    <div class="cta">
+      <a class="btn-gold" href="#join">Join Swarm</a>
+      <p class="cancel">Cancel anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3. WHY NOW -->
+<section class="sec why" id="why" aria-labelledby="why-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">Why this cycle</p>
+      <h2 class="h2" id="why-h"><span class="m">Crypto cycles aren't really about crypto.</span> <span class="b">They're about attention.</span></h2>
+      <div class="lede">
+        <p>The crowd's money goes to the riskiest bet on whatever everyone is excited about. In my first cycle, that was games. Since 2023, it's been AI.</p>
+        <p>The money coming back this time is a more informed crowd. It isn't chasing stories. It wants real things.</p>
+      </div>
+    </div>
+    <div class="attn" id="attn">
+      <canvas aria-hidden="true"></canvas>
+      <span class="attn-l a1">2021 · Games</span>
+      <span class="attn-l a2">Since 2023 · AI</span>
+    </div>
+    <p class="attn-cap">Illustration · where the crowd's attention went</p>
+    <figure class="real">
+      <blockquote><p><span>"Real things,</span> <span>real revenue,</span> <span>real users."</span></p></blockquote>
+      <figcaption>Jesus · Welcome to Swarm</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 4. WATCH THE INTRO -->
+<section class="sec video" id="intro" aria-labelledby="intro-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">Welcome to Swarm · 4:05</p>
+      <h2 class="h2" id="intro-h"><span class="m">Watch the intro.</span> <span class="b">Why I built Swarm, in my words.</span></h2>
+    </div>
+    <a class="poster" href="https://youtu.be/n15W6X84IGg" target="_blank" rel="noopener">
+      <span class="poster-info">
+        <img class="poster-logo" src="../brand/swarm/logo/swarm-horizontal-compact-for-dark-bg.svg" alt="" width="160" height="49">
+        <span class="poster-title">Welcome to Swarm <span>AI agentic trading</span></span>
+        <span class="poster-play">
+          <span class="play" aria-hidden="true"></span>
+          <span class="poster-meta"><span class="mono-s">Watch on YouTube</span><span class="dur-l">4:05</span></span>
+        </span>
+        <span class="mono-s poster-src">JM Crypto · published Oct 16, 2026</span>
+      </span>
+      <span class="poster-photo"><img src="../assets/jesus-studio-smile.jpg" alt="Jesus Martinez at the microphone in his studio" width="1920" height="1080" loading="lazy"></span>
+      <span class="sr-only"> (opens YouTube in a new tab)</span>
+    </a>
+  </div>
+</section>
+
+<!-- 5. THE FOUNDER -->
+<section class="sec founder" id="founder" aria-labelledby="founder-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">The founder</p>
+      <h2 class="h2" id="founder-h"><span class="m">2021 was my first cycle.</span> <span class="b">This is my third.</span></h2>
+    </div>
+    <div class="founder-grid">
+      <figure class="portrait">
+        <img src="../assets/jesus-studio-arms.jpg" alt="Jesus Martinez, founder of Swarm, arms crossed in his studio" width="1920" height="1080" loading="lazy">
+        <figcaption><span>Jesus Martinez</span><span>Founder · JM Crypto</span></figcaption>
+      </figure>
+      <article class="transcript" aria-label="From the Welcome to Swarm transcript">
+        <header class="tr-head"><span>Welcome to Swarm · Transcript</span><a href="https://youtu.be/n15W6X84IGg" target="_blank" rel="noopener">4:05<span class="sr-only"> video on YouTube, opens in a new tab</span></a></header>
+        <div class="tr-body">
+          <div class="tr-row">
+            <a class="ts" href="https://youtu.be/n15W6X84IGg?t=154" target="_blank" rel="noopener" aria-label="02:34 in the video">02:34</a>
+            <p>In 2021 I was working as a server and studying economics. My brother had just <strong>lost everything trading.</strong> For his birthday I gave him three Axies. Two months later they were worth tens of thousands of dollars, and it helped him get back on his feet.</p>
+          </div>
+          <div class="tr-row">
+            <a class="ts" href="https://youtu.be/n15W6X84IGg?t=170" target="_blank" rel="noopener" aria-label="02:50 in the video">02:50</a>
+            <p><strong>It wasn't luck.</strong> I grew up playing video games, so I understood how these game economies worked. I did the same with other crypto games, and that's how the channel started.</p>
+          </div>
+          <div class="tr-row">
+            <a class="ts" href="https://youtu.be/n15W6X84IGg?t=185" target="_blank" rel="noopener" aria-label="03:05 in the video">03:05</a>
+            <p>I stayed through the bear market. 2023 was my second cycle. Now I'm in my third, and <strong>I'm doing the same deep work on AI that I did on gaming.</strong> That's why I built Swarm.</p>
+          </div>
+        </div>
+        <ol class="cycles" aria-label="My cycles">
+          <li><b>2021</b><span>1st cycle</span></li>
+          <li><b>2023</b><span>2nd cycle</span></li>
+          <li class="now"><b>Now</b><span>3rd cycle</span></li>
+        </ol>
+        <footer class="tr-foot">
+          <p>My story, not a typical result and not a promise of yours.</p>
+          <span class="dn">[Confirm: wording against official captions]</span>
+        </footer>
+      </article>
+    </div>
+    <div class="cta">
+      <a class="btn-gold" href="#join">Join Swarm</a>
+      <p class="cancel">Cancel anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6. WHAT MEMBERS GET -->
+<section class="sec members" id="members" aria-labelledby="members-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">Swarm · Members get</p>
+      <h2 class="h2" id="members-h"><span class="m">Here's what you get.</span> <span class="b">Built for the new era of crypto.</span></h2>
+    </div>
+
+    <div class="mg">
+      <!-- Custom AI tools -->
+      <article class="mcard c-tools">
+        <div class="mock mock-tools" id="tools-mock">
+          <div class="mbar"><span>Agent console</span><span class="mtag">Illustration · not live data</span></div>
+          <div class="tools3d" id="tools-3d">
+            <canvas class="tools-still" id="tools-still" aria-hidden="true"></canvas>
+            <img id="tools-mark" src="../brand/swarm/logo/swarm-mark.svg" alt="">
+            <button class="replay" type="button" id="tools-replay" hidden>Replay</button>
+          </div>
+          <div class="console" id="console">
+            <div class="con-head">Scouts</div>
+            <ul class="con-rows">
+              <li class="crow" data-state="SCANNING"><span class="spin" aria-hidden="true"></span><span class="cid">Scout 01</span><span class="cst">Scanning</span><span class="cline"><span class="cverb">Scanning</span> <span class="cobj">the watch list</span></span></li>
+              <li class="crow" data-state="WATCHING"><span class="spin" aria-hidden="true"></span><span class="cid">Scout 02</span><span class="cst">Watching</span><span class="cline"><span class="cverb">Watching</span> <span class="cobj">where attention is moving</span></span></li>
+              <li class="crow" data-state="SYNCING"><span class="spin" aria-hidden="true"></span><span class="cid">Scout 03</span><span class="cst">Syncing</span><span class="cline"><span class="cverb">Comparing</span> <span class="cobj">with last week's review</span></span></li>
+              <li class="crow" data-state="IDLE"><span class="spin" aria-hidden="true"></span><span class="cid">Scout 04</span><span class="cst">Idle</span><span class="cline"><span class="cverb">Waiting</span> <span class="cobj">for the next scan</span></span></li>
+            </ul>
+            <p class="con-foot">Illustrative agent states. Not live data. Not results.</p>
+          </div>
+        </div>
+        <div class="mtext">
+          <span class="mchip">Members get</span>
+          <h3>Custom AI tools</h3>
+          <p>Built and maintained by me to trade the markets.</p>
+        </div>
+      </article>
+
+      <!-- Watch list -->
+      <article class="mcard c-watch">
+        <div class="mock mock-watch" id="watch-mock">
+          <div class="mbar"><span>Watch list // members only</span><span class="mtag">Illustration · not live data</span></div>
+          <div class="wl" role="presentation">
+            <div class="wl-head" aria-hidden="true"><span>#</span><span>Asset</span><span class="wl-why">Why it's on the list</span><span>Status</span></div>
+            <div class="wl-row" data-row="0"><span class="rk">01</span><span class="bar" style="width:58%"></span><span class="bar wl-why" style="width:76%"></span><span class="wchip">Watching</span></div>
+            <div class="wl-row" data-row="1"><span class="rk">02</span><span class="bar" style="width:40%"></span><span class="bar wl-why" style="width:52%"></span><span class="wchip rev">Reviewing</span></div>
+            <div class="wl-row" data-row="2"><span class="rk">03</span><span class="bar" style="width:66%"></span><span class="bar wl-why" style="width:64%"></span><span class="wchip new">New this week</span></div>
+            <div class="wl-row" data-row="3"><span class="rk">04</span><span class="bar" style="width:46%"></span><span class="bar wl-why" style="width:82%"></span><span class="wchip">Watching</span></div>
+            <div class="wl-row rem" data-row="4"><span class="rk">05</span><span class="bar" style="width:52%"></span><span class="bar wl-why" style="width:44%"></span><span class="wchip">Removed</span></div>
+            <div class="wl-row" data-row="5"><span class="rk">06</span><span class="bar" style="width:36%"></span><span class="bar wl-why" style="width:60%"></span><span class="wchip">Watching</span></div>
+          </div>
+          <p class="mock-foot">Asset names are members only</p>
+        </div>
+        <div class="mtext">
+          <span class="mchip">Members get</span>
+          <h3>My watch list</h3>
+          <p>So you always know what I'm looking at.</p>
+        </div>
+      </article>
+
+      <!-- Weekly live calls -->
+      <article class="mcard c-calls">
+        <div class="mock mock-calls" id="calls-mock">
+          <div class="mbar"><span>Live portfolio review</span><span class="mtag">Illustration · not live data</span></div>
+          <div class="call">
+            <div class="call-frame">
+              <img src="../assets/jesus-interview.jpg" alt="" width="1200" height="1800" loading="lazy">
+              <span class="call-tag">Weekly call</span>
+              <div class="call-bot">
+                <span class="call-who">Jesus · host</span>
+                <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              </div>
+            </div>
+            <div class="call-next"><span>Next call</span><span class="dn">[Data needed: day and time]</span></div>
+          </div>
+        </div>
+        <div class="mtext">
+          <span class="mchip">Members get</span>
+          <h3>Weekly live calls</h3>
+          <p>Live portfolio reviews, every week.</p>
+        </div>
+      </article>
+
+      <!-- Multi-cycle traders -->
+      <article class="mcard c-traders">
+        <div class="mock mock-room" id="room-mock">
+          <div class="mbar"><span>Trader room // members only</span><span class="mtag">Illustration · not live data</span></div>
+          <div class="room">
+            <div class="msg"><span class="av" aria-hidden="true"></span><div><div class="mhead"><span class="bar mname" style="width:96px"></span><span class="mtagc">Trader · 3 cycles</span></div><div class="mlines"><span class="bar" style="width:88%"></span><span class="bar" style="width:54%"></span></div></div></div>
+            <div class="msg"><span class="av" aria-hidden="true"></span><div><div class="mhead"><span class="bar mname" style="width:74px"></span><span class="mtagc">Multi-cycle trader</span></div><div class="mlines"><span class="bar" style="width:70%"></span></div></div></div>
+            <div class="msg"><span class="av host" aria-hidden="true"></span><div><div class="mhead"><span class="mhost">Jesus</span><span class="mtagc">Host</span></div><div class="mlines"><span class="bar" style="width:80%"></span><span class="bar" style="width:62%"></span></div></div></div>
+            <div class="msg"><span class="av" aria-hidden="true"></span><div><div class="mhead"><span class="bar mname" style="width:110px"></span><span class="mtagc">Trader · 3 cycles</span></div><div class="mlines"><span class="bar" style="width:46%"></span></div></div></div>
+            <div class="composer" aria-hidden="true">Members only</div>
+          </div>
+        </div>
+        <div class="mtext">
+          <span class="mchip">Members get</span>
+          <h3>Multi-cycle traders</h3>
+          <p>Traders who have made it through several cycles, sharing how they see the market right now.</p>
+          <p class="mnote">Names and messages are hidden in this preview. <span class="dn">[Data needed: guest traders]</span></p>
+        </div>
+      </article>
+    </div>
+
+    <div class="cta">
+      <a class="btn-gold" href="#join">Join Swarm</a>
+      <p class="cancel">Cancel anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7. WHO IT'S FOR -->
+<section class="sec who-sec" id="who" aria-labelledby="who-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">Who it's for</p>
+      <h2 class="h2" id="who-h"><span class="m">Your first cycle or your second.</span> <span class="b">Either way, get there in one.</span></h2>
+    </div>
+    <div class="who-grid">
+      <article class="who">
+        <div class="mini" aria-hidden="true">
+          <svg viewBox="0 0 320 100" preserveAspectRatio="none"><path class="mc-base" d="M0 88.5 H320"/><path class="mc-full" d="M10.0 84.9 L14.0 84.4 L18.0 83.7 L22.0 83.0 L26.0 82.2 L30.0 81.3 L34.0 80.3 L38.0 79.1 L42.0 77.9 L46.0 76.5 L50.0 75.0 L54.0 73.3 L58.0 71.5 L62.0 69.6 L66.0 67.5 L70.0 65.3 L74.0 62.9 L78.0 60.5 L82.0 57.9 L86.0 55.3 L90.0 52.6 L94.0 49.8 L98.0 47.0 L102.0 44.1 L106.0 41.3 L110.0 38.5 L114.0 35.8 L118.0 33.2 L122.0 30.7 L126.0 28.4 L130.0 26.2 L134.0 24.3 L138.0 22.6 L142.0 21.1 L146.0 19.9 L150.0 19.0 L154.0 18.3 L158.0 18.0 L162.0 18.0 L166.0 18.3 L170.0 19.0 L174.0 19.9 L178.0 21.1 L182.0 22.6 L186.0 24.3 L190.0 26.2 L194.0 28.4 L198.0 30.7 L202.0 33.2 L206.0 35.8 L210.0 38.5 L214.0 41.3 L218.0 44.1 L222.0 47.0 L226.0 49.8 L230.0 52.6 L234.0 55.3 L238.0 57.9 L242.0 60.5 L246.0 62.9 L250.0 65.3 L254.0 67.5 L258.0 69.6 L262.0 71.5 L266.0 73.3 L270.0 75.0 L274.0 76.5 L278.0 77.9 L282.0 79.1 L286.0 80.3 L290.0 81.3 L294.0 82.2 L298.0 83.0 L302.0 83.7 L306.0 84.4 L310.0 84.9"/><path class="mc-zone" d="M10.0 84.9 L14.0 84.4 L18.0 83.7 L22.0 83.0 L26.0 82.2 L30.0 81.3 L34.0 80.3 L38.0 79.1 L42.0 77.9 L46.0 76.5 L50.0 75.0 L54.0 73.3 L58.0 71.5 L62.0 69.6 L66.0 67.5 L70.0 65.3 L74.0 62.9 L78.0 60.5 L82.0 57.9 L86.0 55.3 L90.0 52.6 L94.0 49.8 L98.0 47.0 L102.0 44.1 L106.0 41.3 L110.0 38.5 L112.0 37.2"/><path class="mc-div" d="M112 88 V37.2 M208 88 V37.2"/></svg>
+          <span class="mini-you" style="left:19.06%;top:70.1%">You</span>
+        </div>
+        <p class="who-eye">If this is your first cycle</p>
+        <h3>Skip the expensive lesson</h3>
+        <p>"If this is your first cycle, this saves you from learning it the expensive way."</p>
+      </article>
+      <article class="who">
+        <div class="mini" aria-hidden="true">
+          <svg viewBox="0 0 320 100" preserveAspectRatio="none"><path class="mc-base" d="M0 88.5 H320"/><path class="mc-full" d="M10.0 84.9 L14.0 84.4 L18.0 83.7 L22.0 83.0 L26.0 82.2 L30.0 81.3 L34.0 80.3 L38.0 79.1 L42.0 77.9 L46.0 76.5 L50.0 75.0 L54.0 73.3 L58.0 71.5 L62.0 69.6 L66.0 67.5 L70.0 65.3 L74.0 62.9 L78.0 60.5 L82.0 57.9 L86.0 55.3 L90.0 52.6 L94.0 49.8 L98.0 47.0 L102.0 44.1 L106.0 41.3 L110.0 38.5 L114.0 35.8 L118.0 33.2 L122.0 30.7 L126.0 28.4 L130.0 26.2 L134.0 24.3 L138.0 22.6 L142.0 21.1 L146.0 19.9 L150.0 19.0 L154.0 18.3 L158.0 18.0 L162.0 18.0 L166.0 18.3 L170.0 19.0 L174.0 19.9 L178.0 21.1 L182.0 22.6 L186.0 24.3 L190.0 26.2 L194.0 28.4 L198.0 30.7 L202.0 33.2 L206.0 35.8 L210.0 38.5 L214.0 41.3 L218.0 44.1 L222.0 47.0 L226.0 49.8 L230.0 52.6 L234.0 55.3 L238.0 57.9 L242.0 60.5 L246.0 62.9 L250.0 65.3 L254.0 67.5 L258.0 69.6 L262.0 71.5 L266.0 73.3 L270.0 75.0 L274.0 76.5 L278.0 77.9 L282.0 79.1 L286.0 80.3 L290.0 81.3 L294.0 82.2 L298.0 83.0 L302.0 83.7 L306.0 84.4 L310.0 84.9"/><path class="mc-zone" d="M112.0 37.2 L116.0 34.5 L120.0 31.9 L124.0 29.5 L128.0 27.3 L132.0 25.2 L136.0 23.4 L140.0 21.8 L144.0 20.4 L148.0 19.4 L152.0 18.6 L156.0 18.2 L160.0 18.0 L164.0 18.2 L168.0 18.6 L172.0 19.4 L176.0 20.4 L180.0 21.8 L184.0 23.4 L188.0 25.2 L192.0 27.3 L196.0 29.5 L200.0 31.9 L204.0 34.5 L208.0 37.2"/><path class="mc-div" d="M112 88 V37.2 M208 88 V37.2"/></svg>
+          <span class="mini-you" style="left:50%;top:18%">You</span>
+        </div>
+        <p class="who-eye">If it's your second</p>
+        <h3>Get back in with a plan</h3>
+        <p>"If this is your second cycle and you got burned and you've been waiting on the sideline, this is how you get back in with a plan."</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 8. PRICING AND CHECKOUT -->
+<section class="sec pricing" id="join" aria-labelledby="join-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">Pre-launch · Join the swarm</p>
+      <h2 class="h2" id="join-h"><span class="b">Early on purpose.</span></h2>
+      <p class="lede join-line">The first 50 founding seats lock in $49/month forever. After that it goes to $99/month. Cancel anytime.</p>
+    </div>
+
+    <div class="join">
+      <fieldset class="seg-switch">
+        <legend class="sr-only">Choose a plan</legend>
+        <label><input type="radio" name="plan" value="founding" checked><span>Founding</span></label>
+        <label><input type="radio" name="plan" value="standard"><span>Standard</span></label>
+        <label><input type="radio" name="plan" value="yearly"><span>Yearly</span></label>
+      </fieldset>
+
+      <div class="pcard is-gold" id="pcard" aria-live="polite">
+        <div class="pc-top"><span id="pc-name">Founding monthly</span><span class="pc-chip" id="pc-chip">50 seats only</span></div>
+        <p class="price"><span class="amt" id="pc-amt">$49</span><span class="unit" id="pc-unit">/mo</span></p>
+        <p class="pc-note" id="pc-note">Forever. Cancel whenever. 50 seats only.</p>
+        <p class="src">Source // pre-launch checkout, Oct 16 2026</p>
+        <hr class="pc-hr">
+        <p class="pc-label">Everything inside Swarm</p>
+        <ul class="checks">
+          <li>Custom AI tools I build and maintain</li>
+          <li>My watch list</li>
+          <li>Weekly live calls with live portfolio reviews</li>
+          <li>Traders who have made it through several cycles</li>
+        </ul>
+        <button class="btn-gold" type="button" id="join-btn">Join Swarm</button>
+        <p class="cancel">Card or ACH through Whop. Cancel anytime.</p>
+      </div>
+
+      <div class="whop" id="whop-checkout" tabindex="-1" data-state="placeholder" aria-label="Checkout">
+        <div class="whop-in">
+          <p class="whop-label">Checkout · <span data-slot-plan>Founding monthly</span></p>
+          <p class="whop-title">Checkout opens here soon.</p>
+          <p class="whop-sub">Payment runs through Whop, by card or bank transfer (ACH).</p>
+          <span class="dn">[Data needed: Whop plan IDs]</span>
+          <p class="whop-status" id="whop-status" aria-live="polite"></p>
+        </div>
+      </div>
+      <p class="risk">Swarm is education and research, not financial advice. Crypto is volatile and you can lose money, including all of it. Cancel anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9. HOW JOINING WORKS -->
+<section class="sec how" id="how" aria-labelledby="how-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">How joining works</p>
+      <h2 class="h2" id="how-h"><span class="m">Pick a plan, pay, get access.</span> <span class="b">Then I'll see you inside.</span></h2>
+    </div>
+    <ol class="steps">
+      <li class="step"><span class="node" aria-hidden="true">01</span><h3>Pick your plan</h3><p>Founding, Standard or Yearly. Everything inside Swarm comes with every plan.</p></li>
+      <li class="step"><span class="node" aria-hidden="true">02</span><h3>Pay through Whop</h3><p>By card or bank transfer (ACH). Cancel anytime.</p></li>
+      <li class="step"><span class="node" aria-hidden="true">03</span><h3>Get access</h3><p>Where Swarm lives: <span class="dn">[Data needed: where Swarm lives]</span></p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 10. FAQ -->
+<section class="sec faq-sec" id="faq" aria-labelledby="faq-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="pill">FAQ</p>
+      <h2 class="h2" id="faq-h"><span class="m">You've got questions.</span> <span class="b">Here are straight answers.</span></h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Is this financial advice, and will the AI trade for me?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p>No. Swarm is education and research, not financial advice. The AI tools help you research the market, and every decision stays yours. <span class="dn">[Confirm: the tools do not place trades]</span></p></div>
+      </details>
+      <details>
+        <summary>I've never invested. Is this for me?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p>Yes. If this is your first cycle, Swarm is built to save you from learning it the expensive way. You see my watch list, so you know what I'm looking at, and you get the weekly live calls.</p></div>
+      </details>
+      <details>
+        <summary>I got burned last cycle. Why is this different?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p>If this is your second cycle and you've been waiting on the sideline, this is how you get back in with a plan: knowing what you're buying, why, and when to get out.</p></div>
+      </details>
+      <details>
+        <summary>What do I get each week?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p>A weekly live call with live portfolio reviews, plus my watch list, the custom AI tools I build and maintain, and traders who have made it through several cycles. <span class="dn">[Data needed: call day and time]</span></p></div>
+      </details>
+      <details>
+        <summary>What does "$49 forever" mean?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p>The first 50 founding seats lock in $49/month forever. After those seats are gone, new members pay $99/month. <span class="dn">[Confirm: what happens if a founder cancels and rejoins]</span></p></div>
+      </details>
+      <details>
+        <summary>How do I pay, and can I cancel?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p>Checkout runs through Whop, by card or bank transfer (ACH). You can cancel anytime. <span class="dn">[Data needed: refund policy]</span></p></div>
+      </details>
+      <details>
+        <summary>Where does Swarm happen?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p><span class="dn">[Data needed: where Swarm lives]</span></p></div>
+      </details>
+      <details>
+        <summary>When does Swarm launch?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p>Swarm is in pre-launch now, which is why founding seats exist. <span class="dn">[Data needed: launch date]</span></p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- 11. FINAL CTA -->
+<section class="final" id="final" aria-labelledby="final-h">
+  <canvas id="final-field" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <h2 class="h2" id="final-h"><span class="m">Being early and being wrong feel the same.</span> <span class="b">I want you to be early and actually know exactly why.</span></h2>
+    <div class="cta">
+      <a class="btn-gold" href="#join">Join Swarm</a>
+      <p class="cancel">Cancel anytime.</p>
+    </div>
+    <p class="see">I'll see you inside.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- 12. FOOTER -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <img class="foot-logo" src="../brand/swarm/logo/swarm-horizontal-for-dark-bg.svg" alt="Swarm" width="200" height="61">
+      <ul class="foot-links">
+        <li><a href="https://martinezaccess.com" target="_blank" rel="noopener">martinezaccess.com</a></li>
+        <li><a href="https://www.youtube.com/@jm_crypto" target="_blank" rel="noopener">JM Crypto on YouTube</a></li>
+        <li><a href="https://x.com/JesusMartinez" target="_blank" rel="noopener">@JesusMartinez on X</a></li>
+      </ul>
+    </div>
+    <div class="disclose">
+      <p>Swarm is an educational community. Nothing here is financial, investment, tax or legal advice, or a recommendation to buy or sell anything. Crypto assets are volatile and can lose most or all of their value. Only use money you can afford to lose. Past results, including Jesus's, do not predict future results. AI tools can be wrong. Treat what they show as information to check, not instructions. Payments are processed by Whop.</p>
+    </div>
+    <div class="legal"><span>Terms</span><span>Privacy</span><span>Refund policy</span><span class="dn">[Data needed: policy URLs and legal entity]</span></div>
+    <p class="lab">Design lab preview · Direction A, Core Glow</p>
+  </div>
+</footer>
+
+<script src="hero.js"></script>
+<script src="crowd.js"></script>
+<script src="page.js"></script>
+</body>
+</html>
