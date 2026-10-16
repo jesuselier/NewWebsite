@@ -37,14 +37,25 @@ The website's existing story ($700 into Axie Infinity, half of what he had in th
 
 The video cites Activision up about 2.5x in 2020, Axie Infinity up over 1,000x with over $4 billion in revenue in a calendar year, riskier AI stocks up 4x to 10x, and Robinhood crypto trading volume up 61% in August 2026 in one month. These have not been verified for the website. Leave them off the landing previews, or mark them `[SOURCE NEEDED]`.
 
-## Visual identity in the video
+## Swarm brand kit (binding for anything Swarm)
 
-- Deep charcoal to matte black base (about `#121212` to `#181818`), warm honey gold accent (about `#E2B755` to `#F5C842`), white and muted sand text (about `#A0A09A`).
-- Uppercase condensed sans for headings and numbers (looks like DIN Condensed), mono eyebrow labels with wide tracking and `//` separators (`CASE STUDY // 2020`, `SWARM // MEMBERS GET`).
-- Lower-third cards: dark translucent panels with a thin gold border.
-- **Logo:** a symmetrical cluster of hexagons forming a honeycomb flower (a center hexagon with six around it), the center hexagon lit gold, beside a bold clean sans `SWARM` wordmark. We do not have the master logo file; any page that draws it recreates it in SVG or 3D and is labelled for swap-in.
+The approved kit lives at `public/brand/swarm/` with its handoff doc at `docs/swarm-brand.md` (from the `swarm-brand` branch, brought in on October 16, 2026). **Read `docs/swarm-brand.md` and follow it.** Where this brief or any direction disagrees with the kit, the kit wins. In the design lab, `design-lab/landing/brand` links to `public/brand`, so prototypes reference `../brand/swarm/...`.
+
+The rules that matter most for the previews:
+
+- **Logo: Hive Core.** Use the SVG files in `brand/swarm/logo/` as they are, in an `<img>`. Never rebuild the mark, re-type `SWARM`, recolor it, or light a second cell. Default lockup `swarm-horizontal-for-dark-bg.svg` (hero, footer); `swarm-horizontal-compact-for-dark-bg.svg` under 240px wide; `swarm-stacked-for-dark-bg.svg` for square spaces; `swarm-mark.svg` alone on dark; `swarm-mark-flat.svg` under 48px or over photos. Minimum sizes: mark 24px tall, horizontal 160px wide, compact 120px, stacked 96px. `alt="Swarm"` on lockups, `alt=""` when the word Swarm sits next to the mark.
+- **Tokens are scoped.** Load `brand/swarm/swarm-tokens.css` and put every Swarm section inside a `.swarm` wrapper. The `--swarm-*` tokens and the Swarm fonts apply only inside that wrapper, never to the rest of the page, which keeps its own direction's look.
+- **Color inside `.swarm`:** ink-first (`#0B0B0D` ground, `#EEEBE4` text, `#8E8A80` muted). Gold `#F5C542` is the signal: the core cell, ONE primary button per view, one highlighted number. Text on gold is `#141416`. Never a gold section background. Grey `#55555B` is for hex outlines only, never text. No gradients except the core cell's radial gradient and soft glow. No drop shadows; borders are 1px `#232328`.
+- **Type inside `.swarm`:** Unbounded 600 headlines (uppercase only on short title cards, +0.06em tracking), JetBrains Mono 500 for labels and numbers (labels uppercase, +0.32em tracking), Hanken Grotesk 400 for paragraphs. Never paragraphs in Unbounded.
+- **Shape inside `.swarm`:** radius 28px panels, 18px buttons and inputs, 10px chips. No emoji.
+- **The only decorative pattern** is the honeycomb field: pointy-top hex outlines in `#1C1C21` fading toward the edges, exactly one gold lit cell and its six neighbours outlined in `#55555B` (see `brand/swarm/social/swarm-x-header-1500x500.png`). Keep text off the lit cell. Motion built for Swarm (3D or 2D) animates this field and the idea "the swarm converges on one signal"; it never builds a 3D or redrawn copy of the mark and never lights a second cell.
+- **Meta:** Swarm pages use `brand/swarm/social/swarm-og-1200x630.png` as og:image and Twitter card, and the Swarm icons in `brand/swarm/icons/`. The landing page itself is a martinezaccess.com page, so it keeps the site's own og:image and favicon; a dedicated Swarm page gets the Swarm ones.
+
+## Visual language in the video (secondary to the kit)
+
+- The video's lower thirds use a condensed uppercase sans, mono eyebrow labels with `//` separators (`CASE STUDY // 2020`, `SWARM // MEMBERS GET`), and dark panels with thin gold borders. Its gold reads slightly warmer than the kit's; use the kit's `#F5C542`.
 - Motion: technical HUD cards, line charts that plot themselves, a gold bell curve with left, mid and right zones lighting up.
-- Frame `assets/swarm-intro-frame.jpg` is YouTube's auto thumbnail (Jesus at the mic with two lower thirds). The video's best poster moment is the logo reveal at 3:18; we cannot extract frames until we have the file.
+- Frame `assets/swarm-intro-frame.jpg` is YouTube's auto thumbnail (Jesus at the mic with two lower thirds). The video's logo reveal is at 3:18; we cannot extract frames until we have the file. For a poster, prefer a composed panel with the kit lockup over the auto thumbnail.
 
 ## Video on the page
 
@@ -52,4 +63,4 @@ Artifact previews cannot embed YouTube, so the preview shows a designed poster w
 
 ## Brand note
 
-Gold on ink is The Attention Cycle's palette, and the JM Crypto channel is cyan. Swarm's own video is gold on charcoal. A direction may lean into Swarm gold, but the page as a whole must not read as an Attention Cycle asset.
+Swarm's kit is ink with a single gold signal. Gold on ink is also The Attention Cycle's palette, and the JM Crypto channel is cyan. Keep Swarm's gold inside the `.swarm` sections; the rest of the landing page carries its own direction's palette, so the page as a whole reads as Jesus's site with a Swarm section, not as a Swarm or Attention Cycle asset.
