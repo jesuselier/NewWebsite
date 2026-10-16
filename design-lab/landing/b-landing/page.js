@@ -566,7 +566,7 @@ $$('a[href="#join"]').forEach(a => a.addEventListener('click', () => showPlan('f
       g.beginPath();
       for (let k = 0; k < 6; k++) { const an = Math.PI / 180 * (60 * k - 90); const px = x + R * 0.97 * Math.cos(an), py = y + R * 0.97 * Math.sin(an); k ? g.lineTo(px, py) : g.moveTo(px, py); }
       g.closePath();
-      g.globalAlpha = a; g.fillStyle = '#0F0F12'; g.fill(); g.strokeStyle = '#1C1C21'; g.lineWidth = 1; g.stroke();
+      g.globalAlpha = a; g.strokeStyle = '#1C1C21'; g.lineWidth = 1; g.stroke();   // kit field: unfilled outlines only
     }
     g.globalAlpha = 1;
   }

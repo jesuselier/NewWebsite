@@ -4,7 +4,7 @@ Source: YouTube auto-generated English captions for https://youtu.be/n15W6X84IGg
 
 **0:00** Every crypto cycle, there are three kinds of people. If it's your first cycle, you're likely left curve. You buy because everyone else is buying and you have no idea when to sell.
 
-**0:09** If it's your second cycle, you're probably mid-curve around this time. I know I was. You got burnt last time, so now you overthink everything. You sell too early and you watch the big moves from the sidelines.
+**0:09** It's your second cycle, you're probably mid-curve around this time. I know I was. You got burnt last time, so now you overthink everything. You sell too early and you watch the big moves from the sidelines.
 
 **0:17** And by your third cycle, you finally get to the glory lands. You get to the right curve. From the outside, it looks just like left curve because, you know, both people are buying. The difference is right curve knows what it's buying, why it's buying it, and when to get out.
 
@@ -38,14 +38,19 @@ Source: YouTube auto-generated English captions for https://youtu.be/n15W6X84IGg
 
 ## Caption corrections
 
-"Axi Infinity" to Axie Infinity, "three axis" to three Axies, "Axi" to Axie, "Robin Hood" to Robinhood, "bare market" to bear market, "on mass" to en masse, "learning at the expensive way" to learning it the expensive way. Music and other non-speech tags are removed.
+"Axi Infinity" to Axie Infinity, "three axis" to three Axies, "Axi" to Axie, "Robin Hood" to Robinhood, "bare market" to bear market, "on mass" to en masse, "learning at the expensive way" to learning it the expensive way. Music and other non-speech tags are removed. At 0:09 the caption reads "[music] It's your second cycle"; a first word like "If" may be masked by the music, so that line is not quoted until the audio is checked.
 
 ## Lines that work on the page (verbatim)
 
+Timestamps below are where each line itself starts, as re-checked against the caption segments in `FOUNDER-DOSSIER.md` (section 3), which is the authority for quotes.
+
+
 - "Most people need three cycles and a lot of pain to get there. I want to get you there in one." (0:34)
 - "Crypto cycles aren't really about crypto. They're about attention." (0:40)
-- "They want real things. They want real revenue. They want real users." (2:15)
+- "They want real things. They want real revenue. They want real users." (2:23)
 - "It wasn't luck. I grew up playing video games, so I understood how these game economies worked." (2:48)
-- "I'm doing the same deep work on AI that I did on gaming." (3:02)
+- "I stayed through the bear market when everyone else left." (3:02)
+- "2023 was my second cycle and this is my third, and I'm doing the same deep work on AI that I did on gaming." (3:06)
 - "Being early and being wrong a lot of the time feels the same way. But I want you to be early and actually know exactly why." (3:51)
-- "If you want to be on the right side of this cycle, hit the button below and join Swarm. I'll see you inside." (3:51)
+- "If you want to be on the right side of this cycle, hit the button below and join Swarm." (3:57)
+- "I'll see you inside." (4:01)

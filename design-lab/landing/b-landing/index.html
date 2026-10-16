@@ -268,7 +268,8 @@ a { color: inherit; }
   .tr-row { grid-template-columns: 1fr; gap: 10px; }
   .ts { width: 66px; }
   .tr-row p { font-size: 16px; }
-  .cycles { margin: 4px 10px 0; }
+  .cycles { margin: 4px 4px 0; }
+  .cyc .label { letter-spacing: .14em; font-size: 10px; }
   .tr-foot { padding: 16px 18px 20px; }
 }
 
@@ -362,6 +363,8 @@ body.paused .typing.run .dots i { animation-play-state: paused; }
   .wl { left: 14px; right: 14px; }
   .wl-row { grid-template-columns: 76px 1fr 104px; gap: 8px; padding: 0 2px; }
   .wl-row .why { font-size: 12.5px; }
+  .wl-row.hd { font-size: 8.5px; letter-spacing: .12em; }
+  .msgs .msg:nth-last-child(n+4) { display: none; }
   .call { left: 14px; right: 14px; grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
   .call-side .pr-row, .call-side > .label { display: none; }
   .call-side { padding: 10px 12px; }
@@ -476,7 +479,7 @@ body.paused .typing.run .dots i { animation-play-state: paused; }
 .disclosure { max-width: 1200px; margin: 34px auto 0; padding-top: 26px; border-top: 1px solid var(--swarm-line); display: grid; grid-template-columns: 1fr 1fr; gap: 10px 48px; }
 .disclosure p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--swarm-text-muted); }
 .foot-bottom { max-width: 1200px; margin: 26px auto 0; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-@media (max-width: 760px) { .disclosure { grid-template-columns: 1fr; } .foot-top img { width: 180px; } .foot-links { flex-direction: column; gap: 2px; } }
+@media (max-width: 760px) { .disclosure { grid-template-columns: 1fr; } .foot-top img { width: 180px; } .foot-top { flex-direction: column; align-items: flex-start; gap: 18px; } .foot-links { flex-direction: column; gap: 2px; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -754,7 +757,7 @@ body.paused .typing.run .dots i { animation-play-state: paused; }
     <div class="panel reveal">
       <span class="label">If this is your first cycle</span>
       <h3>Skip the expensive lesson</h3>
-      <p><q>This saves you from learning it the expensive way.</q></p>
+      <p><q>This saves you from learning it the expensive way.</q> <span class="mono ts-i">(3:39)</span></p>
       <div class="track" aria-hidden="true">
         <div class="stop you"><svg viewBox="0 0 20 22" aria-hidden="true"><path class="hx-now" d="M10 1.2 L18.4 6.1 L18.4 15.9 L10 20.8 L1.6 15.9 L1.6 6.1 Z"/></svg><span class="label">You</span></div>
         <span class="ln dash"></span>
@@ -766,7 +769,7 @@ body.paused .typing.run .dots i { animation-play-state: paused; }
     <div class="panel reveal">
       <span class="label">If it's your second</span>
       <h3>Get back in with a plan</h3>
-      <p>Burned and waiting on the sideline? <q>This is how you get back in with a plan.</q></p>
+      <p>Burned and waiting on the sideline? <q>This is how you get back in with a plan.</q> <span class="mono ts-i">(3:39)</span></p>
       <div class="track" aria-hidden="true">
         <div class="stop"><svg viewBox="0 0 20 22" style="color:#55555B"><use href="#hx"/></svg><span class="label">First</span></div>
         <span class="ln"></span>
@@ -857,7 +860,7 @@ body.paused .typing.run .dots i { animation-play-state: paused; }
 <section class="sec wrap final" id="final" aria-labelledby="final-h">
   <canvas id="finalField" aria-hidden="true"></canvas>
   <div class="head reveal">
-    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Welcome to Swarm · 03:51</span>
+    <span class="pill"><svg class="hexdot" aria-hidden="true"><use href="#hx"/></svg>Before you join</span>
     <h2 class="h2" id="final-h"><span class="mute">Being early and being wrong feel the same.</span> <span>I want you to be early and actually know exactly why.</span></h2>
     <div class="cta">
       <a class="btn btn-gold" href="#join" data-gold>Join Swarm <span class="arrow" aria-hidden="true"></span></a>

@@ -1,5 +1,6 @@
 /* Swarm A, Core Glow: page controller.
-   Motion toggle, nav state, fact-chip marquee, the four product mocks (play once, settle inside 5s),
+   Motion toggle, nav state (the compact lockup appears once the hero's mark has scrolled away),
+   the four product mocks (play once, settle inside 5s),
    the lazy Three.js patch in the Custom AI tools card, the why-now attention strip, the final field,
    and the pricing switch with the Whop checkout stub. */
 (() => {
@@ -24,13 +25,16 @@
   toggles.forEach(b => b.addEventListener('click', () => setMotion(!motionOff)));
 
   /* ---------- nav ---------- */
-  const nav = $('#nav');
-  const onScroll = () => nav && nav.classList.toggle('scrolled', window.scrollY > 8);
+  const nav = $('#nav'), heroMark = $('#hero-mark');
+  const onScroll = () => {
+    if (!nav) return;
+    nav.classList.toggle('scrolled', window.scrollY > 8);
+    // one lit core per view: the nav lockup only shows once the hero's mark is out of sight
+    const mb = heroMark ? heroMark.getBoundingClientRect().bottom - heroMark.offsetHeight * 0.18 : 0;
+    nav.classList.toggle('logo-on', mb < 64);
+  };
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
-
-  /* ---------- fact chips: a duplicate list makes the phone marquee seamless ---------- */
-  const facts = $('.facts');
-  if (facts) { const c = facts.cloneNode(true); c.classList.add('facts-clone'); c.setAttribute('aria-hidden', 'true'); c.removeAttribute('aria-label'); facts.parentElement.appendChild(c); }
+  window.addEventListener('resize', onScroll);
 
   /* ---------- play-once helper ---------- */
   function once(el, fn, threshold = 0.4) {
@@ -86,10 +90,11 @@
     const c = r.querySelector('.wchip'); c.textContent = text; c.className = 'wchip' + (cls ? ' ' + cls : '');
     r.classList.toggle('rem', cls === 'gone');
   }
+  // row 03 walks WATCHING > REVIEWING > NEW THIS WEEK; three changes in all, then it rests
   const wlSteps = [
-    [1400, () => { wlSet(1, 'Watching', ''); wlSet(4, 'Reviewing', 'rev'); }],
-    [2800, () => { wlSet(4, 'Removed', 'gone'); wlSet(2, 'Reviewing', 'rev'); }],
-    [4200, () => { wlSet(2, 'New this week', 'new'); wlSet(0, 'Reviewing', 'rev'); }]
+    [1200, () => { wlSet(2, 'Reviewing', 'rev'); }],
+    [2600, () => { wlSet(2, 'New this week', 'new'); wlSet(4, 'Reviewing', 'rev'); }],
+    [4000, () => { wlSet(4, 'Removed', 'gone'); wlSet(0, 'Reviewing', 'rev'); }]
   ];
   function playWatch(final) {
     if (final) { wlSteps.forEach(s => s[1]()); return; }
@@ -121,17 +126,13 @@
   if (!STATIC) msgs.forEach(m => m.classList.add('pending'));
 
   /* ---------- Custom AI tools: lazy 3D hex patch, 2D still for reduced motion and fallback ---------- */
-  const toolsHost = $('#tools-3d'), toolsMark = $('#tools-mark'), still = $('#tools-still'), replay = $('#tools-replay');
+  const toolsHost = $('#tools-3d'), still = $('#tools-still'), replay = $('#tools-replay');
   function toolsLayout() {
     const W = toolsHost.clientWidth, H = toolsHost.clientHeight, phone = window.innerWidth <= 640;
     const R = phone ? 15 : 18;
     const coreX = (phone || W < 640) ? Math.round(W / 2) : Math.round((W - Math.min(W * 0.47, 400) - 14) / 2);
     const coreY = Math.round(H * (phone ? 0.5 : 0.54));
     return { W, H, R, coreX, coreY, rings: phone ? 5 : 6, phone };
-  }
-  function placeToolsMark(L) {
-    const Sz = 7.5 * L.R;
-    Object.assign(toolsMark.style, { width: Sz + 'px', height: Sz + 'px', left: (L.coreX - Sz / 2) + 'px', top: (L.coreY - Sz / 2) + 'px' });
   }
   function drawToolsStill() {
     if (!toolsHost || !still) return;
@@ -141,16 +142,26 @@
     const P = 1.95 * L.R, N = L.rings, maxD = N * P;
     g.lineWidth = 1; g.strokeStyle = '#1C1C21';
     for (let q = -N; q <= N; q++) for (let r = -N; r <= N; r++) {
-      const ring = (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2; if (ring > N || ring < 1) continue;
+      const ring = (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2; if (ring > N) continue;
       const x = L.coreX + P * (q + r / 2), y = L.coreY + P * (SQ3 / 2) * r, d = Math.hypot(x - L.coreX, y - L.coreY);
       g.globalAlpha = Math.max(0.25, 1 - sm(0.55 * maxD, maxD * 1.02, d));
       g.beginPath();
       for (let k = 0; k < 6; k++) { const a = Math.PI / 180 * (60 * k - 90); const px = x + L.R * 0.97 * Math.cos(a), py = y + L.R * 0.97 * Math.sin(a); k ? g.lineTo(px, py) : g.moveTo(px, py); }
       g.closePath(); g.stroke();
     }
+    // scouts resting on the unlit field, matching the 3D scene's last frame (no lit cell here)
+    let sd = 23; const rr = () => (sd = sd * 16807 % 2147483647) / 2147483647;
+    const nDots = L.phone ? 22 : 30;
+    for (const col of ['#8E8A80', '#EEEBE4']) {
+      g.fillStyle = col; g.globalAlpha = col === '#EEEBE4' ? 0.95 : 0.8; g.beginPath();
+      for (let i = 0; i < nDots / 2; i++) {
+        let q, r, ring;
+        do { q = Math.round((rr() * 2 - 1) * N); r = Math.round((rr() * 2 - 1) * N); ring = (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2; } while (ring > N - 1);
+        g.rect(L.coreX + P * (q + r / 2) - 1.3, L.coreY + P * (SQ3 / 2) * r - 1.3, 2.6, 2.6);
+      }
+      g.fill();
+    }
     g.globalAlpha = 1;
-    placeToolsMark(L);
-    toolsMark.style.opacity = '1';
     still.style.display = 'block';
   }
   let toolsScene = null, toolsVisible = false, toolsPlayed = false;
@@ -163,8 +174,8 @@
       if (!es.some(e => e.isIntersecting) || loading) return;
       loading = true; loadIO.disconnect();
       import('./tools3d.js').then(m => {
-        const L = toolsLayout(); placeToolsMark(L);
-        toolsScene = m.createTools(toolsHost, toolsMark, L);
+        const L = toolsLayout();
+        toolsScene = m.createTools(toolsHost, L);
         if (!toolsScene) throw new Error('no scene');
         still.style.display = 'none';
         toolsScene.renderAt(0);

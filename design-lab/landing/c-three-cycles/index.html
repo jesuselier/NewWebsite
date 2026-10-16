@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&family=JetBrains+Mono:wght@500&family=Unbounded:wght@600&display=swap">
 <link rel="stylesheet" href="../brand/swarm/swarm-tokens.css">
 <link rel="stylesheet" href="c.css">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" crossorigin="anonymous">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script>
 /* Motion state shared by every animated piece on the page. ?reduce=1 forces the reduced-motion still. */
@@ -179,6 +180,7 @@
     <p class="pill">Why this cycle</p>
     <h2 class="h2" id="why-h"><span class="m">Crypto cycles aren't really about crypto.</span> <span class="b">They're about attention.</span></h2>
     <p class="lede">In 2020 everyone was stuck at home and the attention went to video games. Since 2023 it has been on AI. When the crowd gets excited about something, the money skips the safe bet and goes to the riskiest one. The money coming back to crypto now is a more informed crowd, and it has spent this time learning about AI.</p>
+    <p class="src src-why">From the intro video <i>·</i> <a href="https://youtu.be/n15W6X84IGg?t=40" target="_blank" rel="noopener">0:40<span class="sr"> (opens YouTube at 0:40 in a new tab)</span></a> to <a href="https://youtu.be/n15W6X84IGg?t=135" target="_blank" rel="noopener">2:15<span class="sr"> (opens YouTube at 2:15 in a new tab)</span></a></p>
   </div>
   <figure class="pq">
     <div class="pq-rule" aria-hidden="true"><span></span><svg viewBox="-11 -12 22 24" width="12" height="13"><path d="M0,-10 L8.66,-5 L8.66,5 L0,10 L-8.66,5 L-8.66,-5Z" fill="none" stroke="#55555B" stroke-width="1.6"/></svg><span></span></div>
@@ -329,11 +331,11 @@
     <!-- 6.3 weekly live calls -->
     <article class="mcard mc-narrow" aria-labelledby="m3-h">
       <div class="mock mock-call" role="img" aria-label="Illustration of a weekly live call: Jesus in his studio, a live portfolio review frame with an audio level strip. The day and time of the call are still to be confirmed.">
+        <div class="mock-head" aria-hidden="true"><span class="mock-name">Live call // Weekly</span><span class="illus">Illustration · Not live data</span></div>
         <div class="call-frame" aria-hidden="true">
           <img src="../assets/jesus-studio-arms.jpg" alt="" width="1920" height="1080" loading="lazy">
-          <span class="call-chip">Weekly · Live portfolio review</span>
-          <span class="illus illus-on">Illustration · Not live data</span>
           <span class="call-bars" id="callBars"></span>
+          <span class="call-chip">Live portfolio review</span>
         </div>
         <div class="call-row" aria-hidden="true">
           <span class="call-k">Next call</span>
@@ -475,9 +477,9 @@
     <h2 class="h2" id="faq-h"><span class="m">Questions,</span> <span class="b">answered straight.</span></h2>
   </div>
   <div class="faq-list">
-    <details>
+    <details open>
       <summary>Is this financial advice, and will the AI trade for me?</summary>
-      <p>No. Swarm is education and research, not financial advice. The AI tools are there to help you research and to show you what I'm looking at. You make your own decisions. <span class="dn">[CONFIRM: the tools do not place trades]</span></p>
+      <p>No. Swarm is education and research, not financial advice. You make your own decisions with your own money. <span class="dn">[CONFIRM: the tools do not place trades]</span></p>
     </details>
     <details>
       <summary>I've never invested. Is this for me?</summary>

@@ -44,7 +44,7 @@
       dpr = Math.min(2, window.devicePixelRatio || 1);
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.height = H + 'px';
       base = H - 16; cx = W / 2; sig = W * 0.205; A = H - 44;
-      var rnd = rng(11), n = W < 640 ? 84 : 176;
+      var rnd = rng(11), n = W < 640 ? 96 : 228;
       var counts = [Math.round(n * 0.3), Math.round(n * 0.42), 0]; counts[2] = n - counts[0] - counts[1];
       agents = [];
       for (var z = 0; z < 3; z++) {
@@ -164,14 +164,13 @@
     var line = box.querySelector('.tl-draw'), nodes = [].slice.call(box.querySelectorAll('.tl-node'));
     function set(p) {
       line.style.strokeDashoffset = String(1 - p);
+      if (p >= 1) line.style.strokeDashoffset = '0';
       nodes.forEach(function (n) { n.classList.toggle('on', p >= parseFloat(n.dataset.at) - 0.001); });
     }
-    if (REDUCE) { set(1); return; }
-    var onScroll = function () {
-      var r = box.getBoundingClientRect(), vh = window.innerHeight;
-      set(clamp01((vh * 0.92 - r.top) / (vh * 0.5)));
-    };
-    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+    // draws once when it scrolls into view (CSS transition), then stays drawn
+    if (REDUCE) { box.classList.add('drawn'); set(1); return; }
+    line.style.strokeDashoffset = '';
+    watch(box, function (v) { if (v && !box.classList.contains('drawn')) { box.classList.add('drawn'); nodes.forEach(function (n) { n.classList.add('on'); }); } }, { threshold: 0.45 });
   })();
 
   // ------------------------------------------------------------ 6.1 agent swimlanes (logic analyzer)
@@ -300,6 +299,13 @@
     }
     el.innerHTML = html;
     watch(el, function (v) { el.classList.toggle('off', !v); });
+  })();
+
+  // CSS loops (chips marquee, typing dots) pause when their section is offscreen
+  (function cssLoops() {
+    var hero = document.getElementById('top'), room = document.querySelector('.room');
+    if (hero) watch(hero, function (v) { hero.classList.toggle('off', !v); });
+    if (room) watch(room, function (v) { room.classList.toggle('off', !v); });
   })();
 
   // ------------------------------------------------------------ 8. plans and the Whop checkout slot

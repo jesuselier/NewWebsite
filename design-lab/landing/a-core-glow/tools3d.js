@@ -1,11 +1,11 @@
 /* Swarm A, Core Glow: the Custom AI tools card (Three.js r160, lazy-loaded).
    An instanced hex patch seen at an angle. Scouts move over it; cells they sense lift and light their rims,
-   then settle. The camera cranes to a top-down view where 1 world unit = 1 CSS px, the patch ends flat,
-   the six neighbours turn hive grey and the official swarm-mark.svg fades in exactly on the core cell.
-   MeshBasicMaterial only (no lights, no shadows). Plays once in about 5 seconds, then stops rendering. */
+   then settle. The camera cranes to a top-down view where 1 world unit = 1 CSS px and the patch ends flat:
+   an unlit #1C1C21 field with the scouts resting on it as dots. No lit cell here: the page's one lit cell
+   is the hero's. MeshBasicMaterial only (no lights, no shadows). Plays once in about 5 seconds, then stops. */
 import * as THREE from 'three';
 
-export function createTools(host, mark, L) {
+export function createTools(host, L) {
   const { W, H, R, coreX, coreY, rings: N, phone } = L;
   if (!W || !H) return null;
   let renderer;
@@ -52,17 +52,13 @@ export function createTools(host, mark, L) {
   const rims = new THREE.InstancedMesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }), n);
   plates.frustumCulled = rims.frustumCulled = false;
   scene.add(plates, rims);
-  const goldShape = hexShape(R * 0.82 + 0.75); goldShape.holes.push(hexShape(R * 0.82 - 0.75));
-  const goldMat = new THREE.MeshBasicMaterial({ color: 0xF5C542, transparent: true, opacity: 0, depthWrite: false });
-  const goldRim = new THREE.Mesh(new THREE.ShapeGeometry(goldShape), goldMat);
-  goldRim.position.z = 0.6; scene.add(goldRim);
 
   // agents: heads (points) and heading ticks (segments)
   const NA = phone ? 30 : 46;
   const agents = [];
   for (let i = 0; i < NA; i++) {
     const c = cells[(rnd() * n) | 0];
-    agents.push({ x: c.x + (rnd() - 0.5) * R, y: c.y + (rnd() - 0.5) * R, vx: 0, vy: 0, t: cells[(rnd() * n) | 0], commit: rnd() < 0.74, alive: true, delay: 150 + rnd() * 500, dwell: 0 });
+    agents.push({ x: c.x + (rnd() - 0.5) * R, y: c.y + (rnd() - 0.5) * R, vx: 0, vy: 0, t: cells[(rnd() * n) | 0], alive: true, delay: 150 + rnd() * 500, dwell: 0, rest: false });
   }
   const headPos = new Float32Array(NA * 3), segPos = new Float32Array(NA * 6);
   const headGeo = new THREE.BufferGeometry(); headGeo.setAttribute('position', new THREE.BufferAttribute(headPos, 3));
@@ -76,21 +72,25 @@ export function createTools(host, mark, L) {
   const GROUND = new THREE.Color(0x0B0B0D), SURF = new THREE.Color(0x141418), LIFTC = new THREE.Color(0x24242A);
   const FAINT = new THREE.Color(0x1C1C21), HIVE = new THREE.Color(0x55555B);
   const m4 = new THREE.Matrix4(), col = new THREE.Color(), tmp = new THREE.Color();
-  const coreCell = cells.find(c => c.ring === 0);
   const tops = new Float32Array(n);
 
   function step(t, dt) {
     const s = dt / 1000, cons = sm(T.scanEnd, 3600, t);
+    // scouts scan independently; as the patch settles each one finishes on the cell it is reading and stays there
+    const settling = t > 3500;
     for (const a of agents) {
       if (!a.alive || t < a.delay) continue;
-      if (a.commit && t > T.scanEnd && a.t !== coreCell) a.t = coreCell;
       const ox = a.t.x - a.x, oy = a.t.y - a.y, d = Math.hypot(ox, oy) || 1e-6;
-      const vmax = P * 2.3 * (1 + 1.3 * cons), sp = Math.min(vmax, vmax * d / (P * 0.9));
-      a.vx += ((ox / d) * sp - a.vx) * 3.4 * s + (rnd() - 0.5) * (1 - cons) * vmax * 1.6 * s;
-      a.vy += ((oy / d) * sp - a.vy) * 3.4 * s + (rnd() - 0.5) * (1 - cons) * vmax * 1.6 * s;
+      const vmax = P * 2.3 * (1 - 0.35 * cons), sp = Math.min(vmax, vmax * d / (P * 0.9));
+      const k = settling ? 5 : 3.4;
+      a.vx += ((ox / d) * sp - a.vx) * k * s + (settling ? 0 : (rnd() - 0.5) * vmax * 1.6 * s);
+      a.vy += ((oy / d) * sp - a.vy) * k * s + (settling ? 0 : (rnd() - 0.5) * vmax * 1.6 * s);
       a.x += a.vx * s; a.y += a.vy * s;
-      if (a.t === coreCell) { if (d < R * 0.45) a.alive = false; }
-      else if (d < R * 0.35) { a.dwell += dt; if (a.dwell > 220 + rnd() * 260) { a.dwell = 0; a.t = cells[(rnd() * n) | 0]; if (a.t.ring === 0) a.t = cells[(rnd() * n) | 0]; } }
+      if (d < R * 0.35) {
+        a.dwell += dt;
+        if (!settling && a.dwell > 220 + rnd() * 260) { a.dwell = 0; a.t = cells[(rnd() * n) | 0]; }
+      }
+      if (settling && d < 0.6) { a.x = a.t.x; a.y = a.t.y; a.vx = a.vy = 0; }
     }
     // sensing: cells under an agent lift and light their rim, then settle
     for (const c of cells) {
@@ -105,7 +105,6 @@ export function createTools(host, mark, L) {
   function apply(t) {
     const flat = sm(T.settle0, T.settle1, t);
     const fillOut = sm(T.settle1 - 200, T.resolve + 200, t);
-    const nb = sm(3300, 4200, t) * (1 - sm(T.resolve, T.resolve + 240, t));
     for (let i = 0; i < n; i++) {
       const c = cells[i];
       const reveal = sm(c.ring * 60, c.ring * 60 + 520, t);
@@ -119,33 +118,29 @@ export function createTools(host, mark, L) {
       col.copy(GROUND).lerp(SURF, (1 - fillOut) * reveal * fade).lerp(LIFTC, c.lift * (1 - flat));
       plates.setColorAt(i, col);
       tmp.copy(GROUND).lerp(FAINT, reveal * fade);
-      const lit = Math.max(c.sense * 0.9 * (1 - flat), c.ring === 1 ? nb : 0);
-      tmp.lerp(HIVE, lit);
-      if (c.ring === 0) tmp.copy(GROUND).lerp(FAINT, reveal * (1 - sm(3400, 4000, t)));
+      tmp.lerp(HIVE, c.sense * 0.9 * (1 - flat));
       rims.setColorAt(i, tmp);
     }
     plates.instanceMatrix.needsUpdate = rims.instanceMatrix.needsUpdate = true;
     plates.instanceColor.needsUpdate = rims.instanceColor.needsUpdate = true;
-    goldMat.opacity = sm(3400, 4300, t) * (1 - sm(T.resolve, T.resolve + 240, t));
-    // agents ride just above the plates
-    const fadeA = 1 - sm(T.resolve, T.resolve + 600, t);
+    // agents ride just above the plates and end as resting dots
+    const fadeA = 1;
     let k = 0;
     for (let i = 0; i < NA; i++) {
       const a = agents[i], v = a.alive && t >= a.delay && fadeA > 0;
       const z = 4 + 14 * (1 - flat);
       headPos[i * 3] = v ? a.x : 1e6; headPos[i * 3 + 1] = a.y; headPos[i * 3 + 2] = z;
-      const sp = Math.hypot(a.vx, a.vy) || 1, Lt = Math.min(14, 4 + sp * 0.06);
+      const sp = Math.hypot(a.vx, a.vy) || 1, Lt = sp < 4 ? 0 : Math.min(14, 4 + sp * 0.06);
       segPos[k] = v ? a.x : 1e6; segPos[k + 1] = a.y; segPos[k + 2] = z;
       segPos[k + 3] = v ? a.x - (a.vx / sp) * Lt : 1e6; segPos[k + 4] = a.y - (a.vy / sp) * Lt; segPos[k + 5] = z; k += 6;
     }
     headGeo.attributes.position.needsUpdate = segGeo.attributes.position.needsUpdate = true;
-    headMat.opacity = fadeA; segMat.opacity = 0.5 * fadeA;
+    headMat.opacity = 0.95; segMat.opacity = 0.5;
     // camera: tilted orbit, then a crane to exactly top-down at the registered distance
     const tilt = THREE.MathUtils.degToRad(57) * (1 - flat);
     const yaw = (THREE.MathUtils.degToRad(-24) + 0.12 * Math.sin(t * 0.0006)) * (1 - flat);
     cam.position.set(look.x + Math.sin(yaw) * Math.sin(tilt) * dist, look.y - Math.cos(yaw) * Math.sin(tilt) * dist, Math.cos(tilt) * dist);
     cam.up.set(0, 1, 0); cam.lookAt(look);
-    mark.style.opacity = String(Math.min(1, Math.max(0, (t - T.resolve) / 240)));
   }
 
   let simT = 0, raf = 0, last = 0, acc = 0, playing = false, onDone = null;

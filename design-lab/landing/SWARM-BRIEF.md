@@ -46,7 +46,7 @@ Still never: invented testimonials, member counts, wins, results, seats-left cou
 
 ## Verified transcript
 
-`swarm-intro-transcript.md` is the timestamped transcript from YouTube's captions (fetched October 16, 2026). It supersedes the vidIQ wording below. **Anything shown as a quote (quotation marks, a quote card, or a timestamp) must match it word for word, with its real timestamp.** Headlines may lightly edit his lines when they are not presented as quotes. Correct timestamps for the founder story are 2:33, 2:48 and 3:02; the closing line is at 3:51 and reads "Being early and being wrong a lot of the time feels the same way. But I want you to be early and actually know exactly why."
+`swarm-intro-transcript.md` is the timestamped transcript from YouTube's captions (fetched October 16, 2026). It supersedes the vidIQ wording below, and the quote bank in `FOUNDER-DOSSIER.md` (section 3) is the final authority for exact wording and timestamps. **Anything shown as a quote (quotation marks, a quote card, or a timestamp) must match it word for word, with its real timestamp.** Headlines may lightly edit his lines when they are not presented as quotes. Correct timestamps for the founder story are 2:33, 2:48 and 3:02; the closing line is at 3:51 and reads "Being early and being wrong a lot of the time feels the same way. But I want you to be early and actually know exactly why."
 
 ## The video
 
