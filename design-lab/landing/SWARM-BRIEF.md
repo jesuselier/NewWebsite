@@ -1,5 +1,40 @@
 # Swarm brief
 
+## Decisions (October 16, 2026)
+
+- **The page is 100% the Swarm offer.** It is the landing page for the agentic AI crypto trading community, not a personal site. Jesus appears as the founder (his story, his face, his voice) inside it. martinezaccess.com stays his personal site and links here.
+- **Because the whole page is a Swarm page, the Swarm brand kit applies to the whole page:** the `.swarm` wrapper goes on the page root, the Swarm og:image and Swarm icons go in its head. The three style directions differ in composition, motion language, narrative and texture, all inside the kit's colors and fonts.
+- **Domain:** `joinswarm.ai` is the recommended domain (not yet bought). Until it exists, previews live in the design lab.
+- **Checkout:** Whop embedded checkout on the page. Whop plan IDs are `[DATA NEEDED]`.
+- **Taste reference from Jesus:** https://www.joinasymmetric.xyz/ (a paid trading community page). Reference only, never copy its layout, copy, assets or code. See "Taste notes" below.
+- **The graphics:** original 2D and 3D motion that amplifies the agentic feel: many independent agents sensing, deciding and converging on one signal, which is also the Hive Core logo's meaning.
+
+## Pricing (from Jesus's pre-launch checkout screenshot, October 16, 2026)
+
+- Eyebrow: `// PRE-LAUNCH · JOIN THE SWARM`. Headline: **Early on purpose.**
+- "The first 50 founding seats lock in $49/month forever. After that it goes to $99/month. Cancel anytime."
+- Plans, in this order:
+  1. **Founding Monthly, $49/mo.** "Forever. Cancel whenever. 50 seats only." Renews at $49.00 per month.
+  2. **Standard Monthly, $99/mo.**
+  3. **Yearly, 2 months free.** The yearly price is not shown; on the $99 standard plan that would be $990/year. Show "2 months free" and mark the price `[CONFIRM: $990/yr?]` until Jesus confirms.
+- Checkout takes card or ACH (Whop).
+- Not provided, so never invented: how many founding seats are left, member count, testimonials, results, a launch date, a refund policy beyond "cancel anytime".
+- The screenshot's checkout used a condensed italic display face. The brand kit's type (Unbounded, JetBrains Mono, Hanken Grotesk) wins on the page; the copy and prices above are what to follow.
+
+## Taste notes: joinasymmetric.xyz (principles only)
+
+What makes it feel good, as principles to learn from:
+- Product mocks are the content: every benefit is shown as a working piece of the product (a live stream with chat, a vault of interviews, a tool mid-scan, a live position tracker), not described with icons.
+- Proof is close to every claim, and every claim is concrete.
+- The founder story is a personal, first-person piece set apart from the sales copy.
+- One primary call to action, repeated at natural stopping points, with "Cancel anytime" under it.
+- Atmosphere behind the hero (light and depth), very dark ground, one saturated accent.
+- Pricing is laid out as an itemized reveal ending on one price.
+
+What not to take: its blue light-beam hero, serif-italic accent words, tilted testimonial cards, email-format story, value-stack dollar figures, or any wording. Swarm has no testimonials, member counts or results yet, so none appear.
+
+## The video
+
 Source: Jesus's intro video "Welcome To Swarm | AI Agentic Trading", JM Crypto, published October 16, 2026, 4:05 long. https://youtu.be/n15W6X84IGg
 
 The notes below come from a vidIQ watch-through of the video on October 16, 2026 (scene breakdown, near-verbatim transcript, on-screen text). Captions were not yet available from YouTube. Re-check the quotes against the official captions once they appear.
