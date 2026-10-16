@@ -2,6 +2,7 @@
 
 ## Decisions (October 16, 2026)
 
+- **Direction picked: A, Core Glow** (Jesus, October 16, 2026, after the first look). His note: the agents' head-and-tapering-tail look "doesn't really make much sense" (it reads as sperm). Agents are now small hexagonal nodes that hop along the honeycomb's own edges, lighting each edge briefly as they pass; no tails, no swimming curves, everything on the grid. Directions B and C are kept for reference only.
 - **The page is 100% the Swarm offer.** It is the landing page for the agentic AI crypto trading community, not a personal site. Jesus appears as the founder (his story, his face, his voice) inside it. martinezaccess.com stays his personal site and links here.
 - **Because the whole page is a Swarm page, the Swarm brand kit applies to the whole page:** the `.swarm` wrapper goes on the page root, the Swarm og:image and Swarm icons go in its head. The three style directions differ in composition, motion language, narrative and texture, all inside the kit's colors and fonts.
 - **Domain:** Jesus bought `joinswarm.ai` on October 16, 2026 (Namecheap). Plan: add it to the existing Vercel project and route that host to the Swarm page, so martinezaccess.com is untouched. Until the Swarm page ships, previews live in the design lab.
