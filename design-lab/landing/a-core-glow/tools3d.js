@@ -3,7 +3,9 @@
    nodes hopping corner to corner along the channels between plates, each crossed edge lit for 650ms, sensed plates
    lifting and lighting their rims. The camera cranes to top-down, where 1 world unit = 1 CSS px, and the patch ends
    flat: an unlit #1C1C21 field with the scouts resting on it. No lit cell here: the page's lit cell is the hero's.
-   MeshBasicMaterial only (no lights, no shadows). Plays once in about 5 seconds, then stops. */
+   MeshBasicMaterial only (no lights, no shadows), in three draw calls: the plates and their rims as one instanced
+   mesh (the rim colour rides a per-instance attribute), the lit edges, and the scout nodes. Plays once in under 5
+   seconds, then stops. */
 import * as THREE from 'three';
 
 export function createTools(host, M, onLabels) {
@@ -32,13 +34,35 @@ export function createTools(host, M, onLabels) {
   }
   const cells = L.cells, n = cells.length;
   const DEPTH = 8;
+  // one geometry for a plate and its rim: plate tops at full tone, plate sides at 43%, the rim ring just above the top
   const plateGeo = new THREE.ExtrudeGeometry(hexShape(R * 0.97 - 1.1), { depth: DEPTH, bevelEnabled: false, curveSegments: 1 });
   const ringShape = hexShape(R * 0.97 + 0.6); ringShape.holes.push(hexShape(R * 0.97 - 0.6));
-  const ringGeo = new THREE.ShapeGeometry(ringShape);
-  const plates = new THREE.InstancedMesh(plateGeo, [new THREE.MeshBasicMaterial({ color: 0xffffff }), new THREE.MeshBasicMaterial({ color: 0x6e6e6e })], n);
-  const rims = new THREE.InstancedMesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }), n);
-  plates.frustumCulled = rims.frustumCulled = false;
-  scene.add(plates, rims);
+  const ringGeo = new THREE.ShapeGeometry(ringShape).toNonIndexed();
+  const pp = plateGeo.attributes.position, pn = plateGeo.attributes.normal, rp = ringGeo.attributes.position;
+  const nv = pp.count + rp.count, pos = new Float32Array(nv * 3), shade = new Float32Array(nv * 3), isRim = new Float32Array(nv);
+  for (let i = 0; i < pp.count; i++) {
+    pos[i * 3] = pp.getX(i); pos[i * 3 + 1] = pp.getY(i); pos[i * 3 + 2] = pp.getZ(i);
+    const k = Math.abs(pn.getZ(i)) > 0.5 ? 1 : 0.43; shade[i * 3] = shade[i * 3 + 1] = shade[i * 3 + 2] = k;
+  }
+  for (let i = 0; i < rp.count; i++) {
+    const o = pp.count + i;
+    pos[o * 3] = rp.getX(i); pos[o * 3 + 1] = rp.getY(i); pos[o * 3 + 2] = DEPTH + 0.15;
+    shade[o * 3] = shade[o * 3 + 1] = shade[o * 3 + 2] = 1; isRim[o] = 1;
+  }
+  const cellGeo = new THREE.BufferGeometry();
+  cellGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  cellGeo.setAttribute('color', new THREE.BufferAttribute(shade, 3));
+  cellGeo.setAttribute('isRim', new THREE.BufferAttribute(isRim, 1));
+  const rimCol = new THREE.InstancedBufferAttribute(new Float32Array(cells.length * 3), 3);
+  cellGeo.setAttribute('rimColor', rimCol);
+  plateGeo.dispose(); ringGeo.dispose();
+  const cellMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true });
+  cellMat.onBeforeCompile = sh => {
+    sh.vertexShader = 'attribute float isRim;\nattribute vec3 rimColor;\n' + sh.vertexShader.replace('#include <color_vertex>', '#include <color_vertex>\n\tvColor.xyz = mix( vColor.xyz, rimColor, isRim );');
+  };
+  const plates = new THREE.InstancedMesh(cellGeo, cellMat, n);
+  plates.frustumCulled = false;
+  scene.add(plates);
 
   // agents: flat pointy-top hexagonal nodes
   const NA = M.sim.agents.length;
@@ -76,16 +100,15 @@ export function createTools(host, M, onLabels) {
       const h = -34 * (1 - reveal) + lift[i] * 13 * (1 - flat);
       tops[i] = h;
       m4.makeTranslation(c.x, -c.y, h - DEPTH); plates.setMatrixAt(i, m4);
-      m4.makeTranslation(c.x, -c.y, h + 0.15); rims.setMatrixAt(i, m4);
       const fade = M.fade(c);
       col.copy(GROUND).lerp(SURF, (1 - fillOut) * reveal * fade).lerp(LIFTC, lift[i] * (1 - flat));
       plates.setColorAt(i, col);
       tmp.copy(GROUND).lerp(FAINT, reveal * fade).lerp(HIVE, ping * 0.9);
       if (tracked.has(c)) tmp.lerp(LINE, sm(T.stop, T.stop + 500, t));
-      rims.setColorAt(i, tmp);
+      rimCol.setXYZ(i, tmp.r, tmp.g, tmp.b);
     }
-    plates.instanceMatrix.needsUpdate = rims.instanceMatrix.needsUpdate = true;
-    plates.instanceColor.needsUpdate = rims.instanceColor.needsUpdate = true;
+    plates.instanceMatrix.needsUpdate = true;
+    plates.instanceColor.needsUpdate = true; rimCol.needsUpdate = true;
     bg.copy(GROUND).lerp(SURF, 1 - fillOut);
 
     // lit edges, drawn as colour fading into the plate below

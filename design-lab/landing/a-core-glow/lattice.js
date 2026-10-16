@@ -2,7 +2,9 @@
    Every agent on the page is a small pointy-top hexagonal node that lives ON the honeycomb: it hops from corner to
    corner along the channels between cells (the corridor lattice), one edge per hop with a short ease, and the edge it
    crosses lights for about 600ms. No tails, no trails, no curved paths, no glow. Cells it senses brighten briefly.
-   Used by hero.js (hero convergence) and page.js (why-now strip, pricing core, final field). No text on canvas. */
+   Used by hero.js (hero convergence) and page.js (why-now band, pricing core, final field). No text on canvas.
+   drawEdges / drawAgents take optional edgeMul(edge, t) and agentMul(agent, t) multipliers (the hero dims its
+   scouts once the chosen agents set off). */
 (() => {
   'use strict';
   const SQ3 = Math.sqrt(3);
@@ -111,7 +113,7 @@
   /* Drawing. alphaAt(x, y) returns a multiplier (the hero uses it to keep everything faint behind the copy). */
   const BUCKETS = 12;
   function drawEdges(g, S, t, o) {
-    const { alphaAt = null, base = [0.42, 0.72], lw = 1.5 } = o || {}; const proj = (o && o.proj) || ID;
+    const { alphaAt = null, base = [0.42, 0.72], lw = 1.5, edgeMul = null, agentMul = null } = o || {}; const proj = (o && o.proj) || ID;
     const V = S.L.V, groups = [new Map(), new Map()];
     const put = (k, a, x0, y0, x1, y1) => {
       const b = Math.round(a * BUCKETS); if (b <= 0) return;
@@ -121,7 +123,8 @@
       const age = t - e.t; if (age < 0 || age > S.edgeFade) continue;
       const A = V[e.a], B = V[e.b];
       let a = base[e.k] * (1 - age / S.edgeFade);
-      if (alphaAt) a *= alphaAt((A.x + B.x) / 2, (A.y + B.y) / 2);
+      if (edgeMul) a *= edgeMul(e, t);
+      if (alphaAt && a > 0) a *= alphaAt((A.x + B.x) / 2, (A.y + B.y) / 2);
       put(e.k, a, A.x, A.y, B.x, B.y);
     }
     // the edge an agent is crossing right now lights up to where it is
@@ -129,7 +132,8 @@
       if (ag.dead || ag.to < 0 || t <= ag.t0) continue;
       const A = V[ag.from];
       let a = base[ag.kind] * S.vis(ag, t);
-      if (alphaAt) a *= alphaAt(ag.x, ag.y);
+      if (agentMul) a *= agentMul(ag, t);
+      if (alphaAt && a > 0) a *= alphaAt(ag.x, ag.y);
       put(ag.kind, a, A.x, A.y, ag.x, ag.y);
     }
     g.lineWidth = lw; g.lineCap = 'round';
@@ -145,12 +149,13 @@
     g.globalAlpha = 1; g.lineCap = 'butt';
   }
   function drawAgents(g, S, t, o) {
-    const { alphaAt = null, r = 2.8, base = [0.9, 1] } = o || {}; const proj = (o && o.proj) || ID;
+    const { alphaAt = null, r = 2.8, base = [0.9, 1], agentMul = null } = o || {}; const proj = (o && o.proj) || ID;
     const groups = [new Map(), new Map()];
     for (const a of S.agents) {
       const v = S.vis(a, t); if (v <= 0) continue;
       let al = base[a.kind] * v;
-      if (alphaAt) al *= alphaAt(a.x, a.y);
+      if (agentMul) al *= agentMul(a, t);
+      if (alphaAt && al > 0) al *= alphaAt(a.x, a.y);
       const b = Math.round(al * BUCKETS); if (b <= 0) continue;
       const m = groups[a.kind]; let arr = m.get(b); if (!arr) m.set(b, arr = []); arr.push(a);
     }

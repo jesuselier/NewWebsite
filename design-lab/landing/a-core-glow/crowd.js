@@ -1,8 +1,9 @@
 /* Swarm A, Core Glow: "The crowd" (Canvas 2D).
    A 1px bell curve draws once; people in the cycle are packed under it as a beeswarm of agents, drawn in the
-   page's agent language (small hexagonal nodes, no tails). LEFT drifts as one herd, MID twitches and keeps stepping
-   out to the sideline, RIGHT holds still, then steps out together. It runs two cycles, then settles and stops.
-   A DOM "YOU" tick rides left to right with scroll (fixed under reduced motion). No text is drawn on canvas. */
+   page's agent language (small hexagonal nodes, no tails). One pass when it comes into view: the curve draws in
+   1.5s while LEFT drifts as one herd, MID twitches and a wave of them steps out to the sideline once, RIGHT holds
+   still, then steps out together once; everyone settles back by 4.5s and the loop stops for good (no pause control
+   needed). A DOM "YOU" tick rides left to right with scroll (fixed under reduced motion). No text on canvas. */
 (() => {
   'use strict';
   const S = window.SWARM || { reduce: false, freeze: null };
@@ -15,7 +16,7 @@
   const zoneEls = fig.querySelectorAll('[data-zone]'), tagEls = fig.querySelectorAll('[data-ztag]');
   const COL = { line: '#232328', muted: '#8E8A80', text: '#EEEBE4' };
   const hexPath = (window.SwarmLattice && window.SwarmLattice.hexPath) || ((c, x, y, r) => c.rect(x - r, y - r, 2 * r, 2 * r));
-  const RUN = 14.5, SETTLE = 0.9;
+  const RUN = 3.7, SETTLE = 0.8;
   const ZB = [0.34, 0.66];
   const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
   const ease = x => { x = Math.min(1, Math.max(0, x)); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
@@ -37,7 +38,7 @@
     base = H - (phone ? 40 : 46);
     peak = base - (phone ? 36 : 42);
     x0 = phone ? 6 : 20; x1 = W - x0;
-    const N = phone ? 130 : 300;
+    const N = phone ? 100 : 290;
     let A = 0; for (let x = x0; x <= x1; x += 2) A += (base - cy(x)) * 2;
     const s = Math.sqrt(A / (N * 0.866));
     agents = [];
@@ -49,7 +50,7 @@
         const u = (hx - x0) / (x1 - x0);
         agents.push({
           hx, hy, x: hx, y: hy, px: hx, py: hy, u, zone: u < ZB[0] ? 0 : (u < ZB[1] ? 1 : 2),
-          ang: -Math.PI / 2, a2: rnd() * Math.PI * 2, jx: 0, jy: 0, tjx: 0, tjy: 0, next: rnd() * 0.5, outT: -99, sx: 0
+          ang: -Math.PI / 2, a2: rnd() * Math.PI * 2, jx: 0, jy: 0, tjx: 0, tjy: 0, next: rnd() * 0.5, outT: -99, sx: 0, out: false
         });
       }
     }
@@ -58,32 +59,33 @@
 
   function update(t, dt) {
     const s = Math.max(dt, 1) / 1000;
+    const calm = 1 - sm(RUN - 0.4, RUN + 0.5, t);             // everything quiets down toward the settle
     const th = -0.2 + 0.8 * Math.sin(t * 0.34);            // LEFT: one shared, drifting heading
-    if (t > nextOut) {                                       // MID: someone keeps stepping out
-      nextOut = t + 0.3 + rnd() * 0.32;
-      for (let tries = 0; tries < 8; tries++) {
+    if (t > 1.0 && t < 2.6 && t > nextOut) {                // MID: one wave of them steps out to the sideline
+      nextOut = t + 0.1 + rnd() * 0.08;
+      for (let tries = 0; tries < 10; tries++) {
         const a = agents[(rnd() * agents.length) | 0];
-        if (a.zone === 1 && t - a.outT > 3.2) { a.outT = t; a.sx = (rnd() - 0.5) * 26; break; }
+        if (a.zone === 1 && !a.out) { a.out = true; a.outT = t; a.sx = (rnd() - 0.5) * 26; break; }
       }
     }
-    const cyc = 6.6, e = (t + 1.2) % cyc;                     // RIGHT: hold, then step out together
-    const stepR = e < 4.3 ? 0 : e < 4.95 ? ease((e - 4.3) / 0.65) : e < 5.8 ? 1 : 1 - ease((e - 5.8) / 0.8);
+    // RIGHT: holds still, then steps out together once
+    const stepR = t < 2.2 ? 0 : t < 2.8 ? ease((t - 2.2) / 0.6) : t < 3.2 ? 1 : 1 - ease((t - 3.2) / 0.7);
     for (const a of agents) {
       a.px = a.x; a.py = a.y;
       let nx, ny, ang;
       if (a.zone === 0) {
-        const d = 7 * Math.sin(t * 0.95 - a.hx * 0.011);
+        const d = 7 * Math.sin(t * 0.95 - a.hx * 0.011) * calm;
         nx = a.hx + Math.cos(th) * d; ny = a.hy + Math.sin(th) * d * 0.7; ang = th;
       } else if (a.zone === 1) {
-        if (t > a.next) { a.next = t + 0.14 + rnd() * 0.5; a.a2 = rnd() * Math.PI * 2; a.tjx = (rnd() - 0.5) * 5; a.tjy = (rnd() - 0.5) * 5; }
+        if (t > a.next) { a.next = t + 0.14 + rnd() * 0.5; a.a2 = rnd() * Math.PI * 2; a.tjx = (rnd() - 0.5) * 5 * calm; a.tjy = (rnd() - 0.5) * 5 * calm; }
         const k = Math.min(1, s * 16);
         a.jx += (a.tjx - a.jx) * k; a.jy += (a.tjy - a.jy) * k;
         nx = a.hx + a.jx; ny = a.hy + a.jy; ang = a.a2;
         const o = t - a.outT;
-        if (o >= 0 && o < 2.7) {
-          const m = o < 0.55 ? ease(o / 0.55) : o < 1.95 ? 1 : 1 - ease((o - 1.95) / 0.75);
+        if (o >= 0 && o < 1.6) {
+          const m = o < 0.4 ? ease(o / 0.4) : o < 1.0 ? 1 : 1 - ease((o - 1.0) / 0.6);
           nx += a.sx * m; ny += (base + 15 - a.hy) * m;
-          ang = o < 0.55 ? Math.PI / 2 : o < 1.95 ? a.a2 : -Math.PI / 2;
+          ang = o < 0.4 ? Math.PI / 2 : o < 1.0 ? a.a2 : -Math.PI / 2;
         }
       } else {
         nx = a.hx + 15 * stepR; ny = a.hy - 22 * stepR; ang = -0.66;
@@ -138,8 +140,8 @@
   }
 
   // ---- lifecycle ----
-  let raf = 0, last = 0, visible = false, motionOff = false, started = false, settled = false;
-  const canRun = () => live && !settled && visible && !document.hidden && !motionOff;
+  let raf = 0, last = 0, visible = false, started = false, settled = false;
+  const canRun = () => live && !settled && visible && !document.hidden;
   function frame(now) {
     raf = 0;
     if (!canRun()) return;
@@ -151,7 +153,7 @@
       // settle: everyone eases back home, then the loop stops for good
       const k = ease((tau - RUN) / SETTLE);
       for (const a of agents) { a.x += (a.hx - a.x) * k; a.y += (a.hy - a.y) * k; }
-      if (tau > RUN + SETTLE) { for (const a of agents) { a.x = a.hx; a.y = a.hy; } draw(); placeYou(); settled = true; fig.classList.add('settled'); return; }
+      if (tau > RUN + SETTLE) { for (const a of agents) { a.x = a.hx; a.y = a.hy; } draw(); placeYou(); settled = true; return; }
     }
     draw(); placeYou();
     raf = requestAnimationFrame(frame);
@@ -161,7 +163,7 @@
   setup();
   zoneEls.forEach(el => el.classList.toggle('on', +el.dataset.zone === 0));
   tagEls.forEach(el => el.classList.toggle('on', +el.dataset.ztag === 0));
-  if (!live) { drawP = 1; update(0, 16.7); draw(); placeYou(); }
+  if (!live) { drawP = 1; draw(); placeYou(); }                // the still: everyone at home, as the live pass ends
   else { drawP = 0; draw(); placeYou(); }
 
   if ('IntersectionObserver' in window) {
@@ -180,17 +182,12 @@
     requestAnimationFrame(() => { ticking = false; placeYou(); });
   }, { passive: true });
   document.addEventListener('visibilitychange', kick);
-  window.addEventListener('swarm:motion', e => {
-    motionOff = !!(e.detail && e.detail.off);
-    if (motionOff && drawP < 1) { drawP = 1; draw(); placeYou(); }
-    if (!motionOff) kick();
-  });
   let lastW = 0, rt = 0;
   window.addEventListener('resize', () => {
     clearTimeout(rt);
     rt = setTimeout(() => {
       const w = cv.parentElement.clientWidth; if (w === lastW) return; lastW = w;
-      setup(); update(tau, 16.7); draw(); placeYou();
+      setup(); if (live && started && !settled) update(tau, 16.7); draw(); placeYou();
     }, 160);
   });
   lastW = cv.parentElement.clientWidth;
