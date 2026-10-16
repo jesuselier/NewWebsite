@@ -1,9 +1,13 @@
 import { ImageResponse } from "next/og";
-export const alt =
-  "Jesus Martinez. Creator of JM Crypto. Crypto changed my life.";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
-export default function Image() {
+
+// martinezaccess.com share image, served at /opengraph-image and referenced from the
+// site metadata. It is a route handler rather than an opengraph-image file so it keeps
+// this URL now that the site's pages live in the app/(site) route group, and so it is
+// never attached to the Swarm pages, which use their own image.
+// Alt text: "Jesus Martinez. Creator of JM Crypto. Crypto changed my life."
+export const dynamic = "force-static";
+const size = { width: 1200, height: 630 };
+export function GET() {
   return new ImageResponse(
     <div
       style={{

@@ -1,6 +1,6 @@
 # Martinez Access
 
-Personal website for Jesus Martinez, creator of JM Crypto. Built with Next.js 16 App Router, React 19, and TypeScript. Production deploys from `main` to the Vercel project `new-website` at https://www.martinezaccess.com.
+Personal website for Jesus Martinez, creator of JM Crypto. Built with Next.js 16 App Router, React 19, and TypeScript. Production deploys from `main` to the Vercel project `new-website` at https://www.martinezaccess.com. The same project serves Swarm at https://www.joinswarm.ai (see below).
 
 ## Develop and verify
 
@@ -30,6 +30,18 @@ The original press-kit Google Drive folder was unavailable. `/press-kit` now hos
 The landing-page introduction uses `jesus-martinez-city-portrait.png`, an AI-assisted crop and restrained color correction of Jesus's supplied New York nighttime photograph. Jesus requested a tighter crop and color correction after choosing the camera-facing city portrait. Keep the natural smile, eye contact, and visible skyline. The studio originals remain available. The candid professional portrait sits to the left of the homepage story text and also appears on `/about`, so his gaze leads toward the story on desktop.
 
 `public/media/jesus-martinez-professional.jpg` is the original `C2_09680.JPG` selected from Jesus's supplied professional shoot folder on September 23, 2026. Source: https://drive.google.com/file/d/1zlg4FdtsuWOLd5-gnTlpZhqzc1W-z0cz/view (folder `16j5_T-xpDHJVKr27UzPVgFS5amWheSMw`). Original photographs are preserved; Next Image handles orientation and optimized responsive delivery. Check both portrait crops at desktop, tablet, and phone widths when changing their containers.
+
+## Swarm (joinswarm.ai)
+
+Swarm is Jesus's AI crypto trading community. Its pre-launch page is served from this project at https://www.joinswarm.ai (the bare `joinswarm.ai` redirects to `www` in Vercel, so `www` is canonical; `SWARM_ORIGIN` in `lib/swarm.ts` follows that choice).
+
+The app uses two root layouts in route groups. `app/(site)` holds every martinezaccess.com page with the site's fonts, nav, footer and metadata. `app/(swarm)` is Swarm's own root layout: the approved brand kit (`docs/swarm-brand.md`, `public/brand/swarm/`), its `--swarm-*` tokens scoped to the `.swarm` body class, Unbounded, JetBrains Mono and Hanken Grotesk through `next/font`, the Swarm favicon and touch icon, and `swarm-og-1200x630.png` as the share image. Neither brand's styles or metadata reach the other.
+
+`next.config.ts` routes by host. On joinswarm.ai, `/` rewrites to `/swarm`, and `robots.txt`, `sitemap.xml` and `favicon.ico` rewrite to Swarm's own versions; any other path that is not a Swarm asset or a Next or Vercel internal redirects to `/`, so site pages never render under the Swarm domain. On martinezaccess.com, `/swarm` redirects to joinswarm.ai. Preview deployments show the page at `/swarm`. The site's share image is a route handler at `app/opengraph-image/route.tsx` and its icons live in `public/`, so their URLs stay `/opengraph-image`, `/icon.svg` and `/favicon.ico` and they are never attached to Swarm pages.
+
+Page copy comes from Jesus's intro video (https://youtu.be/n15W6X84IGg, October 16, 2026) and his pre-launch pricing: Founding Monthly $49 for the first 50 seats, Standard Monthly $99, Yearly $990 (two months free). There are no results, member counts or testimonials yet, so none appear. The risk and disclosure wording is a draft for Jesus to approve. Checkout runs through Whop; until the plan IDs exist, the plan picker shows a "checkout opens here soon" placeholder. The IDs go in `NEXT_PUBLIC_WHOP_PLAN_FOUNDING`, `NEXT_PUBLIC_WHOP_PLAN_STANDARD` and `NEXT_PUBLIC_WHOP_PLAN_YEARLY` (see `.env.example`), and the Whop Elements embed then mounts in `CheckoutSlot` in `app/(swarm)/swarm/PlanPicker.tsx`, remounting on plan change. The intro video loads from youtube-nocookie only after the visitor presses play. Three full style directions with 3D and 2D motion are being designed in `design-lab/landing/`; the chosen one replaces this page.
+
+To verify host routing locally, run `npm run build && npx next start` and request pages with `curl -H "Host: www.joinswarm.ai"`.
 
 ## Homepage
 
