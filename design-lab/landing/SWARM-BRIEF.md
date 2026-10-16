@@ -40,6 +40,10 @@ What to carry over, translated into Swarm:
 
 Still never: invented testimonials, member counts, wins, results, seats-left counts, value-stack dollars, or their exact wording. Their blue, serif italic and drop-shadow glows are not used; the kit's ink, gold core glow and fonts replace them.
 
+## Founder details
+
+`FOUNDER-DOSSIER.md` (being compiled October 16, 2026 from his site, the Attention Cycle story bible, his own videos, his profiles and the launch video, then fact-checked) is the reference for anything about Jesus on the page: timeline, story beats, a verbatim quote bank with timestamps, sourced numbers, photo inventory and founder-section drafts. When it exists, use it for the founder section and quote cards, and never use anything in its "Unverified" section.
+
 ## Verified transcript
 
 `swarm-intro-transcript.md` is the timestamped transcript from YouTube's captions (fetched October 16, 2026). It supersedes the vidIQ wording below. **Anything shown as a quote (quotation marks, a quote card, or a timestamp) must match it word for word, with its real timestamp.** Headlines may lightly edit his lines when they are not presented as quotes. Correct timestamps for the founder story are 2:33, 2:48 and 3:02; the closing line is at 3:51 and reads "Being early and being wrong a lot of the time feels the same way. But I want you to be early and actually know exactly why."

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'">
 <title>Swarm | Core Glow</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'">
 <meta name="description" content="Swarm is Jesus Martinez's AI crypto trading community for the new era: custom AI tools, his watch list, weekly live calls and multi-cycle traders. Pre-launch, 50 founding seats.">
 <meta name="theme-color" content="#0B0B0D">
 <meta property="og:type" content="website">
@@ -243,7 +243,7 @@
             <img id="tools-mark" src="../brand/swarm/logo/swarm-mark.svg" alt="">
             <button class="replay" type="button" id="tools-replay" hidden>Replay</button>
           </div>
-          <div class="console" id="console">
+          <div class="console" id="console" role="img" aria-label="Illustration of the agent console: four scouts scanning the watch list, watching where attention is moving, syncing notes for the weekly live call and flagging a change for Jesus to review. Not live data, not results.">
             <div class="con-head">Scouts</div>
             <ul class="con-rows">
               <li class="crow" data-state="SCANNING"><span class="spin" aria-hidden="true"></span><span class="cid">Scout 01</span><span class="cst">Scanning</span><span class="cline"><span class="cverb">Scanning</span> <span class="cobj">the watch list</span></span></li>
@@ -263,15 +263,15 @@
 
       <!-- Watch list -->
       <article class="mcard c-watch">
-        <div class="mock mock-watch" id="watch-mock">
-          <div class="mbar"><span>Watch list // members only</span><span class="mtag">Illustration · not live data</span></div>
-          <div class="wl" role="presentation">
+        <div class="mock mock-watch" id="watch-mock" role="img" aria-label="Illustration of the members-only watch list: six rows with hidden asset names, each marked watching, new this week, reviewing or removed. Not live data.">
+          <div class="mbar"><span>Watch list</span><span class="mtag">Illustration · not live data</span></div>
+          <div class="wl">
             <div class="wl-head" aria-hidden="true"><span>#</span><span>Asset</span><span class="wl-why">Why it's on the list</span><span>Status</span></div>
             <div class="wl-row" data-row="0"><span class="rk">01</span><span class="bar" style="width:58%"></span><span class="bar wl-why" style="width:76%"></span><span class="wchip">Watching</span></div>
             <div class="wl-row" data-row="1"><span class="rk">02</span><span class="bar" style="width:40%"></span><span class="bar wl-why" style="width:52%"></span><span class="wchip rev">Reviewing</span></div>
-            <div class="wl-row" data-row="2"><span class="rk">03</span><span class="bar" style="width:66%"></span><span class="bar wl-why" style="width:64%"></span><span class="wchip new">New this week</span></div>
+            <div class="wl-row" data-row="2"><span class="rk">03</span><span class="bar" style="width:66%"></span><span class="bar wl-why" style="width:64%"></span><span class="wchip">Watching</span></div>
             <div class="wl-row" data-row="3"><span class="rk">04</span><span class="bar" style="width:46%"></span><span class="bar wl-why" style="width:82%"></span><span class="wchip">Watching</span></div>
-            <div class="wl-row rem" data-row="4"><span class="rk">05</span><span class="bar" style="width:52%"></span><span class="bar wl-why" style="width:44%"></span><span class="wchip">Removed</span></div>
+            <div class="wl-row" data-row="4"><span class="rk">05</span><span class="bar" style="width:52%"></span><span class="bar wl-why" style="width:44%"></span><span class="wchip">Watching</span></div>
             <div class="wl-row" data-row="5"><span class="rk">06</span><span class="bar" style="width:36%"></span><span class="bar wl-why" style="width:60%"></span><span class="wchip">Watching</span></div>
           </div>
           <p class="mock-foot">Asset names are members only</p>
@@ -285,7 +285,7 @@
 
       <!-- Weekly live calls -->
       <article class="mcard c-calls">
-        <div class="mock mock-calls" id="calls-mock">
+        <div class="mock mock-calls" id="calls-mock" role="img" aria-label="Illustration of a weekly live call: Jesus hosting a live portfolio review. Next call day and time still to be announced. Not live data.">
           <div class="mbar"><span>Live portfolio review</span><span class="mtag">Illustration · not live data</span></div>
           <div class="call">
             <div class="call-frame">
@@ -308,7 +308,7 @@
 
       <!-- Multi-cycle traders -->
       <article class="mcard c-traders">
-        <div class="mock mock-room" id="room-mock">
+        <div class="mock mock-room" id="room-mock" role="img" aria-label="Illustration of the members-only trader room: hidden messages from multi-cycle traders and Jesus. Not live data.">
           <div class="mbar"><span>Trader room // members only</span><span class="mtag">Illustration · not live data</span></div>
           <div class="room">
             <div class="msg"><span class="av" aria-hidden="true"></span><div><div class="mhead"><span class="bar mname" style="width:96px"></span><span class="mtagc">Trader · 3 cycles</span></div><div class="mlines"><span class="bar" style="width:88%"></span><span class="bar" style="width:54%"></span></div></div></div>
