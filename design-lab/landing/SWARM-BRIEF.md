@@ -5,7 +5,7 @@
 - **The page is 100% the Swarm offer.** It is the landing page for the agentic AI crypto trading community, not a personal site. Jesus appears as the founder (his story, his face, his voice) inside it. martinezaccess.com stays his personal site and links here.
 - **Because the whole page is a Swarm page, the Swarm brand kit applies to the whole page:** the `.swarm` wrapper goes on the page root, the Swarm og:image and Swarm icons go in its head. The three style directions differ in composition, motion language, narrative and texture, all inside the kit's colors and fonts.
 - **Domain:** `joinswarm.ai` is the recommended domain (not yet bought). Until it exists, previews live in the design lab.
-- **Checkout:** Whop embedded checkout on the page. Whop plan IDs are `[DATA NEEDED]`.
+- **Checkout:** Whop embedded checkout on the page. Jesus does not have the Whop plan IDs yet, so every page shows a clearly marked placeholder where the Whop checkout will mount, wired so that swapping in the three plan IDs later is a one-line change per plan.
 - **Taste reference from Jesus:** https://www.joinasymmetric.xyz/ (a paid trading community page). Reference only, never copy its layout, copy, assets or code. See "Taste notes" below.
 - **The graphics:** original 2D and 3D motion that amplifies the agentic feel: many independent agents sensing, deciding and converging on one signal, which is also the Hive Core logo's meaning.
 
@@ -16,7 +16,7 @@
 - Plans, in this order:
   1. **Founding Monthly, $49/mo.** "Forever. Cancel whenever. 50 seats only." Renews at $49.00 per month.
   2. **Standard Monthly, $99/mo.**
-  3. **Yearly, 2 months free.** The yearly price is not shown; on the $99 standard plan that would be $990/year. Show "2 months free" and mark the price `[CONFIRM: $990/yr?]` until Jesus confirms.
+  3. **Yearly, $990/year, 2 months free** (twelve months of the $99 standard plan for the price of ten; confirmed by Jesus on October 16, 2026).
 - Checkout takes card or ACH (Whop).
 - Not provided, so never invented: how many founding seats are left, member count, testimonials, results, a launch date, a refund policy beyond "cancel anytime".
 - The screenshot's checkout used a condensed italic display face. The brand kit's type (Unbounded, JetBrains Mono, Hanken Grotesk) wins on the page; the copy and prices above are what to follow.
