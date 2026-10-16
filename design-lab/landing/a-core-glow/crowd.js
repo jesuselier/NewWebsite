@@ -1,8 +1,8 @@
 /* Swarm A, Core Glow: "The crowd" (Canvas 2D).
-   A 1px bell curve draws once; people in the cycle are packed under it as a beeswarm of agents.
-   LEFT herds in one drifting heading, MID twitches and keeps stepping out to the sideline,
-   RIGHT holds still and oriented, then steps out together. A DOM "YOU" tick rides left to right with scroll.
-   No text is drawn on canvas. */
+   A 1px bell curve draws once; people in the cycle are packed under it as a beeswarm of agents, drawn in the
+   page's agent language (small hexagonal nodes, no tails). LEFT drifts as one herd, MID twitches and keeps stepping
+   out to the sideline, RIGHT holds still, then steps out together. It runs two cycles, then settles and stops.
+   A DOM "YOU" tick rides left to right with scroll (fixed under reduced motion). No text is drawn on canvas. */
 (() => {
   'use strict';
   const S = window.SWARM || { reduce: false, freeze: null };
@@ -14,6 +14,8 @@
   const yl = you.querySelector('.yl'), yt = you.querySelector('.yt');
   const zoneEls = fig.querySelectorAll('[data-zone]'), tagEls = fig.querySelectorAll('[data-ztag]');
   const COL = { line: '#232328', muted: '#8E8A80', text: '#EEEBE4' };
+  const hexPath = (window.SwarmLattice && window.SwarmLattice.hexPath) || ((c, x, y, r) => c.rect(x - r, y - r, 2 * r, 2 * r));
+  const RUN = 14.5, SETTLE = 0.9;
   const ZB = [0.34, 0.66];
   const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
   const ease = x => { x = Math.min(1, Math.max(0, x)); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
@@ -30,7 +32,7 @@
     seed = 3;
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     W = cv.parentElement.clientWidth; phone = W < 600;
-    H = phone ? 250 : 340;
+    H = phone ? 250 : 320;
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); cv.style.height = H + 'px';
     base = H - (phone ? 40 : 46);
     peak = base - (phone ? 36 : 42);
@@ -98,21 +100,14 @@
     g.beginPath();
     for (const b of ZB) { const x = Math.round(x0 + b * (x1 - x0)) + 0.5; if (x > xe) continue; g.moveTo(x, base); g.lineTo(x, cy(x) + 8); }
     g.stroke();
-    // agents, bucketed: active zone bright, others muted
+    // agents as hexagonal nodes, bucketed: active zone bright, others muted
     const groups = [[], []];
     for (const a of agents) { if (a.hx > xe - 6) continue; groups[a.zone === activeZone ? 1 : 0].push(a); }
-    const tailA = [0.26, 0.5], headA = [0.62, 1], colr = [COL.muted, COL.text];
+    const headA = [0.7, 1], colr = [COL.muted, COL.text], r = phone ? 2.2 : 2.7;
     for (let i = 0; i < 2; i++) {
       const list = groups[i]; if (!list.length) continue;
-      g.globalAlpha = tailA[i]; g.strokeStyle = colr[i]; g.beginPath();
-      for (const a of list) {
-        const sp = Math.hypot(a.x - a.px, a.y - a.py);
-        const L = Math.min(13, 5 + sp * 2.2);
-        g.moveTo(a.x, a.y); g.lineTo(a.x - Math.cos(a.ang) * L, a.y - Math.sin(a.ang) * L);
-      }
-      g.stroke();
       g.globalAlpha = headA[i]; g.fillStyle = colr[i]; g.beginPath();
-      for (const a of list) g.rect(a.x - 1.25, a.y - 1.25, 2.5, 2.5);
+      for (const a of list) hexPath(g, a.x, a.y, r);
       g.fill();
     }
     // the curve, drawn once
@@ -122,9 +117,12 @@
   }
 
   function placeYou() {
-    const r = fig.getBoundingClientRect(), vh = window.innerHeight || 800;
-    const p = Math.min(1, Math.max(0, (vh * 0.92 - r.top) / (vh * 0.92 + r.height * 0.35)));
-    youU = 0.04 + 0.92 * p;
+    if (S.reduce) youU = 0.5;
+    else {
+      const r = fig.getBoundingClientRect(), vh = window.innerHeight || 800;
+      const p = Math.min(1, Math.max(0, (vh * 0.92 - r.top) / (vh * 0.92 + r.height * 0.35)));
+      youU = 0.04 + 0.92 * p;
+    }
     const x = x0 + youU * (x1 - x0), y = cy(x);
     you.style.transform = `translateX(${x.toFixed(1)}px)`;
     yl.style.top = y + 'px'; yl.style.height = Math.max(0, base - y) + 'px';
@@ -140,15 +138,22 @@
   }
 
   // ---- lifecycle ----
-  let raf = 0, last = 0, visible = false, motionOff = false, started = false;
-  const canRun = () => live && visible && !document.hidden && !motionOff;
+  let raf = 0, last = 0, visible = false, motionOff = false, started = false, settled = false;
+  const canRun = () => live && !settled && visible && !document.hidden && !motionOff;
   function frame(now) {
     raf = 0;
     if (!canRun()) return;
     const dt = last ? Math.min(400, now - last) : 16.7;
     last = now;
     if (drawP < 1) { introStart += dt; drawP = ease(introStart / 1500); }
-    tau += dt / 1000; update(tau, dt); draw(); placeYou();
+    tau += dt / 1000; update(tau, dt);
+    if (tau > RUN) {
+      // settle: everyone eases back home, then the loop stops for good
+      const k = ease((tau - RUN) / SETTLE);
+      for (const a of agents) { a.x += (a.hx - a.x) * k; a.y += (a.hy - a.y) * k; }
+      if (tau > RUN + SETTLE) { for (const a of agents) { a.x = a.hx; a.y = a.hy; } draw(); placeYou(); settled = true; fig.classList.add('settled'); return; }
+    }
+    draw(); placeYou();
     raf = requestAnimationFrame(frame);
   }
   function kick() { if (!raf && canRun()) { last = 0; raf = requestAnimationFrame(frame); } }
@@ -170,7 +175,7 @@
   } else { drawP = 1; draw(); }
 
   let ticking = false;
-  window.addEventListener('scroll', () => {
+  if (!S.reduce) window.addEventListener('scroll', () => {
     if (ticking) return; ticking = true;
     requestAnimationFrame(() => { ticking = false; placeYou(); });
   }, { passive: true });

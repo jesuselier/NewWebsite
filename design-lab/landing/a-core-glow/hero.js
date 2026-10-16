@@ -1,431 +1,333 @@
-/* Swarm A, Core Glow: hero swarm (Canvas 2D).
-   Agents run the honeycomb's corridors (the channels between cells), sense the cells they pass, then reach
-   consensus and stream along the lattice to the core at the top of the hero. Eighteen of them come to rest on
-   the outer corners of the six neighbour cells; the rest are absorbed by the core, whose warm falloff opens
-   (the light from above) while the official swarm-mark.svg fades in on the core cell.
-   Agents stay out of the reading zone: routes avoid the copy, and anything that does cross it is drawn at 12%.
-   No text is drawn on canvas. ?t=<ms> freezes a frame, ?reduce=1 forces the settled still (no trails). */
+/* Swarm A, Core Glow: the hero (Canvas 2D, two canvases, official swarm-mark.svg on the core cell).
+   The honeycomb fills the first screen. Agents are small hexagonal nodes that hop corner to corner along the
+   channels between cells; every edge they cross lights for 600ms, and the cells they sense brighten briefly, so the
+   field reads as a network being worked. The opening is seen at an angle and straightens out as consensus forms:
+   committed agents route along shared paths (around the copy) toward the core, the six neighbours light as agents
+   reach their corners, and the official mark lands on the core as its warm light opens over the whole screen.
+   Everything settles by about 4.3s and the loop stops; the settled frame is the reduced-motion still.
+   No text is drawn on canvas. ?t=<ms> freezes a frame, ?reduce=1 forces the still. */
 (() => {
   'use strict';
+  const SL = window.SwarmLattice;
   const S = window.SWARM || { reduce: false, freeze: null };
   const hero = document.getElementById('top');
   const fc = document.getElementById('hero-field');
   const ac = document.getElementById('hero-agents');
   const mark = document.getElementById('hero-mark');
   const anchor = document.getElementById('core-anchor');
-  const phaseEl = document.getElementById('hero-phase');
-  const segs = document.querySelectorAll('#hero-seg i');
   const card = document.getElementById('scout-card');
-  if (!hero || !fc || !ac || !fc.getContext) return;
+  if (!SL || !hero || !fc || !ac || !fc.getContext) return;
   const fx = fc.getContext('2d'), ax = ac.getContext('2d');
   if (!fx || !ax) return;
+  const { COL, clamp01, sm, inOut, outCubic, rng, hexPath, lattice, sim, drawEdges, drawAgents, drawField } = SL;
 
-  const COL = { faint: '#1C1C21', hive: '#55555B', muted: '#8E8A80', text: '#EEEBE4', gold: '#F5C542' };
-  const T = { scanEnd: 2400, consEnd: 3600, arrive: 4250, resolve: 4400, fade: 240 };
+  const T = { ringMs: 20, wake: 120, commit0: 980, commit1: 1400, arrive: 2320, resolveMin: 2200, resolveMax: 2780, markIn: 380, glowIn: 1000, tilt: 2350 };
   const DT = 1000 / 60;
-  const SQ3 = Math.sqrt(3);
-  const MASK = 0.12;                       // agent opacity inside the reading zone
-  const NB = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
-  const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-  const clamp01 = x => Math.min(1, Math.max(0, x));
-  const easeOut = x => 1 - Math.pow(1 - clamp01(x), 3);
-  let seed = 7;
-  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const pick = arr => arr[(rnd() * arr.length) | 0];
-  const key = (q, r) => q + ',' + r;
+  const MASK = 0.13;
   const STATES = [
     ['SCANNING', 'Scanning', 'the watch list'],
     ['WATCHING', 'Watching', 'where attention is moving'],
     ['FLAGGED FOR REVIEW', 'Flagged', 'a change on the watch list for Jesus to review']
   ];
 
-  let W, H, DPR, phone, R, P, Rc, vScan, core, cells, cellMap, rings, maxD, avoid, pulses, V, agents;
-  let charge, resolved, resolveT, simT, fieldDone, fieldKey, phaseIdx, pulseCap, pingCapBase, keepN, restN, lastDot = -2;
+  let W, Hc, DPR, phone, tablet, R, core, maxD, RAD, TH0, PD, L, V, walk, dist, parent, hops, innerNext, glowEl, tintCv, lastG = -1, lastTilt = '';
+  let rects, Sx, rnd, resolved, resolveT, absorbed, routed, flashT, pinged, simT, END, fieldKey, phaseIdx, lastDot;
 
-  /* ---------- the reading zone ---------- */
-  function measureAvoid() {
+  /* ---------- the copy, in screen space ---------- */
+  function measure() {
     const hr = hero.getBoundingClientRect();
-    avoid = [];
-    const add = (r, m) => { if (r.width && r.height) avoid.push({ x0: r.left - hr.left - m, y0: r.top - hr.top - m, x1: r.right - hr.left + m, y1: r.bottom - hr.top + m }); };
+    rects = [];
+    const add = (r, m) => { if (r.width && r.height) rects.push([r.left - hr.left - m, r.top - hr.top - m, r.right - hr.left + m, r.bottom - hr.top + m]); };
     hero.querySelectorAll('[data-avoid]').forEach(el => {
-      if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;
-      if (el.dataset.avoid === 'lines') {
-        const rg = document.createRange(); rg.selectNodeContents(el);
-        for (const r of rg.getClientRects()) add(r, 10);
-      } else add(el.getBoundingClientRect(), 8);
+      if (el.offsetParent === null) return;
+      if (el.dataset.avoid === 'lines') { const rg = document.createRange(); rg.selectNodeContents(el); for (const r of rg.getClientRects()) add(r, phone ? 4 : 8); }
+      else add(el.getBoundingClientRect(), 6);
     });
-    const navR = document.querySelector('.nav-r');
-    if (navR && window.scrollY < 10) add(navR.getBoundingClientRect(), 6);
+    if (window.scrollY < 10) document.querySelectorAll('.nav-logo, .nav .btn-line').forEach(el => add(el.getBoundingClientRect(), 6));
   }
-  function inAvoid(x, y, m) {
-    for (const b of avoid) if (x > b.x0 - m && x < b.x1 + m && y > b.y0 - m && y < b.y1 + m) return true;
-    return false;
+  // 1 in the open, MASK behind the copy, with a soft 22px edge; everything fades out at the bottom of the art
+  function maskAt(x, y) {
+    let d = 1e9;
+    for (const r of rects) {
+      const dx = Math.max(r[0] - x, 0, x - r[2]), dy = Math.max(r[1] - y, 0, y - r[3]);
+      const dd = dx > 0 || dy > 0 ? Math.hypot(dx, dy) : 0;
+      if (dd < d) { d = dd; if (!d) break; }
+    }
+    return (MASK + (1 - MASK) * sm(0, 22, d)) * (1 - sm(Hc - 150, Hc - 8, y));
   }
 
-  /* ---------- field, lattice and agents ---------- */
+  /* ---------- the opening camera: a receding plane that straightens out ---------- */
+  function projAt(t) {
+    const k = 1 - inOut(t / T.tilt);
+    if (k <= 0.0005) return null;
+    const th = TH0 * k, c = Math.cos(th), s = Math.sin(th), z0 = 1 + 0.05 * k;
+    return (x, y) => { const dy = y - core.y, f = PD / (PD - dy * s) * z0; return [core.x + (x - core.x) * f, core.y + dy * c * f, f]; };
+  }
+  const ID = (x, y) => [x, y, 1];
+  // the same camera as a CSS transform, so the compositor tilts the canvases instead of re-drawing every cell
+  function tiltCSS(t) {
+    const k = 1 - inOut(t / T.tilt);
+    if (k <= 0.0005) return '';
+    return `scale(${(1 + 0.05 * k).toFixed(4)}) perspective(${PD}px) rotateX(${(TH0 * k).toFixed(5)}rad)`;
+  }
+
+  /* ---------- lattice, routes and agents ---------- */
   function setup() {
-    seed = 7;
     DPR = Math.min(window.devicePixelRatio || 1, 2);
-    W = hero.clientWidth; H = hero.clientHeight;
-    phone = W <= 640;
-    for (const c of [fc, ac]) { c.width = Math.round(W * DPR); c.height = Math.round(H * DPR); c.style.width = W + 'px'; c.style.height = H + 'px'; }
-    R = phone ? 20 : 22; P = 1.95 * R; Rc = P / SQ3;
-    vScan = P * (phone ? 2.0 : 2.2);
-    pulseCap = phone ? 3 : 6; pingCapBase = phone ? 4 : 8;
+    W = hero.clientWidth;
+    const vh = window.innerHeight || 900;
+    Hc = Math.round(Math.min(hero.clientHeight, Math.max(vh, 640) + 120));
+    phone = W <= 640; tablet = !phone && W < 1100;
+    if (!glowEl) {
+      glowEl = document.createElement('div'); glowEl.className = 'hero-glow';
+      tintCv = document.createElement('canvas'); tintCv.className = 'hero-tint';
+      fc.after(glowEl); glowEl.after(tintCv);
+    }
+    for (const c of [fc, ac, tintCv]) { c.width = Math.round(W * DPR); c.height = Math.round(Hc * DPR); c.style.width = W + 'px'; c.style.height = Hc + 'px'; }
+    R = parseFloat(getComputedStyle(hero).getPropertyValue('--R')) || (phone ? 19 : 28);   // the CSS lays the copy out around the same cell size
     const hr = hero.getBoundingClientRect(), ar = anchor.getBoundingClientRect();
     core = { x: Math.round(W / 2), y: Math.round(ar.top - hr.top) };
     const Sz = 7.5 * R;
     Object.assign(mark.style, { width: Sz + 'px', height: Sz + 'px', left: (core.x - Sz / 2) + 'px', top: (core.y - Sz / 2) + 'px' });
-    maxD = Math.hypot(Math.max(core.x, W - core.x), Math.max(core.y, H - core.y));
-    measureAvoid();
+    maxD = Math.hypot(Math.max(core.x, W - core.x), Math.max(core.y, Hc - core.y));
+    RAD = phone ? 400 : (tablet ? 500 : 640);
+    TH0 = (phone ? 30 : 40) * Math.PI / 180; PD = phone ? 820 : 1250;
+    measure();
+    for (const c of [fc, ac]) c.style.transformOrigin = `${core.x}px ${core.y}px`;
+    // the core's warm light (the one glow the kit allows): a static layer the compositor fades and opens
+    const sx = phone ? 1.12 : 1.5, st = [[0, 0.36], [8, 0.24], [20, 0.14], [36, 0.075], [56, 0.034], [78, 0.012], [100, 0]];
+    Object.assign(glowEl.style, { width: W + 'px', height: Hc + 'px', transformOrigin: `${core.x}px ${core.y}px`,
+      background: `radial-gradient(ellipse ${Math.round(RAD * sx)}px ${RAD}px at ${core.x}px ${core.y}px, ${st.map(([o, a]) => `rgba(245,197,66,${a}) ${o}%`).join(', ')})` });
+    tintCv.style.transformOrigin = `${core.x}px ${core.y}px`;
+    lastG = -1; lastTilt = '-';
+    const P = 1.95 * R;
+    L = lattice({ R, ox: core.x, oy: core.y, x0: -0.32 * W, y0: -7 * P, x1: 1.32 * W, y1: Hc + 2 * P });
+    V = L.V;
+    rnd = rng(11);
+    { const g = tintCv.getContext('2d'), k = RAD * 0.5;
+      g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, Hc);
+      drawField(g, L, c => c.ring >= 2 ? 0.26 * Math.exp(-(c.d * c.d) / (k * k)) * fieldAlpha(c, 1e9) : 0, { color: COL.gold }); }
 
-    cells = []; cellMap = new Map(); rings = [];
-    const rq = Math.ceil(maxD / P) + 2;
-    let maxRing = 0;
-    for (let q = -rq; q <= rq; q++) for (let r = -rq; r <= rq; r++) {
-      const x = core.x + P * (q + r / 2), y = core.y + P * (SQ3 / 2) * r;
-      if (x < -P || x > W + P || y < -P || y > H + P) continue;
-      const ring = (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2;
-      const c = { q, r, x, y, ring, d: Math.hypot(x - core.x, y - core.y), ping: 0, pingT: -1, text: inAvoid(x, y, R * 0.5) };
-      cells.push(c); cellMap.set(key(q, r), c);
-      (rings[ring] || (rings[ring] = [])).push(c);
-      maxRing = Math.max(maxRing, ring);
+    // where agents may walk, and what crossing the copy costs (routes go around it)
+    walk = V.map(v => !v.core && !v.perim && v.ring >= 2 && v.x > -0.14 * W && v.x < 1.14 * W && v.y > -4 * P && v.y < Hc + P);
+    const cost = V.map(v => maskAt(v.x, v.y) < 0.6 ? 2 : 1);
+    dist = new Float64Array(V.length).fill(Infinity);
+    parent = new Int32Array(V.length).fill(-1);
+    const heap = [];
+    const push = (d, i) => { heap.push([d, i]); let k = heap.length - 1; while (k) { const p = (k - 1) >> 1; if (heap[p][0] <= heap[k][0]) break; [heap[p], heap[k]] = [heap[k], heap[p]]; k = p; } };
+    const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let k = 0; for (;;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === k) break; [heap[m], heap[k]] = [heap[k], heap[m]]; k = m; } } return top; };
+    V.forEach((v, i) => { if (v.perim) { dist[i] = 0; push(0, i); } });
+    while (heap.length) {
+      const [d, i] = pop(); if (d > dist[i]) continue;
+      for (const j of V[i].nb) { if (!walk[j]) continue; const nd = d + cost[i] + cost[j]; if (nd < dist[j]) { dist[j] = nd; push(nd, j); } }
     }
-    fieldDone = maxRing * 45 + 320;
-    buildLattice();
-
-    const N = phone ? 80 : (W < 1100 ? 140 : 210);
-    keepN = phone ? 8 : 18;
-    const spawn = [];
-    // spawn under the light: dense near the core, thinning out, and none in the bottom band of the hero
-    for (let i = 0; i < V.length; i++) if (V[i].walk && V[i].ring >= 3 && V[i].nb.length === 3 && V[i].y < H - 120) spawn.push(i);
-    agents = [];
-    let kept = 0;
-    for (let i = 0; i < N && spawn.length; i++) {
-      let id = spawn[0];
-      for (let tries = 0; tries < 40; tries++) {
-        id = pick(spawn);
-        const v = V[id];
-        if (rnd() < 0.03 + 0.97 * Math.exp(-v.d / (0.26 * maxD))) break;
+    // among equally short ways in, prefer the one closest to the six arteries leaving the cluster, so routes merge
+    const art = V.filter(v => v.perim && v.cells.filter(c => c.ring === 1).length === 2).map(v => Math.atan2(v.y - core.y, v.x - core.x));
+    const artDev = (x, y) => { const a = Math.atan2(y - core.y, x - core.x); let m = 9; for (const b of art) { let d = Math.abs(a - b); if (d > Math.PI) d = 2 * Math.PI - d; m = Math.min(m, d); } return m; };
+    V.forEach((v, i) => {
+      if (!walk[i] || dist[i] === Infinity) return;
+      let best = -1, bs = 1e9;
+      for (const j of v.nb) {
+        if (dist[j] === Infinity || Math.abs(dist[j] + cost[i] + cost[j] - dist[i]) > 1e-6) continue;
+        const s = artDev(V[j].x, V[j].y) * (0.6 + 0.4 * Math.min(1, V[j].d / (6 * P))) + V[j].d * 1e-5;
+        if (s < bs) { bs = s; best = j; }
       }
-      const opts = V[id].nb.filter(j => V[j].walk && V[j].ring >= 2);
-      const a = {
-        from: id, to: opts.length ? pick(opts) : V[id].nb[0], s: rnd() * Rc, x: V[id].x, y: V[id].y,
-        mode: 'scan', commit: rnd() < 0.72, delay: 200 + rnd() * 600, cdelay: rnd() * 480,
-        speed: vScan * (0.85 + 0.3 * rnd()), cur: 0, target: 0, hist: [], dead: false, keep: false, fadeT: -1, restV: -1
-      };
-      if (!a.commit && kept < keepN) { a.keep = true; kept++; }
-      agents.push(a);
-    }
-    pulses = []; charge = 0; commitCount = 0; resolved = false; resolveT = Infinity; simT = 0; fieldKey = ''; phaseIdx = -1; restN = 0;
-  }
+      parent[i] = best;
+    });
+    hops = new Int32Array(V.length).fill(-1);
+    const hopOf = i => { let n = 0, k = i; const seen = []; while (k >= 0 && !V[k].perim && hops[k] < 0 && n < 400) { seen.push(k); k = parent[k]; n++; } let base = k < 0 ? 9999 : (V[k].perim ? 0 : hops[k]); for (let m = seen.length - 1; m >= 0; m--) hops[seen[m]] = ++base; return hops[i]; };
+    V.forEach((v, i) => { if (walk[i]) hopOf(i); });
+    // inside the cluster: from the outer corners to the core's own corners
+    innerNext = new Int32Array(V.length).fill(-1);
+    const dIn = new Int32Array(V.length).fill(-1), q = [];
+    V.forEach((v, i) => { if (v.core) { dIn[i] = 0; q.push(i); } });
+    for (let h = 0; h < q.length; h++) for (const j of V[q[h]].nb) { if (dIn[j] >= 0 || !(V[j].perim || V[j].core)) continue; dIn[j] = dIn[q[h]] + 1; innerNext[j] = q[h]; q.push(j); }
 
-  // The corridors between cells form their own honeycomb: its corners sit at P / sqrt(3) from each cell centre.
-  function buildLattice() {
-    V = [];
-    const vmap = new Map();
-    const vk = (x, y) => Math.round(x * 2) + ':' + Math.round(y * 2);
-    for (const c of cells) {
-      const ids = [];
-      for (let k = 0; k < 6; k++) {
-        const ang = Math.PI / 180 * (60 * k - 90);
-        const x = c.x + Rc * Math.cos(ang), y = c.y + Rc * Math.sin(ang);
-        const kk = vk(x, y);
-        let id = vmap.get(kk);
-        if (id === undefined) { id = V.length; vmap.set(kk, id); V.push({ x, y, nb: [], cells: [], ring: 99, core: false, dist: Infinity, distIn: Infinity, rest: null }); }
-        const v = V[id];
-        v.cells.push(c); v.ring = Math.min(v.ring, c.ring); if (c.ring === 0) v.core = true;
-        ids.push(id);
+    // the swarm: spread across the whole first screen, thinning toward the edges and behind the copy
+    const N = phone ? 86 : (tablet ? 136 : 196);
+    const pool = [];
+    V.forEach((v, i) => { if (walk[i] && v.ring >= 3 && v.x > 6 && v.x < W - 6 && v.y > 8 && v.y < Hc - 40) pool.push(i); });
+    Sx = sim(L, 23, 600);
+    const used = new Set();
+    for (let n = 0; n < N && pool.length; n++) {
+      let id = pool[0];
+      for (let tries = 0; tries < 60; tries++) {
+        id = pool[(rnd() * pool.length) | 0];
+        if (used.has(id)) continue;
+        const v = V[id], w = (0.32 + 0.68 * Math.exp(-v.d / (0.55 * maxD))) * (maskAt(v.x, v.y) < 0.6 ? 0.35 : 1);
+        if (rnd() < w) break;
       }
-      for (let k = 0; k < 6; k++) {
-        const a = ids[k], b = ids[(k + 1) % 6];
-        if (!V[a].nb.includes(b)) V[a].nb.push(b);
-        if (!V[b].nb.includes(a)) V[b].nb.push(a);
-      }
+      used.add(id);
+      const v = V[id];
+      const kind = rnd() < 0.7 ? 1 : 0;
+      const a = Sx.add(id, { kind, born: T.wake + v.ring * T.ringMs + rnd() * 260, ct: T.commit0 + rnd() * (T.commit1 - T.commit0), jit: rnd() * 260 });
+      const nx = v.nb.filter(j => walk[j]);
+      if (nx.length) Sx.hop(a, nx[(rnd() * nx.length) | 0], a.born + 40 + rnd() * 220, hopD());
     }
-    for (const v of V) {
-      v.d = Math.hypot(v.x - core.x, v.y - core.y);
-      v.text = inAvoid(v.x, v.y, 6);
-      v.out = v.x < 8 || v.x > W - 8 || v.y < 8 || v.y > H - 8 || v.d > maxD * 0.92;
-      v.perim = v.ring === 1 && !v.core;
-      v.walk = !v.text && !v.out;
-    }
-    // distance (in corridor hops) to the cluster's 18 outer corners, routed around the copy
-    const q = [];
-    V.forEach((v, i) => { if (v.perim) { v.dist = 0; q.push(i); } });
-    for (let h = 0; h < q.length; h++) {
-      const v0 = V[q[h]];
-      for (const j of v0.nb) { const v = V[j]; if (v.dist !== Infinity || !v.walk || v.ring <= 1) continue; v.dist = v0.dist + 1; q.push(j); }
-    }
-    // inside the cluster: outer corner to the core's own corners
-    const q2 = [];
-    V.forEach((v, i) => { if (v.core) { v.distIn = 0; q2.push(i); } });
-    for (let h = 0; h < q2.length; h++) {
-      const v0 = V[q2[h]];
-      for (const j of v0.nb) { const v = V[j]; if (v.distIn !== Infinity || v.ring > 1) continue; v.distIn = v0.distIn + 1; q2.push(j); }
-    }
+    pinged = []; resolved = false; resolveT = Infinity; absorbed = 0; routed = 0; flashT = -1e9;
+    simT = 0; END = Infinity; fieldKey = ''; phaseIdx = -1; lastDot = -2;
   }
+  const hopD = () => 175 + rnd() * 85;
+  const pick = arr => arr[(rnd() * arr.length) | 0];
 
-  function hexLine(c) {
-    const out = [], n = c.ring;
-    for (let i = 0; i < n; i++) {
-      const f = i / n;
-      const q = c.q * (1 - f) + 1e-6, r = c.r * (1 - f) + 1e-6, s = -q - r;
-      let rq = Math.round(q), rr = Math.round(r); const rs = Math.round(s);
-      const dq = Math.abs(rq - q), dr = Math.abs(rr - r), ds = Math.abs(rs - s);
-      if (dq > dr && dq > ds) rq = -rr - rs; else if (dr > ds) rr = -rq - rs;
-      const cell = cellMap.get(key(rq, rr));
-      if (cell && cell.ring >= 1) out.push(cell);
-    }
-    return out;
-  }
-  function spawnPulse(cell, t) {
-    if (resolved || pulses.length >= pulseCap) return;
-    if (rnd() > (t < T.scanEnd ? 0.35 : 1)) return;
-    const path = hexLine(cell);
-    if (path.length > 1) pulses.push({ path, t0: t + 120 });
-  }
-
-  let activePings = 0;
-  function arrive(a, t) {
-    const prev = a.from; a.from = a.to;
+  function policy(a, at) {
     const v = V[a.from];
     if (a.mode === 'scan') {
-      const minRing = t > T.scanEnd || resolved ? 3 : 2;
-      // sense one of the three cells around this corner
-      const pingCap = resolved ? 3 : pingCapBase;
-      if (rnd() < 0.42 && activePings < pingCap) {
-        const cs = v.cells.filter(c => c.ring >= minRing && !c.text && c.pingT < 0);
-        if (cs.length) { const c = pick(cs); c.pingT = t; activePings++; spawnPulse(c, t); }
+      // sense one of the three cells that meet at this corner
+      if (!resolved && rnd() < (at < 900 ? 0.5 : 0.34)) {
+        let live = 0; for (const c of pinged) if (at - c.ping < 800) live++;
+        if (live < (phone ? 7 : 16)) {
+          const cs = v.cells.filter(c => c.ring >= 3 && at - c.ping > 800);
+          if (cs.length) { const c = pick(cs); c.ping = at; pinged.push(c); if (pinged.length > 40) pinged.splice(0, pinged.length - 40); }
+        }
       }
-      let opts = v.nb.filter(j => j !== prev && V[j].walk && V[j].ring >= minRing);
-      if (!opts.length) opts = v.nb.filter(j => V[j].walk && V[j].ring >= 2);
-      if (!opts.length) opts = [prev];
-      // committed agents drift toward the core before consensus, so the swarm gathers under the light
-      const bias = a.commit && !resolved ? 0.55 * sm(700, T.scanEnd, t) : 0;
-      if (bias && rnd() < bias) { const down = opts.filter(j => V[j].dist < v.dist); if (down.length) opts = down; }
-      a.to = pick(opts);
+      if (a.kind === 1 && !resolved && at >= a.ct && hops[a.from] > 0 && hops[a.from] < 9999) {
+        a.mode = 'route'; routed++;
+        a.hd = Math.min(205, Math.max(68, (Math.max(180, T.arrive + a.jit - at)) / hops[a.from]));
+        return policy(a, at);
+      }
+      if (resolved) { if (a.fadeT < 0) { a.fadeT = at; a.fadeD = 300; } return; }
+      const minRing = at > T.commit0 ? 3 : 2;
+      let opts = v.nb.filter(j => j !== a.prev && walk[j] && V[j].ring >= minRing);
+      if (!opts.length) opts = v.nb.filter(j => walk[j] && V[j].ring >= 2);
+      if (!opts.length) return;
+      const bias = a.kind ? 0.62 * sm(350, T.commit0, at) : 0;
+      if (bias && rnd() < bias) { const down = opts.filter(j => dist[j] < dist[a.from]); if (down.length) opts = down; }
+      Sx.hop(a, pick(opts), at + 20 + rnd() * 140, hopD());
       return;
     }
-    if (a.mode === 'commit') {
-      if (v.perim) {
-        if (v.rest === null && restN < 18) { v.rest = a; restN++; a.mode = 'rest'; a.restV = a.from; a.s = 0; a.to = a.from; return; }
-        a.mode = 'absorb';
-      } else {
-        let opts = v.nb.filter(j => V[j].dist < v.dist);
-        if (!opts.length) opts = v.nb.filter(j => j !== prev && V[j].dist <= v.dist);
-        a.to = opts.length ? pick(opts) : prev;
-        return;
-      }
+    if (v.perim && a.mode === 'route') {
+      for (const c of v.cells) if (c.ring === 1 && c.lit < -1e8) c.lit = at;
+      if (resolved) { a.fadeT = at; a.fadeD = 140; return; }
+      a.mode = 'inner';
     }
-    if (a.mode === 'absorb') {
-      // never cross the lit core: after the handoff, agents still arriving vanish at the cluster's edge
-      if (v.core || resolved) { a.dead = true; charge = Math.min(1, charge + 1 / Math.max(1, commitCount)); return; }
-      const opts = v.nb.filter(j => V[j].distIn < v.distIn);
-      if (!opts.length) { a.dead = true; return; }
-      a.to = pick(opts);
+    if (a.mode === 'inner') {
+      if (v.core) { a.dead = true; absorbed++; flashT = at; return; }
+      const nx = innerNext[a.from];
+      if (nx < 0) { a.dead = true; return; }
+      Sx.hop(a, nx, at, 110);
+      return;
     }
+    const p = parent[a.from];
+    if (p < 0) { a.mode = 'scan'; return; }
+    Sx.hop(a, p, at, a.hd);
   }
 
-  let commitCount = 0;
-  function step(t, dt) {
-    const s = dt / 1000;
-    activePings = 0; for (const c of cells) if (c.pingT >= 0) activePings++;
-    let inFlight = 0;
-    for (const a of agents) {
-      if (a.dead || t < a.delay) continue;
-      if (a.commit && a.mode === 'scan' && t >= T.scanEnd + a.cdelay && !resolved) {
-        const v = V[a.to];
-        const L = (v.dist + 2) * Rc + (Rc - a.s);
-        const need = v.dist === Infinity ? Infinity : L / Math.max(350, T.arrive - t) * 1000;
-        if (need <= vScan * 3.4) { a.mode = 'commit'; a.cur = a.speed; a.target = Math.max(vScan * 1.15, need); commitCount++; }
-        else a.commit = false;
-      }
-      let sp = 0;
-      if (a.mode === 'scan') sp = a.speed * (resolved ? 0.6 : 1);
-      else if (a.mode === 'commit' || a.mode === 'absorb') { a.cur += (a.target - a.cur) * Math.min(1, s * 6); sp = a.cur; inFlight++; }
-      if (sp > 0) {
-        a.s += sp * s;
-        let guard = 0;
-        while (a.s >= Rc && !a.dead && a.mode !== 'rest' && guard++ < 6) { a.s -= Rc; arrive(a, t); }
-      }
-      if (a.dead) continue;
-      if (a.mode === 'rest') { a.x = V[a.restV].x; a.y = V[a.restV].y; }
-      else { const A = V[a.from], B = V[a.to], f = a.s / Rc; a.x = A.x + (B.x - A.x) * f; a.y = A.y + (B.y - A.y) * f; }
-      a.hist.push(a.x, a.y); if (a.hist.length > 20) a.hist.splice(0, 2);
-      if (resolved && a.mode === 'scan' && !a.keep) {
-        if (a.fadeT < 0) a.fadeT = t + rnd() * 400;
-        if (t > a.fadeT + 700) a.dead = true;
+  function step(t) {
+    Sx.advance(t, policy);
+    if (!resolved && ((t >= T.resolveMin && routed > 0 && absorbed >= 0.6 * routed) || t >= T.resolveMax)) {
+      resolved = true; resolveT = t; END = t + 1500;
+      for (const c of L.rings[1] || []) if (c.lit < -1e8) c.lit = t;
+      for (const a of Sx.agents) {
+        if (a.dead || a.fadeT >= 0) continue;
+        if (a.mode === 'scan') { a.fadeT = t + 90 + rnd() * 520; a.fadeD = 300; }
+        else if (a.mode === 'route') { a.fadeT = t + 520 + rnd() * 260; a.fadeD = 220; }
       }
     }
-    for (const c of cells) if (c.pingT >= 0) {
-      const e = t - c.pingT;
-      c.ping = e < 120 ? e / 120 : e < 280 ? 1 : Math.max(0, 1 - (e - 280) / 520);
-      if (e > 800) { c.pingT = -1; c.ping = 0; }
-    }
-    for (let i = pulses.length - 1; i >= 0; i--) if (t > pulses[i].t0 + pulses[i].path.length * 70 + 600) pulses.splice(i, 1);
-    if (!resolved && (t >= T.resolve || charge >= 0.9 || (t > 3800 && inFlight === 0))) { resolved = true; resolveT = t; }
   }
+  const charge = () => Math.min(1, absorbed / Math.max(1, 0.6 * routed));
 
   /* ---------- drawing ---------- */
-  function hexSub(g, x, y, r) {
-    for (let k = 0; k < 6; k++) {
-      const ang = Math.PI / 180 * (60 * k - 90), px = x + r * Math.cos(ang), py = y + r * Math.sin(ang);
-      k ? g.lineTo(px, py) : g.moveTo(px, py);
-    }
-    g.closePath();
-  }
   function glowAt(t) {
-    const pre = 0.3 * sm(T.consEnd - 500, T.resolve, t) + 0.25 * charge;
-    const post = resolved ? sm(resolveT, resolveT + 760, t) : 0;
-    return Math.min(1, Math.max(pre, post));
+    const pre = 0.2 * charge() * sm(T.commit0, T.resolveMin, t);
+    return Math.max(pre, resolved ? outCubic((t - resolveT) / T.glowIn) : 0);
   }
-
-  function drawField(t, G) {
+  function fieldAlpha(c, t) {
+    if (c.ring <= 1) return 0;
+    const reveal = sm(c.ring * T.ringMs, c.ring * T.ringMs + 320, t);
+    return reveal * Math.max(0.16, 1 - sm(0.3 * maxD, 1.05 * maxD, c.d)) * (1 - sm(Hc - 170, Hc - 6, c.y));
+  }
+  function renderField(t) {
+    const G = glowAt(t);
+    if (Math.abs(G - lastG) > 0.002 || (G === 0) !== (lastG === 0)) {
+      glowEl.style.opacity = G.toFixed(3); tintCv.style.opacity = G.toFixed(3);
+      glowEl.style.transform = G < 1 ? `scale(${(0.5 + 0.5 * G).toFixed(4)})` : '';
+      lastG = G;
+    }
+    const tilt = tiltCSS(t);
+    if (tilt !== lastTilt) { fc.style.transform = ac.style.transform = tilt; lastTilt = tilt; }
+    const proj = null;
+    const key = t < 40 * T.ringMs + 1150 ? 'f' + Math.round(t / 16) : 's';
+    if (key === fieldKey) return;
+    fieldKey = key;
     const g = fx;
-    g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H); g.lineWidth = 1;
-    const buckets = new Map();
-    for (const c of cells) {
-      if (c.ring === 0) continue;
-      const reveal = sm(c.ring * 45, c.ring * 45 + 300, t);
-      if (reveal <= 0) continue;
-      const fade = Math.max(0.12, 1 - sm(0.25 * maxD, maxD, c.d)) * (1 - sm(H - 220, H - 10, c.y));
-      const a = Math.round(reveal * fade * 20) / 20;
-      if (a < 0.04) continue;
-      let b = buckets.get(a); if (!b) buckets.set(a, b = []); b.push(c);
-    }
-    g.strokeStyle = COL.faint;
-    for (const [a, list] of buckets) { g.globalAlpha = a; g.beginPath(); for (const c of list) hexSub(g, c.x, c.y, R * 0.97); g.stroke(); }
-    // the core's light falling on the nearby field (kept off the copy)
-    if (G > 0.01) {
-      g.strokeStyle = COL.hive;
-      for (let k = 2; k <= 7; k++) {
-        if (!rings[k]) continue;
-        const a = G * 0.38 * (1 - sm(1.5, 7.6, k));
-        if (a < 0.01) continue;
-        g.globalAlpha = a; g.beginPath(); for (const c of rings[k]) if (!c.text) hexSub(g, c.x, c.y, R * 0.97); g.stroke();
-      }
-    }
-    g.globalAlpha = 1;
-    // the core's warm falloff: the only glow the kit allows, centred on the lit cell
-    if (G > 0.01) {
-      const rad = phone ? Math.min(W * 0.95, 380) : Math.min(W * 0.4, 560);
-      g.save(); g.translate(core.x, core.y); g.scale(phone ? 1.0 : 1.45, 1);
-      const grd = g.createRadialGradient(0, 0, 0, 0, 0, rad);
-      grd.addColorStop(0, `rgba(245,197,66,${(0.3 * G).toFixed(3)})`);
-      grd.addColorStop(0.16, `rgba(245,197,66,${(0.14 * G).toFixed(3)})`);
-      grd.addColorStop(0.42, `rgba(245,197,66,${(0.045 * G).toFixed(3)})`);
-      grd.addColorStop(0.72, `rgba(245,197,66,${(0.012 * G).toFixed(3)})`);
-      grd.addColorStop(1, 'rgba(245,197,66,0)');
-      g.fillStyle = grd; g.fillRect(-rad, -rad, rad * 2, rad * 2);
-      g.restore();
+    g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, Hc);
+    drawField(g, L, c => fieldAlpha(c, t), { proj });
+    // boot: a wave runs out from the core and draws the network before the agents wake
+    if (t < 40 * T.ringMs + 1100) {
+      drawField(g, L, c => {
+        if (c.ring <= 1) return 0;
+        const e = t - c.ring * T.ringMs;
+        if (e < 0 || e > 1000) return 0;
+        const env = e < 110 ? e / 110 : 1 - Math.pow((e - 110) / 890, 0.7);
+        return env * 0.5 * Math.max(0.3, 1 - sm(0.3 * maxD, 1.05 * maxD, c.d)) * (1 - sm(Hc - 170, Hc - 6, c.y));
+      }, { proj, color: COL.hive });
     }
   }
 
-  function drawLayer(t) {
-    const g = ax, still = S.reduce;
-    g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
-    g.lineWidth = 1; g.strokeStyle = COL.hive;
-    if (!still) {
-      // sensing pings
-      for (const c of cells) if (c.ping > 0.01) { g.globalAlpha = c.ping * 0.85 * (c.text ? MASK : 1); g.beginPath(); hexSub(g, c.x, c.y, R * 0.97); g.stroke(); }
-      // signal pulses hop toward the core and stop at ring 1
-      for (const p of pulses) {
-        for (let i = 0; i < p.path.length; i++) {
-          const e = t - (p.t0 + i * 70);
-          if (e < 0) break;
-          const c = p.path[i];
-          const a = (e < 160 ? 0.9 : 0.9 * (1 - (e - 160) / 400)) * (c.text ? MASK : 1);
-          if (a <= 0.01) continue;
-          g.globalAlpha = a; g.beginPath(); hexSub(g, c.x, c.y, R * 0.97); g.stroke();
-        }
-      }
-      // arrival: one hex-ring wave runs outward from the core, faint behind the copy
-      if (resolved) {
-        for (let k = 2; k <= 10; k++) {
-          if (!rings[k]) continue;
-          const e = t - (resolveT + 90 + (k - 2) * 52);
-          if (e < 0) break;
-          const env = e < 90 ? e / 90 : Math.max(0, 1 - (e - 90) / 560);
-          const a = env * 0.6 * (1 - (k - 2) / 10);
-          if (a <= 0.01) continue;
-          g.globalAlpha = a; g.beginPath(); for (const c of rings[k]) if (!c.text) hexSub(g, c.x, c.y, R * 0.97); g.stroke();
-        }
-      }
+  function renderAgents(t, projM) {
+    const g = ax, proj = null;
+    g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, Hc);
+    const mP = projM ? (x, y) => { const p = projM(x, y); return maskAt(p[0], p[1]); } : maskAt;
+    const hand = resolved ? outCubic((t - resolveT) / T.markIn) : 0;
+    // the signal: one ring wave runs out across the field as the mark lands
+    if (resolved && t < resolveT + 1450) {
+      drawField(g, L, c => {
+        if (c.ring < 2) return 0;
+        const e = t - (resolveT + 60 + c.ring * 30);
+        if (e < 0) return 0;
+        const env = e < 90 ? e / 90 : Math.max(0, 1 - (e - 90) / 520);
+        return env * 0.5 * Math.max(0.25, 1 - c.ring / 28) * mP(c.x, c.y);
+      }, { proj, color: COL.hive });
     }
-    // six neighbours turn hive grey as consensus forms, then hand over to the SVG's own outlines
-    const handoff = resolved ? clamp01((t - resolveT) / T.fade) : 0;
-    const nb = sm(T.scanEnd + 400, T.resolve, t) * (1 - handoff);
-    if (nb > 0.01) {
-      g.lineWidth = 1.5; g.globalAlpha = nb; g.beginPath();
-      for (const [q, r] of NB) { const c = cellMap.get(key(q, r)); if (c) hexSub(g, c.x, c.y, R * 0.97); }
+    // sensing: a visited cell's outline brightens briefly
+    if (pinged.length) {
+      drawField(g, L, c => {
+        const e = t - c.ping; if (e < 0 || e > 800) return 0;
+        const env = e < 120 ? e / 120 : e < 280 ? 1 : 1 - (e - 280) / 520;
+        return env * 0.85 * mP(c.x, c.y);
+      }, { proj, color: COL.hive });
+    }
+    // routes: the edges agents cross
+    drawEdges(g, Sx, t, { proj, alphaAt: mP, base: [0.44, 0.78], lw: phone ? 1.25 : 1.5 });
+    // the cluster before the mark lands: neighbours light as agents reach their corners, the core charges
+    if (hand < 1) {
+      const ring1 = L.rings[1] || [];
+      const rev1 = sm(T.ringMs, T.ringMs + 320, t);
+      g.lineWidth = 1; g.strokeStyle = COL.faint; g.globalAlpha = rev1 * (1 - hand); g.beginPath();
+      for (const c of ring1) if (c.lit < -1e8 || t < c.lit) proj ? SL.hexPathP(g, c.x, c.y, R * 0.97, proj) : hexPath(g, c.x, c.y, R * 0.97);
       g.stroke();
-    }
-    // core: a 1.5px gold outline whose strength is the swarm's charge; the gradient and halo come only from the SVG
-    const coreA = Math.max(charge, sm(T.consEnd, T.resolve, t)) * (1 - handoff);
-    if (coreA > 0.01) { g.globalAlpha = coreA; g.lineWidth = 1.5; g.strokeStyle = COL.gold; g.beginPath(); hexSub(g, core.x, core.y, R * 0.82); g.stroke(); }
-
-    // agents: trails follow the corridors, 2.5px heads; batched by kind and by whether they cross the copy
-    const lowK = 1 - 0.5 * (resolved ? sm(resolveT, resolveT + 900, t) : 0);
-    const B = [[], [], [], [], []]; // scout, committed, scout in copy, committed in copy, resting
-    for (const a of agents) {
-      if (a.dead || t < a.delay || a.hist.length < 2) continue;
-      if (still && !(a.mode === 'rest' || a.keep)) continue;
-      if (a.mode === 'rest') { B[4].push(a); continue; }
-      const committed = a.mode !== 'scan';
-      B[(committed ? 1 : 0) + (inAvoid(a.x, a.y, 2) ? 2 : 0)].push(a);
-    }
-    const wake = a => clamp01((t - a.delay) / 300) * (a.fadeT >= 0 ? 1 - clamp01((t - a.fadeT) / 700) : 1);
-    const trailA = [0.32 * lowK, 0.6, 0.32 * lowK * MASK, 0.6 * MASK];
-    const headA = [0.85 * lowK, 1, 0.85 * lowK * MASK, MASK];
-    const colr = [COL.muted, COL.text, COL.muted, COL.text];
-    g.lineWidth = 1;
-    for (let b = 0; b < 4; b++) {
-      if (!B[b].length) continue;
-      if (!still) {
-        g.strokeStyle = colr[b];
-        // two alpha passes: fully awake agents, and those waking up or fading out
-        for (const pass of [0, 1]) {
-          g.beginPath(); let any = false, aSum = 0, n = 0;
-          for (const a of B[b]) {
-            const w = wake(a); if ((w > 0.98) !== (pass === 0)) continue;
-            const h = a.hist, k = Math.max(3, Math.min(10, Math.round(3 + ((a.mode === 'scan' ? a.speed : a.cur) / P) * 1.4)));
-            const start = Math.max(0, h.length - k * 2);
-            g.moveTo(h[start], h[start + 1]);
-            for (let i = start + 2; i < h.length; i += 2) g.lineTo(h[i], h[i + 1]);
-            any = true; aSum += w; n++;
-          }
-          if (any) { g.globalAlpha = trailA[b] * (pass === 0 ? 1 : aSum / n); g.stroke(); }
-        }
+      g.lineWidth = 1.5; g.strokeStyle = COL.hive;
+      for (const c of ring1) {
+        if (c.lit < -1e8 || t < c.lit) continue;
+        g.globalAlpha = sm(c.lit, c.lit + 220, t) * (1 - hand); g.beginPath();
+        proj ? SL.hexPathP(g, c.x, c.y, R * 0.97, proj) : hexPath(g, c.x, c.y, R * 0.97); g.stroke();
       }
-      g.fillStyle = colr[b];
-      for (const pass of [0, 1]) {
-        g.beginPath(); let any = false, aSum = 0, n = 0;
-        for (const a of B[b]) { const w = wake(a); if ((w > 0.98) !== (pass === 0)) continue; g.rect(a.x - 1.25, a.y - 1.25, 2.5, 2.5); any = true; aSum += w; n++; }
-        if (any) { g.globalAlpha = headA[b] * (pass === 0 ? 1 : aSum / n) * (still ? 0.8 : 1); g.fill(); }
+      const flash = Math.max(0, 1 - (t - flashT) / 220);
+      const coreA = Math.min(1, sm(0, 260, t) * (0.34 + 0.56 * charge()) + 0.25 * flash) * (1 - hand);
+      if (coreA > 0.01) {
+        g.globalAlpha = coreA; g.strokeStyle = COL.gold; g.lineWidth = 1.5; g.beginPath();
+        proj ? SL.hexPathP(g, core.x, core.y, R * 0.825, proj) : hexPath(g, core.x, core.y, R * 0.825); g.stroke();
       }
+      g.globalAlpha = 1;
     }
-    // the eighteen agents resting on the neighbour cells' outer corners
-    if (B[4].length) {
-      g.fillStyle = COL.text; g.globalAlpha = resolved ? 0.92 - 0.22 * sm(resolveT, resolveT + 900, t) : 0.95;
-      g.beginPath(); for (const a of B[4]) g.rect(a.x - 1.25, a.y - 1.25, 2.5, 2.5); g.fill();
-    }
-    g.globalAlpha = 1;
-    // the official mark lands on the core cell (240ms, cubic-bezier(.2,.7,.2,1) approximated)
-    mark.style.opacity = resolved ? easeOut((t - resolveT) / T.fade).toFixed(3) : '0';
+    // the agents: small hexagonal nodes, scouts muted, committed bright
+    drawAgents(g, Sx, t, { proj, alphaAt: mP, r: phone ? 2.4 : 3, base: [0.92, 1] });
+    // the official mark lands on the core cell
+    mark.style.opacity = hand ? hand.toFixed(3) : '0';
+    mark.style.transform = hand < 1 ? `scale(${(0.93 + 0.07 * hand).toFixed(4)})` : '';
   }
 
   function updatePhase(t) {
-    const idx = t < T.scanEnd ? 0 : (!resolved ? 1 : 2);
+    const idx = t < T.commit0 ? 0 : (!resolved ? 1 : 2);
     if (card) {
       const dots = card.querySelectorAll('.spin i');
-      const on = idx < 2 && !S.reduce ? Math.floor(t / 80) % 6 : 0;
+      const on = idx < 2 && !S.reduce ? Math.floor(t / 80) % 6 : -1;
       if (dots.length && on !== lastDot) { dots.forEach((d, k) => d.classList.toggle('on', k === on)); lastDot = on; }
+      const sp = card.querySelector('.spin'); if (sp) sp.classList.toggle('done', on < 0);
     }
     if (idx === phaseIdx) return;
     phaseIdx = idx;
-    if (phaseEl) phaseEl.textContent = ['Scanning', 'Consensus', 'Signal'][idx];
-    segs.forEach((s, i) => s.classList.toggle('on', i <= idx));
     if (card) {
       const [state, verb, obj] = STATES[idx];
       card.dataset.state = state;
@@ -437,25 +339,25 @@
   }
 
   function render(t) {
-    const G = glowAt(t);
-    const k = (t < fieldDone ? 'r' + Math.round(t / 16) : 'd') + '|' + G.toFixed(2);
-    if (k !== fieldKey) { drawField(t, G); fieldKey = k; }
-    drawLayer(t);
+    renderField(t);
+    renderAgents(t, projAt(t));
     updatePhase(t);
   }
-  function simulateTo(target) { while (simT + DT <= target) { simT += DT; step(simT, DT); } }
+  function simulateTo(target) { while (simT + DT <= target) { simT += DT; step(simT); } }
 
   /* ---------- lifecycle ---------- */
-  let raf = 0, last = 0, acc = 0, visible = true, motionOff = false;
+  let raf = 0, last = 0, acc = 0, visible = true, motionOff = false, done = false;
   const live = !S.reduce && S.freeze == null;
-  const canRun = () => live && visible && !document.hidden && !motionOff;
+  const canRun = () => live && !done && visible && !document.hidden && !motionOff;
+  function finish() { simulateTo(Math.max(simT, (END === Infinity ? 0 : END) + 50, 6200)); render(simT); done = true; document.documentElement.dataset.heroReady = '1'; }
   function frame(now) {
     raf = 0;
     if (!canRun()) return;
-    // fixed-step simulation on wall-clock time, so the choreography settles on time even at low frame rates
+    // fixed-step simulation on wall-clock time, so the sequence lands on time even at low frame rates
     acc += last ? Math.min(2500, now - last) : DT;
     last = now;
-    while (acc >= DT) { simT += DT; step(simT, DT); acc -= DT; }
+    while (acc >= DT) { simT += DT; step(simT); acc -= DT; }
+    if (simT > END) { finish(); return; }
     render(simT);
     raf = requestAnimationFrame(frame);
   }
@@ -464,7 +366,8 @@
   function start() {
     setup();
     if (!live) {
-      simulateTo(S.reduce ? 4800 : S.freeze); render(simT);
+      if (S.reduce) { finish(); return; }
+      simulateTo(S.freeze); render(simT);
       document.documentElement.dataset.heroReady = '1';
       return;
     }
@@ -473,27 +376,28 @@
   }
   // rebuild with the same seed and replay to the current time (the simulation is deterministic)
   function rebuild() {
-    const keep = simT;
+    const keep = simT, wasDone = done;
     setup();
-    simulateTo(live ? Math.min(keep, 7000) : (S.reduce ? 4800 : S.freeze));
-    if (live && keep > simT) simT = keep;
-    fieldKey = ''; render(simT);
+    if (!live) { if (S.reduce) finish(); else { simulateTo(S.freeze); render(simT); } return; }
+    if (wasDone || motionOff) { finish(); return; }
+    simulateTo(keep); render(simT); kick();
   }
 
   start();
+  // frame-accurate captures: with ?t=<ms>, window.__heroSeek(ms) steps the frozen hero to another time
+  if (!live && !S.reduce) window.__heroSeek = t => { if (t < simT) setup(); simulateTo(t); render(simT); return simT; };
 
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(es => { for (const e of es) { visible = e.isIntersecting; if (visible) kick(); } }, { threshold: 0 }).observe(hero);
   }
   document.addEventListener('visibilitychange', kick);
-  window.addEventListener('swarm:motion', e => { motionOff = !!(e.detail && e.detail.off); if (!motionOff) kick(); });
+  window.addEventListener('swarm:motion', e => { motionOff = !!(e.detail && e.detail.off); if (motionOff && live && !done) finish(); });
 
-  // rebuild on width changes (not on mobile URL-bar height changes)
   let lastW = W, rt = 0;
   window.addEventListener('resize', () => {
     clearTimeout(rt);
     rt = setTimeout(() => {
-      if (hero.clientWidth === lastW && Math.abs(hero.clientHeight - H) < 40) return;
+      if (hero.clientWidth === lastW) return;
       lastW = hero.clientWidth;
       rebuild();
     }, 160);

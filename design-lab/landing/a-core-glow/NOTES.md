@@ -1,71 +1,95 @@
 # Direction A: Core Glow
 
-**The idea.** The joinasymmetric.xyz flow (fact chips, a compact two-line headline, floating cards, pill eyebrows, a product-mock grid, one centered pricing card) rebuilt inside the Swarm kit, with the Hive Core as the hero's "light from above". Agents run the honeycomb's corridors, sense cells, reach consensus and stream along the lattice to one core at the top of the page, where eighteen of them come to rest around it and the official mark lands as its glow opens.
+Picked by Jesus on October 16, 2026 ("Core glow definitely"), with one note: the agents' head-and-tapering-tail look read as sperm and did not make sense. Every agent on the page now uses one language: a small pointy-top hexagonal node that hops corner to corner along the honeycomb's own channels, lighting the edge it crosses for about 600ms. No tails, trails, glows or curved paths anywhere.
+
+**The idea.** The joinasymmetric.xyz flow (fact chips, a two-line two-tone headline, tilted floating cards, pill eyebrows, a product-mock grid, one centered pricing card) rebuilt inside the Swarm kit, with the Hive Core as the hero's light from above. The honeycomb fills the first screen; agents work it as a network, agree, route along shared paths to the core, the six neighbours light as they arrive, and the official mark lands as its warm light opens.
 
 ## Files
 
 - `index.html`: the page (CSP meta, kit tokens, `.swarm` on body, Swarm icons and og:image).
 - `core-glow.css`: all styles.
-- `hero.js`: hero swarm (Canvas 2D, two canvases, official `swarm-mark.svg` registered on the core cell, agents routed along the corridors between cells and around the copy). It also drives the hero's SCOUT 03 status card.
-- `crowd.js`: "The crowd" curve piece with the scroll-driven YOU tick.
-- `page.js`: motion toggle, nav state (the compact lockup appears once the hero mark has scrolled away), the four mocks, why-now strip, final field, pricing switch, `PLANS` map and `mountCheckout(planKey)` stub.
-- `tools3d.js`: Three.js r160 hex patch for the Custom AI tools card, lazy-loaded through the import map. It ends as an unlit field with the scouts resting on it; no lit cell.
-- `media/`: `fold-desktop.png`, `fold-phone.png`, `hero-desktop.mp4`, `hero-phone.mp4`, `scroll-desktop.mp4`.
+- `lattice.js`: the shared honeycomb lattice (cells at pitch 1.95R, copied from the mark) and the agent engine: corridor-lattice graph, hop scheduling, lit edges, hexagonal node drawing. Used by every animated piece.
+- `hero.js`: the hero (field canvas, a static glow layer and a static warm-tint canvas the compositor fades in, the agent canvas, and the official `swarm-mark.svg` on the core cell). Drives the SCOUT 03 card.
+- `crowd.js`: "The crowd" curve with hexagonal nodes; runs two cycles (about 15s) then settles and stops.
+- `page.js`: motion toggle, nav, the four mocks, the scout-field model for the tools card, the why-now strip, the pricing core, the final field, the pricing switch, `PLANS` and `mountCheckout(planKey)`.
+- `tools3d.js`: Three.js r160 renderer for the tools card's scout field (lazy import, 2D still fallback).
+- `media/`: `fold-desktop.png`, `fold-phone.png`, `hero-desktop.mp4`, `hero-phone.mp4`, `scroll-desktop.mp4` (recorded with `rec.mjs`), plus `hero-desktop-frames.mp4` and `hero-phone-frames.mp4` (frame-accurate renders, see Known issues).
 
 URL switches: `?t=<ms>` freezes the hero at that time and shows every mock settled; `?reduce=1` forces the reduced-motion still.
 
+## Hero timeline (desktop; phone uses fewer agents)
+
+- 0 to 1.2s: the field boots ring by ring from the core (a #55555B wave that settles to #1C1C21), seen as a receding plane (CSS 3D tilt from 40 degrees) that straightens out by 2.35s. The core cell shows as a dim 1.5px gold outline from about 0.2s.
+- 0.2 to 1.4s: 196 agents wake across the whole screen (thinner toward the edges and at 13% behind the copy, never on a glyph at full strength) and scan: each hop is 175 to 260ms with an ease, each crossed edge lights (scouts #8E8A80, committed #EEEBE4, 1.5px) and fades over 600ms, visited cells brighten briefly.
+- 1.0 to 2.8s: 70% commit and route along a shared tree of paths toward the core (paths prefer the six arteries leaving the cluster, so they merge into trunks). Each arrival lights the neighbour cells at that corner in #55555B; agents then enter the core.
+- About 2.75s: the official mark lands (opacity and a 0.93 to 1 scale over 380ms), its warm light opens over 1s (radius 640px, 1.5 times wider than tall, reaching the chips), one ring wave runs out across the field, scouts fade where they stand.
+- About 4.3s: everything is settled and the loop stops. The settled frame is the honeycomb, the warm light and the one lit cell, and it is pixel-identical to `?t=4800` and to the reduced-motion still.
+
 ## Placeholders, [DATA NEEDED] and [CONFIRM]
 
-All of these show on the page as dashed mono chips.
+Visible as dashed mono chips, now only in the FAQ, the checkout slot and the footer (none on the hero or the members cards):
 
-- Whop checkout: a dashed placeholder slot under the pricing card. `PLANS` in `page.js` holds `whopPlanId: null` for founding, standard and yearly; adding the three `plan_` IDs and the Elements mount in `mountCheckout()` is the only change needed. [DATA NEEDED: Whop plan IDs]
-- Weekly live call day and time. [DATA NEEDED]
-- Where Swarm lives (Whop app, Discord or other). [DATA NEEDED]
-- Guest traders for the multi-cycle traders card. [DATA NEEDED]
-- Refund policy. [DATA NEEDED]
-- Launch date. [DATA NEEDED]
-- Terms, Privacy and Refund policy URLs and the legal entity name. [DATA NEEDED]
-- The AI tools do not place trades. [CONFIRM]
-- What happens to the $49 founding price if a founder cancels and rejoins. [CONFIRM]
-- Mocks are illustrations: watch list names and reasons, and trader names and messages, are redaction blocks stamped MEMBERS ONLY. Agent states use only SCANNING, WATCHING, FLAGGED FOR REVIEW, IDLE and SYNCING. Every mock and the hero's scout card carry "Illustration · not live data".
-- The footer disclosure leaves out the two unconfirmed lines (adviser registration, holdings) until Jesus confirms them.
-- The video is a composed poster that opens https://youtu.be/n15W6X84IGg in a new tab; production should swap in a youtube-nocookie click-to-load embed.
+- Whop plan IDs (checkout slot). `PLANS` in `page.js` holds `whopPlanId: null` for founding, standard and yearly; adding the IDs and the Elements mount in `mountCheckout()` is the only change needed.
+- Weekly call day and time; guest traders; refund policy; where Swarm lives; launch date; Terms, Privacy and Refund URLs and the legal entity.
+- [CONFIRM] the AI tools do not place trades; [CONFIRM] what happens to $49 if a founder cancels and rejoins.
+- Mocks are illustrations: names, reasons and messages are word-shaped redaction bars, with one "Members only" lock chip per mock. Agent states use only SCANNING, WATCHING, FLAGGED FOR REVIEW, IDLE and SYNCING; watch-list chips only WATCHING, NEW THIS WEEK and REMOVED. Every mock and the scout card carry "Illustration · not live data".
+- The video is the founder card's poster and opens https://youtu.be/n15W6X84IGg in a new tab; production should use a youtube-nocookie click-to-load embed.
 
-Every quote on the page (hero card 0:09, why-this-cycle chips 2:15, both who-it's-for cards 3:39, transcript 2:33, 2:48 and 3:02) is copied word for word from `swarm-intro-transcript.md` and links to its timestamp, so the old wording chip is gone.
+## Quotes on the page (all from FOUNDER-DOSSIER.md section 3 or Draft A)
+
+- Hero card: Q09, 3:51 (?t=231).
+- Why this cycle chips: Q04, 2:23 (?t=143).
+- Founder transcript: Draft A word for word, 2:33, 2:48 and 3:02, source line "Jesus Martinez, "Welcome To Swarm", JM Crypto on YouTube, October 16, 2026." Only "I stayed through the bear market when everyone else left." is set bright; "It wasn't luck" sits unemphasized inside its passage (C2).
+- Who it's for: one transcript card stamped with the passage start, 3:39, holding both of his lines from that passage verbatim.
+- Before you join: Q15, labeled "The Attention Cycle, Aug 7, 2026", linking to the X Article.
+- FAQ: Q20 as the disclaimer line.
+- Nothing from section 10 is used.
+
+## Copy I wrote around his lines (to check with Jesus)
+
+"I'm Jesus Martinez of JM Crypto." at the start of the hero sub; the curve definitions; the why-now lede; the headlines "Two cycles behind me. / This one is my third.", "No more believing and hoping. / Here's what you get instead.", "Your first cycle or your second. / Either way, this is where you start.", "Not financial advice. Not a promise. / Here's exactly what you're joining." and "Be on the right side of this cycle. / I'll see you inside."; the three check lines under each benefit; the FAQ answers; the line "Education and research, not financial advice. You make your own decisions."
 
 ## Known issues
 
-- Page length is about 11,730px on desktop (about 13 screens), over the 7 to 10 screen target in RESEARCH-NOTES.md but under joinasymmetric.xyz. The easiest trims are the why-now strip and the how-joining steps.
-- Six gold "Join Swarm" stops (hero, curve, founder, members, the pricing button, final), not the five in RESEARCH-NOTES.md, following the brief and DIRECTIONS.md. An automated scroll check at 1440x900, 390x844 and 820x1180 finds at most one gold button, one gold number and one lit core per view.
-- Section order follows DIRECTIONS.md, which differs from RESEARCH-NOTES.md.
-- Copy I wrote around his lines, to check with Jesus: the why-now lede ("In my first cycle, that was games. Since 2023, it's been AI." and "It isn't looking for dog coins..."), the curve definitions, and the headlines for the founder ("Two cycles behind me. This one is my third."), who-it's-for, how-joining, the video and the FAQ. The why-now strip labels games "2021 · Games" (his first cycle); the video's games example starts in 2020.
-- At the top of the page the nav shows no logo: the compact lockup fades in once the hero mark has scrolled out, so the first screen holds one lit core. When the poster or the footer is in view, the nav lockup and that lockup are both visible (logos only).
-- The eighteen resting agents sit on the corridor corners just outside the mark's outer outline, about 1px from its stroke.
-- Performance was measured only in headless Chrome with software GL. Compositing runs at a few frames per second there, so `hero-desktop.mp4` has 16 frames and `scroll-desktop.mp4` plays for about 49 seconds (the recorder keeps real capture timestamps). The hero, crowd and 3D timelines run on wall-clock time, so they still settle in about 5 seconds. Not yet checked on an iPhone 12-class device.
-- Full-page screenshots taller than about 8,192px wrap in this Chrome build, so review images were captured in segments and stitched.
-- Under `?t`, reduced motion or no WebGL, the Custom AI tools card shows a 2D still of the 3D scene's last frame, so the tilted 3D moment only appears live and in `scroll-desktop.mp4`.
-- The live-call mock uses `jesus-interview.jpg`, desaturated, because its background is blue.
-- The Whop placeholder reserves 400px; the real embed may need the 560px RESEARCH-NOTES.md suggests.
+- Headless Chrome here renders with software GL, so the live hero manages only a few frames a second and `hero-desktop.mp4` (rec.mjs) has about 10 distinct frames in 8 seconds. Timing is still right because the simulation runs on wall-clock time. `hero-desktop-frames.mp4` and `hero-phone-frames.mp4` are frame-accurate 30fps renders of the same sequence (made by stepping the frozen hero with `?t` and `window.__heroSeek`), so the motion can be judged properly. Not yet checked on an iPhone 12-class device.
+- Full-page screenshots taller than about 8,192px wrap in this Chrome build, so the `d-NN`/`p-NN` tiles past that point repeat the top of the page. The round 2 capture adds `vp-d-NN.png` and `vp-p-NN.png`, one screenshot per viewport down the whole page.
+- The hero uses three canvases plus one CSS gradient layer (RESEARCH-NOTES suggests two canvases). The extra canvas and the gradient are drawn once and only faded by the compositor, so per-frame cost is two canvases.
+- Page length: 10,766px on desktop (11.96 viewports at 1440x900), 13,968px on phone.
+- The founder card crops the landscape studio photo to a tall frame, so his face is large.
+- The why-now strip labels games "2021 Games" (his first cycle); the video's games example starts in 2020.
 
-## Review
+## Review history
 
-Scores from the screenshot review: reference fit 6.5, agentic feel 6, premium 6.5, clarity and trust 6, kit compliance 7, phone 7.
+### First look
 
-What I fixed:
+Scores from the screenshot review: reference fit 6.5, agentic feel 6, premium 6.5, clarity and trust 6, kit compliance 7, phone 7. Fixes then: verbatim quotes, no repeated lines, hero proportions, the official mark in an `<img>`, solid redaction blocks, static phone chips, the compact lockup in the footer.
 
-- **Verbatim quotes.** Hero card is now "If it's your second cycle, you're probably mid-curve around this time. I know I was." (0:09). The why-this-cycle chips read "They want real things. They want real revenue. They want real users." (2:15) in sentence case. Both who-it's-for cards quote 3:39 word for word. The founder transcript card carries the full caption text at 2:33, 2:48 and 3:02. The [CONFIRM] wording chip is deleted, and a script check confirms every quoted string is a substring of the transcript at its stamp.
-- **No repeats.** The right hero card is a live agent-status card (SCOUT 03, stepping SCANNING to WATCHING to FLAGGED FOR REVIEW with the hero phases, labelled as an illustration). The post-curve paragraph is gone (the CTA stands alone). The founder headline, the who-it's-for headline, the how-joining headline, the why-now lede and the FAQ answers were rewritten so no sentence appears twice from the fold to the final CTA.
-- **Hero proportions.** At 1440x900 the cluster is about 118px tall (y 71 to 189), the chips sit at y 217, the headline is two balanced lines between y 262 and 377 (50px, about 910px wide), the CTA is at y 497 to 553, and the next section's pill (y 787) and first headline line (y 836 to 888) are in the first screen. The cards flank the headline's second line and the sub.
-- **Hive Core.** The hero cluster is, and was, the official `swarm-mark.svg` in an `<img>`, now smaller and registered on a field of the same pitch. The Agent Console's 3D patch no longer lights a cell or shows a mark: the scouts move over an unlit #1C1C21 field and finish as resting dots.
-- **Agents.** They now travel the corridors between cells (the honeycomb's own edges), route around the copy and cards, and are drawn at 12% opacity wherever they do cross the reading zone. Committed agents converge along the lattice; eighteen dock on the neighbour cells' outer corners and the rest are absorbed. Spawns are concentrated under the core, so the lower hero stays quiet. The reduced-motion still is the settled frame with no trails, pings or pulses.
-- **Members grid.** Grey skeleton bars are replaced by solid redaction blocks stamped MEMBERS ONLY. Watch list row 03 cycles WATCHING, REVIEWING, NEW THIS WEEK. The live-call "Next call" row and the guest-traders chip moved into the card text, so the paired cards end at their content (largest gap under a last line is 38px desktop, 27px phone).
-- **Phone.** The chip marquee is gone: two static centered rows (PRE-LAUNCH, $49/MO · 50 FOUNDING SEATS / CUSTOM AI TOOLS, CARD OR ACH THROUGH WHOP) with whole words only. The curve caption is shorter and stacks above the pause button.
-- **Logos.** The footer uses the compact lockup (184px desktop, 156px phone). The nav uses the compact lockup per the kit, revealed on scroll as described above.
-- **Clarity.** The FAQ headline is "Not financial advice. Not a promise. / Here's exactly what you're joining." The hero chip reads "$49/mo · 50 founding seats" in mono text color (not gold), so the price is in the first screen.
+### Round 1 (October 16, 2026)
 
-What I skipped or changed, and why:
+Review averages: reference 6.5, motion 5.2, buyer 6.5; the code audit raised 3 blocking items (an unverified hero quote, a wrong 2:15 stamp, two lit cores in one view).
 
-- Headline at 50px rather than 52 to 56px, and the sub kept in the hero (so the CTA lands at y 497, not 430): at 52px and up the headline is too wide for the cards to sit beside it without touching, and the sub is the first screen's only plain statement of what Swarm is.
-- Redaction blocks use the kit's raised surface (#16161A) with a 1px #232328 border instead of #1C1C21, because the kit reserves #1C1C21 for background honeycomb fields.
-- FAQ setup line is "Not financial advice. Not a promise." rather than "No signals to copy", because whether Swarm shares signals is not confirmed.
-- The hero mark stays the official SVG (the review's option a) rather than a 1.5px redraw, because the kit forbids redrawing the mark.
+What changed:
+
+- **Agents (Jesus's note, the top priority).** New shared engine (`lattice.js`): every agent is a hexagonal node (5 to 6px desktop, 4px phone) hopping along the corridor lattice with a 175 to 260ms eased hop; crossed edges light and fade over 600ms; sensed cells brighten. Applied to the hero, the curve beeswarm, the why-now strip, the tools card (3D and still), the pricing core and the final field. No head-and-tail marks remain anywhere.
+- **Hero owns the first screen.** The field covers the full viewport; agents work all of it, around and behind the cards and faintly behind the copy; the mark is 210px (the cluster is 150px tall) on desktop and 142px (102px) on phone, with a 640px warm light; a receding-plane opening (CSS 3D tilt) gives the depth the brief asks for; convergence reads by 2.8s and everything stops by 4.3s. No specks, no floating outlines, no resting agents at rest. The hero HUD and its pause pill are gone (the sequence ends before 5s).
+- **Brand.** `swarm-wordmark-for-dark-bg.svg` (no gold) is in the nav from the first frame at 136px (118px on phone); no typed SWARM labels; the footer uses the horizontal lockup at 260px. A scan every 120px at 1440, 820 and 390 wide finds at most one gold button, one lit core and one gold number per view.
+- **Quotes.** Hero card is Q09 (3:51); the real-things chips are 2:23; the transcript is Draft A; the bold on "It wasn't luck" is gone.
+- **Mocks.** Flush app windows (no double border) with title bars: the agent console (3D scout field with four labelled scouts on leader lines, four scout rows, a five-line event log), the watch list (tabs, lock chip, five rows of word-shaped redaction, an expanded "Jesus's note" row, three state changes then rest), the live call (shared portfolio review, host tile, two members, an audio strip and controls) and the trader room (rooms rail, messages with avatars and role tags, replies, typing, composer). Three check lines under each benefit. No prices, tickers, results or counts.
+- **Trust.** The hero sub names him; "Education and research, not financial advice. You make your own decisions." under the members grid; a "Before you join" block with Q15 right above pricing; [DATA NEEDED] chips moved off the launch cards into the FAQ.
+- **Layout and type.** H1 64px over 44px section heads (33px over 27px on phone); chips unified; the intro video merged into the founder section; the Hive Core and a small field above the pricing switch, where 34 agents route in and the mark lights; a quiet honeycomb behind the founder and members sections; Whop slot reserved at 560px; the scout card's height reserved (no layout shift); tap targets of 28px or more for timestamps and 44px for the nav button.
+- **Code audit items.** The crowd's YOU tick is fixed under reduced motion and the loop settles; WebGL is only probed when the tools card nears the viewport; the tools card rebuilds on resize; `aria-live` covers only the price and note; plan chips no longer repeat the note; "Reviewing" is gone; dead CSS removed; the title is "Swarm: AI Crypto Trading Community".
+
+Calls where reviewers disagreed (the creative director notes decided where they spoke):
+
+- Core timing: the reference review wanted the core lit by 1.5s, the motion review and the director wanted convergence as the climax. The core's gold outline shows dim from 0.2s and the mark lands at about 2.75s.
+- Text clearance: the motion review asked for a 24px exclusion zone; the director asked for agents faintly behind the copy. Agents, edges and pings drop to 13% inside the copy's line boxes with a soft 22px edge.
+- Two-tone headlines on most sections are kept (the brief asks for them; the motion review wanted them on two sections only).
+- H1 at 64px rather than 80px (80px breaks the headline into four lines at 1440); 33px on phone rather than 44px ("Most people need" does not fit 358px at 44px).
+- The receding plane is the opening camera of the whole field rather than a permanent plane under the headline, so the mark lands on a flat field registered to its cells.
+
+Skipped, and why:
+
+- The buyer review's line "No trade signals. No copy trading. No automated trading for you." is not on the page: none of it is confirmed, dossier section 9 lists those phrases as claims not to make, and the FAQ keeps [CONFIRM: the tools do not place trades].
+- Q17 ("How do I continue to provide value...") is not used until Jesus checks the audio, as the dossier asks.
+- The icon-only hero pause button: the hero now stops by itself in about 4.3s, under WCAG 2.2.2's 5 seconds; the crowd, which runs longer, keeps its pause control until it settles.
+- The how-joining steps section stays out (removed earlier to keep the page within length); its three facts live in the pricing card, the checkout slot and the FAQ.
