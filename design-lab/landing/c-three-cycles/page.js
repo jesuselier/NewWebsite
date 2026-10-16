@@ -127,14 +127,27 @@
         ctx.fillRect(a.x - 1, a.y - 1, 2, 2);
       }
     }
+    // YOU travels once, left curve to right curve, when the section first comes into view, then parks on the
+    // right curve (the promise). Reduced motion shows it parked.
+    var youX = REDUCE ? 0.78 : 0.1, youState = REDUCE ? 2 : 0;
+    var zls = [].slice.call(box.querySelectorAll('.crowd-zl li'));
     function placeYou() {
       if (!W) return;
-      var r = box.getBoundingClientRect(), vh = window.innerHeight;
-      var prog = REDUCE ? 0.84 : clamp01((vh * 0.92 - r.top) / (r.height + vh * 0.62));
-      var x = lerp(W * 0.07, W * 0.93, prog), y = curveY(x);
+      var x = W * youX, y = curveY(x);
       you.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) translate(-50%, -100%)';
       var zi = Math.min(2, Math.floor(x / (W / 3)));
       zones.forEach(function (el, i) { el.classList.toggle('on', i === zi); });
+      zls.forEach(function (el, i) { el.classList.toggle('on', i === zi); });
+    }
+    function travelYou() {
+      if (youState) return; youState = 1;
+      var t0 = performance.now(), D = 2800;
+      var ease = function (u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; };
+      (function f(now) {
+        var u = clamp01((now - t0) / D);
+        youX = lerp(0.1, 0.78, ease(u)); placeYou();
+        if (u < 1) requestAnimationFrame(f); else youState = 2;
+      })(t0);
     }
     function frame(now) {
       raf = 0; if (!running) return;
@@ -153,24 +166,9 @@
     layout(); update(0, 16); draw(0); placeYou();
     if (REDUCE) { update(5200, 16); draw(5200); }
     watch(box, function (v) { visible = v; sync(); });
+    watch(box, function (v) { if (v) travelYou(); }, { threshold: 0.35 });
     document.addEventListener('visibilitychange', sync); M.on(sync);
-    window.addEventListener('scroll', placeYou, { passive: true });
     var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { layout(); update(tc, 16); draw(tc); placeYou(); }, 160); });
-  })();
-
-  // ------------------------------------------------------------ 5. founder timeline draws with scroll
-  (function timeline() {
-    var box = document.getElementById('tline'); if (!box) return;
-    var line = box.querySelector('.tl-draw'), nodes = [].slice.call(box.querySelectorAll('.tl-node'));
-    function set(p) {
-      line.style.strokeDashoffset = String(1 - p);
-      if (p >= 1) line.style.strokeDashoffset = '0';
-      nodes.forEach(function (n) { n.classList.toggle('on', p >= parseFloat(n.dataset.at) - 0.001); });
-    }
-    // draws once when it scrolls into view (CSS transition), then stays drawn
-    if (REDUCE) { box.classList.add('drawn'); set(1); return; }
-    line.style.strokeDashoffset = '';
-    watch(box, function (v) { if (v && !box.classList.contains('drawn')) { box.classList.add('drawn'); nodes.forEach(function (n) { n.classList.add('on'); }); } }, { threshold: 0.45 });
   })();
 
   // ------------------------------------------------------------ 6.1 agent swimlanes (logic analyzer)
@@ -182,7 +180,7 @@
     var STATES = ['Scanning', 'Watching', 'Flagged for review', 'Idle', 'Syncing'];
     var DUR = [[1200, 3600], [1500, 4200], [700, 1300], [800, 2600], [420, 900]];
     var WEIGHT = [0.38, 0.27, 0.07, 0.16, 0.12];
-    var WINDOW = 22000, ROW = 22, rnd = rng(23);
+    var WINDOW = 22000, ROW = 26, rnd = rng(23);
     var nLanes = 8, lanesData = [], W = 0, H = 0, dpr = 1, visible = false, running = false, raf = 0, lastDraw = 0;
     function pick(prev) {
       for (;;) { var u = rnd(), s = 0, acc = 0; for (s = 0; s < 5; s++) { acc += WEIGHT[s]; if (u < acc) break; } s = Math.min(4, s); if (s !== prev) return s; }
@@ -316,16 +314,15 @@
     yearly: { label: 'Yearly', price: '$990', per: '/yr', note: '2 months free.', renew: '', whopPlanId: null }
   };
   var current = 'founding';
+  var WS_TEXT = 'Opens here soon (Whop, card or ACH)';
   function mountCheckout(planKey) {
     var plan = PLANS[planKey];
-    var slot = document.getElementById('whopSlot');
     document.getElementById('wsLabel').textContent = 'Checkout · ' + plan.label;
     if (!plan.whopPlanId) {
       // Preview: no Whop script may load here. Production (Whop Elements):
       //   const checkout = window.WhopElements().checkout.create({ plan: plan.whopPlanId, returnUrl, onComplete });
       //   checkout.create('checkout').mount('#whopSlot');   // destroy and remount to change plans
-      var stEl = document.getElementById('wsStatus'); stEl.hidden = false;
-      stEl.textContent = 'Whop checkout for ' + plan.label + ' is not connected in this preview.';
+      document.getElementById('wsText').textContent = 'Not connected in this preview. The Whop checkout for ' + plan.label + ' mounts in this row.';
       return false;
     }
     return true;
@@ -341,7 +338,7 @@
       document.getElementById('pcNote').textContent = p.note;
       document.getElementById('pcRenew').textContent = p.renew;
       document.getElementById('wsLabel').textContent = 'Checkout · ' + p.label;
-      document.getElementById('wsStatus').hidden = true;
+      document.getElementById('wsText').textContent = WS_TEXT;
     });
   });
   var joinBtn = document.getElementById('joinBtn');
@@ -355,7 +352,7 @@
   // ------------------------------------------------------------ gentle reveal for section heads and cards
   (function reveal() {
     if (REDUCE || !('IntersectionObserver' in window)) return;
-    var els = [].slice.call(document.querySelectorAll('.sec-head, .crowd, .zones, .pq, .poster, .founder-grid, .tline, .mcard, .wcard, .price-wrap, .step-row, .faq-list, .h2-final'));
+    var els = [].slice.call(document.querySelectorAll('.sec-head, .crowd, .zones, .pq, .poster, .founder-grid, .mcard, .wcard, .price-wrap, .step-row, .faq-list, .h2-final'));
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.01 });
