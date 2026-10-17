@@ -6,7 +6,7 @@
    the core column lights gold, the camera cranes to exactly top-down, the columns sink back flat, and the official
    swarm-mark.svg lands on the core with its warm light: the same settled frame as the base hero, which this file then
    hands back to the 2D field canvas (so the settled frame and the reduced-motion still stay pixel-identical to base).
-   Everything settles by about 4.4s and the loop stops.
+   Everything settles by about 4.5s (consensus is forced by 2.45s) and the loop stops.
 
    Fallback: without WebGL, without the Three.js module (blocked CDN, 1.8s timeout), on low-memory or low-core devices,
    with Save-Data, or with ?flat=1, the base 2D hero runs unchanged. ?reduce=1 shows the settled still and never loads

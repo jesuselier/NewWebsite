@@ -31,10 +31,10 @@
   // the push-in needs WebGL; ?flat=1 forces the 2D hero (for comparison)
   const probeGL = () => { try { const c = document.createElement('canvas'); const g = c.getContext('webgl2') || c.getContext('webgl'); if (!g) return false; const x = g.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); return true; } catch (e) { return false; } };
   let mode = !S.reduce && !/[?&]flat=1/.test(location.search) && probeGL() ? 'wait' : '2d';
-  let G3 = null, t3 = 0, resolveReady;
+  let G3 = null, t3 = 0, resolveReady, setupMs = 0;
   const ready = new Promise(r => { resolveReady = r; });
   // push-in timeline (ms): agents wake centre-out, commit, arrive; the camera lands at `resolve`, then the mark
-  const T3 = { wake: 40, wakeSpan: 560, camIn: 120, camEnd: 2950, commit0: 820, commit1: 1420, arrive: 2580, resolve: 2950, markIn: 380, glowIn: 1000 };
+  const T3 = { wake: 0, wakeSpan: 480, camIn: 0, camEnd: 2950, commit0: 820, commit1: 1420, arrive: 2580, resolve: 2950, markIn: 380, glowIn: 1000 };
   const END3 = T3.resolve + 1500, XF3 = 170;
 
   const T = { ringMs: 20, wake: 120, commit0: 980, commit1: 1400, arrive: 2320, resolveMin: 2200, resolveMax: 2780, markIn: 380, glowIn: 1000, tilt: 2350 };
@@ -75,15 +75,15 @@
     }
     return (MASK + (1 - MASK) * sm(0, 22, d)) * (1 - sm(Hc - 150, Hc - 8, y)) * (floorY < 1e8 ? 1 - sm(floorY - 64, floorY - 6, y) : 1);
   }
-  // the copy alone (for route costs in the push-in)
-  function copyAt(x, y) {
+  // distance to the nearest line of copy (route costs in the push-in keep the trunks clear of it)
+  function copyDist(x, y) {
     let d = 1e9;
     for (const r of rects) {
       const dx = Math.max(r[0] - x, 0, x - r[2]), dy = Math.max(r[1] - y, 0, y - r[3]);
       const dd = dx > 0 || dy > 0 ? Math.hypot(dx, dy) : 0;
       if (dd < d) { d = dd; if (!d) break; }
     }
-    return MASK + (1 - MASK) * sm(0, 22, d);
+    return d;
   }
 
   /* ---------- the opening camera: a receding plane that straightens out ---------- */
@@ -408,7 +408,7 @@
   function render3(t) {
     const st = G3.render(t);
     // the core's light: a faint warm point while it charges, small from high up, then it opens as the camera lands
-    const pre = 0.2 * st.charge * sm(T3.commit0, T3.resolve, t);
+    const pre = Math.max(0.14 * sm(120, 900, t), 0.24 * st.charge);
     const Gl = Math.max(pre, st.resolved ? outCubic((t - st.resolveT) / T3.glowIn) : 0);
     const hand = st.resolved ? outCubic((t - st.resolveT) / T3.markIn) : 0;
     glowEl.style.opacity = Gl.toFixed(3);
@@ -456,8 +456,9 @@
       if (mode !== 'wait') return;
       clearTimeout(slow);
       setup();   // the fonts are in: measure the copy and size the layers
-      G3 = m.createPushIn({ before: glowEl, W, Hc, DPR, phone, tablet, R, core, maskAt, copyAt, freeze: !live, T: T3, onLost: () => fallback('context lost') });
-      mode = '3d';
+      const c0 = performance.now();
+      G3 = m.createPushIn({ before: glowEl, W, Hc, DPR, phone, tablet, R, core, maskAt, copyDist, freeze: !live, T: T3, onLost: () => fallback('context lost') });
+      mode = '3d'; setupMs = Math.round(performance.now() - c0);
       fc.style.opacity = '0'; ac.style.opacity = '0';
       if (!live) { seek3(S.freeze); document.documentElement.dataset.heroReady = '1'; resolveReady(); return; }
       t3 = 0; render3(0);
@@ -503,7 +504,7 @@
   const seek2d = t => { if (t < simT) setup(); simulateTo(t); render(simT); return simT; };
   const seekNow = t => mode === '3d' ? seek3(t) : seek2d(t);
   if (!live && !S.reduce) window.__heroSeek = t => mode === 'wait' ? ready.then(() => seekNow(t)) : seekNow(t);
-  window.__h3 = () => ({ mode, info: G3 ? G3.info() : null, END3, T3 });
+  window.__h3 = () => ({ mode, setupMs, info: G3 ? G3.info() : null, END3, T3 });
 
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(es => { for (const e of es) { visible = e.isIntersecting; if (visible) kick(); } }, { threshold: 0 }).observe(hero);

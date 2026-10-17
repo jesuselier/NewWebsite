@@ -64,9 +64,16 @@ export function createTools(host, M, onLabels) {
   plates.frustumCulled = false;
   scene.add(plates);
 
-  // agents: flat pointy-top hexagonal nodes
+  // agents: the page's agent glyph, flat: a hex outline with a head node, one geometry, one instanced draw
   const NA = M.sim.agents.length;
-  const nodeGeo = new THREE.CircleGeometry(M.phone ? 2.7 : 3.1, 6); nodeGeo.rotateZ(Math.PI / 6);
+  const gr = M.phone ? 3.8 : 4.6;
+  const rimS = hexShape(gr + 0.6); rimS.holes.push(hexShape(gr - 0.6));
+  const headS = hexShape(gr * 0.33);
+  const rimG = new THREE.ShapeGeometry(rimS).toNonIndexed(), headG = new THREE.ShapeGeometry(headS).toNonIndexed();
+  const gp = new Float32Array((rimG.attributes.position.count + headG.attributes.position.count) * 3);
+  gp.set(rimG.attributes.position.array, 0); gp.set(headG.attributes.position.array, rimG.attributes.position.count * 3);
+  const nodeGeo = new THREE.BufferGeometry(); nodeGeo.setAttribute('position', new THREE.BufferAttribute(gp, 3));
+  rimG.dispose(); headG.dispose();
   const nodes = new THREE.InstancedMesh(nodeGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, depthWrite: false }), NA);
   nodes.frustumCulled = false; nodes.renderOrder = 3;
   // lit edges
@@ -136,7 +143,7 @@ export function createTools(host, M, onLabels) {
     for (let i = 0; i < NA; i++) {
       const a = sim.agents[i], vis = sim.vis(a, t);
       const v = L.V[a.from], z = vertTop(v) + 2.4 + 6 * (1 - flat);
-      m4.makeScale(vis, vis, 1); m4.setPosition(a.x, -a.y, z);
+      m4.makeScale(vis, vis, 1); m4.setPosition(a.x, -a.y, z + 0.5);
       nodes.setMatrixAt(i, m4);
       nodes.setColorAt(i, a.kind ? TEXT : MUTED);
       if (i < 4) pts.push([a.x, -a.y, z]);
@@ -155,7 +162,7 @@ export function createTools(host, M, onLabels) {
   const DT = 1000 / 60;
   function reset() { M.reset(); simT = 0; lift.fill(0); }
   function frame(now) {
-    raf = 0; if (!playing) return;
+    raf = 0; if (!playing || document.hidden) return;
     acc += last ? Math.min(2500, now - last) : DT; last = now;
     while (acc >= DT) { simT += DT; M.advance(simT); acc -= DT; }
     apply(simT); renderer.render(scene, cam);
@@ -168,12 +175,15 @@ export function createTools(host, M, onLabels) {
     for (let i = 0; i < 30; i++) apply(t);
     renderer.render(scene, cam);
   }
+  // a hidden tab stops rAF; on return, pick the pass up where it was instead of jumping ahead
+  const onVis = () => { last = 0; acc = 0; if (!document.hidden && playing && !raf) raf = requestAnimationFrame(frame); };
+  document.addEventListener('visibilitychange', onVis);
   return {
     renderAt,
     play(done) { reset(); onDone = done || null; playing = true; last = 0; acc = 0; if (!raf) raf = requestAnimationFrame(frame); },
     replay(done) { this.play(done); },
     pause() { playing = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } },
     resume() { if (simT < T.end && simT > 0 && !playing) { playing = true; last = 0; acc = 0; raf = requestAnimationFrame(frame); } },
-    dispose() { this.pause(); renderer.dispose(); renderer.domElement.remove(); }
+    dispose() { this.pause(); document.removeEventListener('visibilitychange', onVis); renderer.dispose(); renderer.domElement.remove(); }
   };
 }

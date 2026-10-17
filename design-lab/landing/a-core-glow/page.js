@@ -32,7 +32,7 @@
      it plays again on hover or keyboard focus once the last run has finished. The hero's light starts as the six
      paths land on the core, so the eye goes from the lit cell to the button, and rests on its full ring by 6s. */
   const golds = $$('.btn-gold'), heroBtn = $('.btn-hero');
-  const RING_MS = 3600, HERO_RING_AT = 2350;               // hero clock: the six paths land from 2340ms, the core ignites at 2600ms
+  const RING_MS = 3600, HERO_RING_AT = 2250;               // hero clock: the trains land from about 1.6s, the core ignites at 2.4s
   const ringPlay = b => { b.classList.remove('ring-run', 'ring-done'); void b.offsetWidth; b.classList.add('ring-run'); b.dataset.ring = 'run'; };
   if (S.reduce) {
     // the still: a full ring (CSS)
@@ -68,8 +68,9 @@
       }, { threshold: [0, 0.6] });
       golds.forEach(b => ringIO.observe(b));
     } else golds.forEach(b => b.classList.add('ring-done'));
-    const fontsReady = (S.fontsReady && S.fontsReady.then) ? S.fontsReady : Promise.resolve();
-    fontsReady.then(() => later(150 + HERO_RING_AT, () => { heroGate = true; if (heroBtn && !heroBtn.dataset.ring && fullyIn(heroBtn)) ringPlay(heroBtn); }));
+    // the hero starts at first paint and says when (hero.js); its light follows as the trains land
+    const t0 = (window.SWARM && window.SWARM.heroT0) || performance.now();
+    later(Math.max(0, t0 + HERO_RING_AT - performance.now()), () => { heroGate = true; if (heroBtn && !heroBtn.dataset.ring && fullyIn(heroBtn)) ringPlay(heroBtn); });
   }
 
   /* ---------- play-once helper ---------- */
@@ -197,9 +198,7 @@
   const roomMock = $('#room-mock'), msgs = $$('#room-mock .msg');
   function playRoom(final) {
     if (final) { msgs.forEach(m => m.classList.remove('pending')); return; }
-    msgs.forEach((m, i) => later(300 + i * 900, () => m.classList.remove('pending')));
-    // the typing dots move while the messages arrive, then rest
-    if (roomMock) { roomMock.classList.add('room-typing'); later(3600, () => roomMock.classList.remove('room-typing')); }
+    msgs.forEach((m, i) => later(250 + i * 650, () => m.classList.remove('pending')));
   }
   if (!STATIC) msgs.forEach(m => m.classList.add('pending'));
 
@@ -213,31 +212,35 @@
     const maxD = Math.hypot(W / 2, H / 2);
     const T = { stop: 3700, end: 4900, tilt: 3500 };
     let rnd, sim, walk;
+    // four squads, one per tracked scout (S01 to S04), each working its own patch of the field
+    const SQ = [[-0.25, -0.2], [0.25, -0.2], [-0.25, 0.22], [0.25, 0.22]].map(([fx, fy]) => ({ x: fx * W, y: fy * H }));
+    const rad = Math.min(W, H) * (phone ? 0.24 : 0.21);
+    let squadOf;
     function reset() {
       rnd = SL.rng(19);
       sim = SL.sim(L, 29, 650);
       walk = L.V.map(v => Math.abs(v.x) < W / 2 - 14 && Math.abs(v.y) < H / 2 - 14);
       for (const c of L.cells) c.ping = -1e9;
-      const n = phone ? 22 : 34;
-      // the four tracked scouts start one per quadrant, away from the edges
-      const quad = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
-      const pool = L.V.map((v, i) => i).filter(i => walk[i] && Math.abs(L.V[i].x) < W * 0.36 && Math.abs(L.V[i].y) < H * 0.34);
+      const n = phone ? 36 : 60;
       const used = new Set();
+      squadOf = L.V.map(v => { let best = -1, bd = 1e9; SQ.forEach((c, k) => { const d = Math.hypot(v.x - c.x, v.y - c.y); if (d < bd) { bd = d; best = k; } }); return bd < rad ? best : -1; });
       for (let k = 0; k < n; k++) {
-        let id = pool[(rnd() * pool.length) | 0];
-        if (k < 4) { const [sx, sy] = quad[k]; const c = pool.filter(i => Math.sign(L.V[i].x) === sx && Math.sign(L.V[i].y) === sy && Math.abs(L.V[i].x) > W * 0.1 && Math.abs(L.V[i].y) > H * 0.1); id = c[(rnd() * c.length) | 0]; }
-        for (let tries = 0; tries < 20 && used.has(id); tries++) id = pool[(rnd() * pool.length) | 0];
+        const sq = k % 4, lead = k < 4;
+        const pool = L.V.map((v, i) => i).filter(i => walk[i] && squadOf[i] === sq && !used.has(i) && (!lead || Math.hypot(L.V[i].x - SQ[sq].x, L.V[i].y - SQ[sq].y) < rad * 0.4));
+        if (!pool.length) continue;
+        const id = pool[(rnd() * pool.length) | 0];
         used.add(id);
-        const a = sim.add(id, { kind: k < 4 || rnd() < 0.45 ? 1 : 0, born: 100 + rnd() * 500 });
-        const nb = L.V[id].nb.filter(j => walk[j]);
-        sim.hop(a, nb[(rnd() * nb.length) | 0], a.born + 80 + rnd() * 300, 200 + rnd() * 80);
+        // the squad of the scout that ends up reporting (S03) is bright, like the four scouts themselves
+        const a = sim.add(id, { kind: lead || sq === 2 ? 1 : 0, born: 100 + rnd() * 500, sq });
+        const nb = L.V[id].nb.filter(j => walk[j] && squadOf[j] === sq);
+        if (nb.length) sim.hop(a, nb[(rnd() * nb.length) | 0], a.born + 80 + rnd() * 300, 200 + rnd() * 80);
       }
     }
     function policy(a, at) {
       if (at > T.stop) return;                                     // rest where it is
       const v = L.V[a.from];
       if (rnd() < 0.42) { const cs = v.cells.filter(c => at - c.ping > 900); if (cs.length) cs[(rnd() * cs.length) | 0].ping = at; }
-      const opts = v.nb.filter(j => j !== a.prev && walk[j]);
+      const opts = v.nb.filter(j => j !== a.prev && walk[j] && squadOf[j] === a.sq);
       if (!opts.length) return;
       sim.hop(a, opts[(rnd() * opts.length) | 0], at + 60 + rnd() * 280, 190 + rnd() * 90);
     }
@@ -266,7 +269,7 @@
     M.reset(); for (let t = 0; t <= M.T.end; t += 1000 / 60) M.advance(t);
     const tracked = new Set(M.sim.agents.slice(0, 4).map(a => M.L.V[a.from].cells[0]));
     SL.drawField(g, M.L, c => tracked.has(c) ? 1 : 0, { color: SL.COL.line, lw: 1.5 });
-    SL.drawAgents(g, M.sim, M.T.end, { r: M.phone ? 2.6 : 3 });
+    SL.drawAgents(g, M.sim, M.T.end, { r: M.phone ? 3.6 : 4.4, glyph: true, base: [0.8, 1] });
     placeLabels(M.sim.agents.slice(0, 4).map(a => [a.x + W / 2, a.y + H / 2]));
   }
   let toolsScene = null, toolsVisible = false, toolsPlayed = false, toolsM = null;
@@ -280,7 +283,11 @@
       if (!es.some(e => e.isIntersecting) || loading) return;
       loading = true; loadIO.disconnect();
       let ok = false;
-      try { const c = document.createElement('canvas'); ok = !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { ok = false; }
+      try {
+        const c = document.createElement('canvas'), gl = c.getContext('webgl2') || c.getContext('webgl');
+        ok = !!gl;
+        if (gl) { const ext = gl.getExtension('WEBGL_lose_context'); if (ext) ext.loseContext(); }
+      } catch (e) { ok = false; }
       if (!ok) { drawToolsStill(toolsM); playConsole(true); return; }
       import('./tools3d.js').then(m => {
         toolsScene = m.createTools(toolsHost, toolsM, placeLabels);
@@ -353,6 +360,7 @@
     // device gets fewer frames, never a longer animation
     function play() {
       played = true;
+      setup();
       const T = opts.end, DT = 1000 / 60;
       let simT = 0;
       const loop = now => {
@@ -374,132 +382,162 @@
     if (STATIC) { settleAt(opts.end); if (opts.done) opts.done(); }
     else { draw(0); once(cv.parentElement, final => { if (final) { settleAt(opts.end); if (opts.done) opts.done(); } else play(); }, opts.threshold || 0.45); }
     let lw = W;
-    window.addEventListener('resize', () => { const w = cv.parentElement.clientWidth; if (w !== lw) { lw = w; if (raf) cancelAnimationFrame(raf); raf = 0; parked = null; settleAt(opts.end); } });
-    return { settleAt };
+    window.addEventListener('resize', () => {
+      const w = cv.parentElement.clientWidth; if (w === lw) return; lw = w;
+      if (raf) cancelAnimationFrame(raf); raf = 0; parked = null;
+      if (played || STATIC) settleAt(opts.end); else { setup(); draw(0); }
+    });
+    return { settleAt, stop() { if (raf) cancelAnimationFrame(raf); raf = 0; parked = null; } };
   }
   const pick = (arr, rnd) => arr[(rnd() * arr.length) | 0];
 
-  /* ---------- why now: the crowd moves from the games basin to the AI basin ----------
-     The crowd starts packed in the 2021 games basin. From 0.3s, four in five set off one after another and stream
-     across the field along the honeycomb's channels to a free corner in the AI basin, so the AI basin fills from the
-     middle out; the rest stay behind. Every crossing wears its edge in a little, so the route the crowd took stays
-     on the field as a worn path between the two basins. Everything rests by 4.6s. */
+  /* ---------- why now: the crowd's attention moves from the games cluster to the AI cluster ----------
+     Two equal clusters of the honeycomb (a centre cell and two rings), one under each label. The crowd starts as the
+     lit games cluster: one agent on every corner, its links drawn between the agents themselves. At 0.45s the whole
+     cluster slides along the honeycomb to the AI cluster in one smooth move (one sine ease over 1.9s), the front a
+     beat ahead of the back, so it stretches a little and gathers again, and its links travel with it: the shape never
+     breaks apart. Behind it the games cluster stays as a quiet outline, and the corners it passes along the middle row
+     keep seven dim agents, a trail from one cluster to the other. It lands whole: the AI centre cell lights and one
+     ring opens around it. Settled by 3.1s, on that clean end picture. The reduced-motion still and ?t= frames show it. */
   (function attention() {
     const box = $('#attn'); if (!box || !SL) return;
-    const cv = box.querySelector('canvas');
-    lattice2D(cv, {
-      seed: 5, end: 4600, threshold: 0.5,
+    const cv = box.querySelector('canvas'), stage = box.querySelector('.attn-stage');
+    const labA = box.querySelector('.attn-l.a1'), labB = box.querySelector('.attn-l.a2'), arrow = box.querySelector('.attn-arrow');
+    const SQ3 = SL.SQ3, T = { go: 450, spread: 90, travel: 1900, end: 3100 };
+    const easeS = x => { x = SL.clamp01(x); return 0.5 - 0.5 * Math.cos(Math.PI * x); };      // one gentle ease in and out
+    const CS6 = [], SN6 = [];
+    for (let k = 0; k < 6; k++) { const an = Math.PI / 180 * (60 * k - 90); CS6.push(Math.cos(an)); SN6.push(Math.sin(an)); }
+    function cluster(cx, cy, R, rings) {
+      const P = 1.95 * R, Rc = P / SQ3, V = [], vm = new Map(), E = [], em = new Set(), cells = [];
+      const key = (x, y) => Math.round(x * 2) + ':' + Math.round(y * 2);
+      for (let r = -rings; r <= rings; r++) for (let q = -rings; q <= rings; q++) {
+        if (Math.abs(q + r) > rings) continue;
+        const x = cx + P * (q + r / 2), y = cy + P * (SQ3 / 2) * r, ids = [];
+        for (let k = 0; k < 6; k++) {
+          const vx = x + Rc * CS6[k], vy = y + Rc * SN6[k], kk = key(vx - cx, vy - cy);
+          let id = vm.get(kk);
+          if (id === undefined) { id = V.length; vm.set(kk, id); V.push({ x: vx, y: vy }); }
+          ids.push(id);
+        }
+        for (let k = 0; k < 6; k++) { const u = ids[k], v = ids[(k + 1) % 6], ek = u < v ? u + ',' + v : v + ',' + u; if (!em.has(ek)) { em.add(ek); E.push([u, v, q === 0 && r === 0]); } }
+        cells.push({ x, y, q, r });
+      }
+      return { V, E, cells, P, Rc };
+    }
+    const api = lattice2D(cv, {
+      seed: 5, end: T.end, threshold: 0.5,
       height: W => W < 600 ? 250 : 330,
       setup(W, H) {
-        const phone = W < 600, R = phone ? 7.5 : 13, P = 1.95 * R;
-        const A = { x: W * (phone ? 0.21 : 0.2), y: H * (phone ? 0.59 : 0.56) }, B = { x: W * (phone ? 0.79 : 0.8), y: A.y };
-        const L = SL.lattice({ R, ox: W / 2, oy: A.y, x0: -P, x1: W + P, y0: -P, y1: H + P });
-        const rad = (phone ? 3.9 : 4.5) * P;
-        for (const c of L.cells) { c.inA = Math.hypot(c.x - A.x, c.y - A.y) < rad; c.inB = Math.hypot(c.x - B.x, c.y - B.y) < rad; }
-        const inA = L.V.map(v => v.cells.length === 3 && v.cells.every(c => c.inA));
-        const inB = L.V.map(v => v.cells.length === 3 && v.cells.every(c => c.inB));
-        const walk = L.V.map(v => v.cells.length === 3 && v.y > 8 && v.y < H - 8);
-        // landing corners in the AI basin, nearest the middle first
-        const targets = L.V.map((v, i) => i).filter(i => inB[i]).sort((i, j) => Math.hypot(L.V[i].x - B.x, L.V[i].y - B.y) - Math.hypot(L.V[j].x - B.x, L.V[j].y - B.y));
-        const fields = new Map();
-        const field = tg => {
-          if (fields.has(tg)) return fields.get(tg);
-          const dist = new Int32Array(L.V.length).fill(-1), q = [tg]; dist[tg] = 0;
-          for (let h = 0; h < q.length; h++) for (const j of L.V[q[h]].nb) if (dist[j] < 0 && walk[j]) { dist[j] = dist[q[h]] + 1; q.push(j); }
-          fields.set(tg, dist); return dist;
+        const phone = W < 600, R = phone ? 8.5 : 15, P = 1.95 * R, Rc = P / SQ3;
+        const k = Math.max(4, Math.round((W * (phone ? 0.56 : 0.6)) / P));     // the two clusters are k pitches apart
+        const cy = phone ? H * 0.58 : H * 0.57;
+        const A = { x: W / 2 - k * P / 2, y: cy }, B = { x: W / 2 + k * P / 2, y: cy };
+        const CA = cluster(A.x, A.y, R, 2), CB = cluster(B.x, B.y, R, 2);
+        const L = SL.lattice({ R, ox: A.x, oy: A.y, x0: -P, x1: W + P, y0: -P, y1: H + P });
+        const dx = B.x - A.x;
+        // the front leaves a beat before the back, so the cluster stretches a little in flight and gathers again
+        const xs = CA.V.map(v => v.x), xmin = Math.min(...xs), xmax = Math.max(...xs);
+        const dep = CA.V.map(v => T.go + (1 - (v.x - xmin) / Math.max(1, xmax - xmin)) * T.spread);
+        const land = T.go + T.spread + T.travel;
+        // the trail: seven corners on the middle row, evenly spaced between the clusters
+        const trail = [], tx0 = A.x + 3 * P, tx1 = B.x - 3 * P;
+        for (let i = 0; i < 7; i++) { const m = Math.round((tx0 + (tx1 - tx0) * i / 6 - A.x) / P - 0.5); trail.push({ x: A.x + (m + 0.5) * P, y: A.y - Rc / 2 }); }
+        // the quiet field, fading out well before every edge of the frame; the two clusters draw themselves
+        const near = (c, o) => Math.hypot(c.x - o.x, c.y - o.y) < 2.6 * P;
+        const top = phone ? 46 : 64;
+        const fade = c => {
+          const fx = Math.min(SL.sm(0, W * 0.1, c.x), 1 - SL.sm(W * 0.9, W, c.x));
+          const fy = Math.min(SL.sm(top, top + 3.2 * P, c.y), 1 - SL.sm(H - 2.4 * P, H - 6, c.y));
+          return Math.max(0, fx * fy);
         };
-        return { L, A, B, rad, inA, inB, walk, targets, field, phone, W, H, P, moved: 0, movers: 0, worn: new Map() };
-      },
-      spawn(sim, rnd, X) {
-        const ids = X.L.V.map((v, i) => i).filter(i => X.inA[i]);
-        for (let i = ids.length - 1; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; [ids[i], ids[j]] = [ids[j], ids[i]]; }
-        const n = Math.min(ids.length, X.phone ? 64 : 120);
-        const movers = Math.min(Math.round(n * 0.8), X.targets.length);
-        X.movers = movers;
-        for (let k = 0; k < n; k++) {
-          const id = ids[k], go = k < movers ? 250 + 1300 * (k / Math.max(1, movers - 1)) + rnd() * 100 : Infinity;
-          const a = sim.add(id, { kind: 0, born: rnd() * 260, go, tg: k < movers ? X.targets[k] : -1 });
-          const nb = X.L.V[id].nb.filter(j => X.inA[j]);
-          if (nb.length) sim.hop(a, pick(nb, rnd), a.born + 80 + rnd() * 300, 220 + rnd() * 80);
+        const bg = document.createElement('canvas'), d = DPR();
+        bg.width = Math.round(W * d); bg.height = Math.round(H * d);
+        const gb = bg.getContext('2d'); gb.setTransform(d, 0, 0, d, 0, 0);
+        SL.drawField(gb, L, c => (near(c, A) || near(c, B)) ? 0 : 0.95 * fade(c), {});
+        // labels sit exactly over the two cluster centres
+        if (labA && labB) {
+          labA.style.left = A.x + 'px'; labB.style.left = B.x + 'px';
+          if (arrow) requestAnimationFrame(() => {
+            const sr = stage.getBoundingClientRect(), ra = labA.getBoundingClientRect(), rb = labB.getBoundingClientRect();
+            arrow.style.left = (ra.right - sr.left + 14) + 'px'; arrow.style.right = (sr.right - rb.left + 18) + 'px';
+          });
         }
+        return { L, A, B, CA, CB, dx, dep, land, trail, P, Rc, phone, bg };
       },
-      policy(a, at, sim, rnd, X) {
-        const V = X.L.V, v = V[a.from];
-        if (a.mode === 'scan' && at >= a.go) { a.mode = 'move'; a.kind = 1; X.moved++; }
-        if (a.mode === 'move') {
-          const dist = X.field(a.tg);
-          if (dist[a.from] === 0) { a.mode = 'there'; return; }
-          const down = v.nb.filter(j => dist[j] >= 0 && dist[j] < dist[a.from]);
-          if (down.length) {
-            const nx = pick(down, rnd), d = X.phone ? 58 + rnd() * 10 : 44 + rnd() * 8, key = SL.ekey(a.from, nx);
-            let w = X.worn.get(key); if (!w) X.worn.set(key, w = { a: a.from, b: nx, t: [] });
-            w.t.push(at + d);
-            sim.hop(a, nx, at, d); return;
-          }
-          a.mode = 'there'; return;
-        }
-        if (a.mode === 'there' || at > 3400) return;
-        if (rnd() < 0.25) { const cs = v.cells.filter(c => c.inA && at - c.ping > 800); if (cs.length) pick(cs, rnd).ping = at; }
-        const opts = v.nb.filter(j => j !== a.prev && X.inA[j]);
-        if (opts.length) sim.hop(a, pick(opts, rnd), at + 60 + rnd() * 260, 220 + rnd() * 80);
-      },
+      spawn() {},
+      policy() {},
       draw(g, t, sim, X, W, H) {
-        let there = 0; for (const a of sim.agents) if (a.mode === 'there') there++;
-        const k = X.movers ? there / X.movers : 0;
-        // the quiet field never changes: drawn once into its own layer
-        if (!X.bg) {
-          const d = g.getTransform().a || 1, c2 = document.createElement('canvas');
-          c2.width = Math.round(W * d); c2.height = Math.round(H * d);
-          const g2 = c2.getContext('2d'); g2.setTransform(d, 0, 0, d, 0, 0);
-          const fade = c => Math.max(0, 1 - SL.sm(W * 0.4, W * 0.56, Math.abs(c.x - W / 2))) * (1 - SL.sm(H - 40, H, c.y)) * SL.sm(0, 30, c.y);
-          SL.drawField(g2, X.L, c => c.inA || c.inB ? 0 : 0.9 * fade(c), {});
-          X.bg = c2;
-        }
+        const { CA, CB, dx, dep, land, trail, P, phone } = X;
         g.drawImage(X.bg, 0, 0, W, H);
-        SL.drawField(g, X.L, c => c.inA ? 1 - 0.45 * k : 0, { color: SL.COL.line });
-        SL.drawField(g, X.L, c => c.inB ? 0.6 + 0.4 * k : 0, { color: SL.COL.line });
-        // the worn path: each crossing so far wears its edge in a little
-        const wb = new Map();
-        for (const w of X.worn.values()) {
-          let n = 0; for (const x of w.t) if (x <= t) n++;
-          if (!n) continue;
-          const b = Math.min(10, Math.round(n * 0.9)); let arr = wb.get(b); if (!arr) wb.set(b, arr = []); arr.push(w);
+        const u = dep.map(d0 => easeS((t - d0) / T.travel));
+        const pos = CA.V.map((v, i) => [v.x + dx * u[i], v.y]);
+        const away = SL.sm(T.go, T.go + 500, t);                 // how far the crowd has left the games cluster
+        const lit = SL.sm(land - 80, land + 260, t);              // the AI cluster has landed
+        const HIVE = SL.COL.hive, TXT = SL.COL.text;
+        const lines = (col, al, lw, segs) => { if (al <= 0.01 || !segs.length) return; g.strokeStyle = col; g.globalAlpha = Math.min(1, al); g.lineWidth = lw; g.beginPath(); for (const [x0, y0, x1, y1] of segs) { g.moveTo(x0, y0); g.lineTo(x1, y1); } g.stroke(); };
+        g.lineCap = 'round';
+        // the AI cluster waits as a faint outline; the games cluster stays behind as a quiet, legible outline
+        lines(HIVE, 0.45, 1, CB.E.map(([a, b]) => [CB.V[a].x, CB.V[a].y, CB.V[b].x, CB.V[b].y]));
+        lines(TXT, 0.3 * away, 1, CA.E.map(([a, b]) => [CA.V[a].x, CA.V[a].y, CA.V[b].x, CA.V[b].y]));
+        // the travelling cluster: its links ride between its own agents, so the shape slides as one piece
+        const ring = [], core = [];
+        for (const [a, b, c] of CA.E) (c ? core : ring).push([pos[a][0], pos[a][1], pos[b][0], pos[b][1]]);
+        lines(TXT, 0.5, phone ? 1.1 : 1.3, ring);
+        lines(TXT, 0.62 + 0.38 * lit, phone ? 1.1 : 1.4, core);
+        g.lineCap = 'butt'; g.globalAlpha = 1;
+        // the AI centre cell lights as the cluster lands, and one ring opens around it
+        if (lit > 0) {
+          const cc = CB.cells.find(c => c.q === 0 && c.r === 0);
+          g.globalAlpha = 0.16 * lit; g.fillStyle = TXT; g.beginPath(); SL.hexPath(g, cc.x, cc.y, (P / 1.95) * 0.9); g.fill();
+          const e = (t - land) / 620;
+          if (e > 0 && e < 1) { g.globalAlpha = 0.34 * (1 - e); g.strokeStyle = HIVE; g.lineWidth = 1; g.beginPath(); SL.hexPath(g, cc.x, cc.y, (P / 1.95) * (3.2 + 2.2 * SL.outCubic(e))); g.stroke(); }
+          g.globalAlpha = 1;
         }
-        g.lineWidth = 1; g.strokeStyle = SL.COL.hive;
-        for (const [b, arr] of wb) { g.globalAlpha = 0.07 + 0.06 * b; g.beginPath(); for (const w of arr) { const A = X.L.V[w.a], B = X.L.V[w.b]; g.moveTo(A.x, A.y); g.lineTo(B.x, B.y); } g.stroke(); }
-        g.globalAlpha = 1;
-        SL.drawField(g, X.L, c => { const e = t - c.ping; if (e < 0 || e > 800) return 0; return (e < 120 ? e / 120 : e < 280 ? 1 : 1 - (e - 280) / 520) * 0.7; }, { color: SL.COL.hive });
-        SL.drawEdges(g, sim, t, { base: [0.3, 0.5], lw: X.phone ? 1.1 : 1.3 });
-        SL.drawAgents(g, sim, t, { r: X.phone ? 1.7 : 2.3, base: [0.7, 1] });
+        // the trail: once the back of the cluster has passed a corner, a dim agent stays on it
+        const back = Math.min(...pos.map(p => p[0]));
+        const list = [];
+        for (const p of trail) { const a = 0.55 * SL.sm(p.x, p.x + P, back); if (a > 0.01) list.push({ x: p.x, y: p.y, a, k: 0 }); }
+        for (const p of pos) list.push({ x: p[0], y: p[1], a: 1, k: 1 });
+        SL.drawGlyphs(g, list, { r: phone ? 2.7 : 4.3, lw: phone ? 0.9 : 1.1, head: phone ? 1.05 : 1.5 });
       }
     });
+    if (api) window.__attnAt = ms => { api.stop(); api.settleAt(ms); };                 // frame renders and tests: draw the band at any time
   })();
 
-  /* ---------- pricing: a small field around the mark; the swarm routes in and the core lights ---------- */
-  (function joinField() {
-    const art = $('.join-art'), cv = $('#join-field'), mk = $('#join-mark'); if (!art || !cv || !SL) return;
-    lattice2D(cv, {
-      seed: 13, end: 2600, threshold: 0.35,
-      height: W => W <= 640 ? 230 : 240,
+  /* ---------- a small converge piece around an official mark: the pricing core and the final CTA ----------
+     The agents route in along the honeycomb's channels, each neighbour lights as its first agent reaches it, the
+     core's gold outline charges, and the official mark lands with its warm light. Plays once, settled under 3.2s. */
+  function converge(cfg) {
+    const { cv, mark, glow } = cfg;
+    return lattice2D(cv, {
+      seed: cfg.seed, end: cfg.end, threshold: 0.35, height: cfg.height,
       setup(W, H) {
-        const phone = W <= 640, S_ = phone ? 112 : 128, R = S_ / 7.5, P = 1.95 * R;
-        const cx = W / 2, cy = phone ? 115 : 120;
-        const L = SL.lattice({ R, ox: cx, oy: cy, x0: cx - 520, x1: cx + 520, y0: -P, y1: H + P });
-        const maxD = phone ? 200 : 280;
-        const walk = L.V.map(v => !v.core && v.d < maxD * 0.95);
+        const phone = W <= 640, c = cfg.core(W, H, phone), R = c.R, P = 1.95 * R;
+        const L = SL.lattice({ R, ox: c.x, oy: c.y, x0: -P, x1: W + P, y0: -P, y1: H + P });
+        const boxes = cfg.boxes ? cfg.boxes() : [];
+        const inBox = (x, y) => boxes.some(b => x > b[0] && x < b[2] && y > b[1] && y < b[3]);
+        const maxD = c.maxD;
+        const walk = L.V.map(v => !v.core && v.d < maxD * 0.95 && v.y > 6 && v.y < H - 6 && !inBox(v.x, v.y));
         const dist = new Int32Array(L.V.length).fill(-1), q = [];
         L.V.forEach((v, i) => { if (v.core) { dist[i] = 0; q.push(i); } });
         for (let h = 0; h < q.length; h++) for (const j of L.V[q[h]].nb) if (dist[j] < 0 && (walk[j] || L.V[j].core)) { dist[j] = dist[q[h]] + 1; q.push(j); }
-        return { L, cx, cy, maxD, walk, dist, phone, R, absorbed: 0 };
+        if (mark) Object.assign(mark.style, { left: (c.x - 3.75 * R) + 'px', top: (c.y - 3.75 * R) + 'px', width: 7.5 * R + 'px', height: 7.5 * R + 'px', marginLeft: '0', marginTop: '0' });
+        if (glow) { const gw = c.glow[0], gh = c.glow[1], st = [[0, 0.34], [9, 0.25], [20, 0.14], [36, 0.065], [56, 0.024], [100, 0]];
+          Object.assign(glow.style, { left: (c.x - gw) + 'px', top: (c.y - gh) + 'px', width: 2 * gw + 'px', height: 2 * gh + 'px', background: `radial-gradient(closest-side, ${st.map(([o, a]) => `rgba(245,197,66,${a}) ${o}%`).join(', ')})` }); }
+        return { L, cx: c.x, cy: c.y, maxD, walk, dist, phone, R, inBox, absorbed: 0, total: 0 };
       },
       spawn(sim, rnd, X) {
-        const ids = X.L.V.map((v, i) => i).filter(i => X.walk[i] && X.L.V[i].ring >= 3 && X.dist[i] > 0 && X.L.V[i].y > 6 && X.L.V[i].y < (X.phone ? 224 : 234));
-        const n = X.phone ? 22 : 34;
-        for (let k = 0; k < n; k++) {
-          const id = pick(ids, rnd), h = X.dist[id];
-          const a = sim.add(id, { kind: 1, born: rnd() * 260, hd: Math.max(70, Math.min(200, (1650 - rnd() * 250) / Math.max(1, h))) });
+        const ids = X.L.V.map((v, i) => i).filter(i => X.walk[i] && X.L.V[i].ring >= 3 && X.dist[i] > 0);
+        const n = X.phone ? cfg.n[1] : cfg.n[0];
+        const used = new Set();
+        for (let k = 0; k < n && ids.length; k++) {
+          let id = pick(ids, rnd); for (let tries = 0; tries < 12 && used.has(id); tries++) id = pick(ids, rnd);
+          if (used.has(id)) continue; used.add(id);
+          const h = X.dist[id];
+          const a = sim.add(id, { kind: 1, born: rnd() * 260, hd: Math.max(70, Math.min(220, (cfg.arrive - rnd() * 300) / Math.max(1, h))) });
           const down = X.L.V[id].nb.filter(j => X.dist[j] >= 0 && X.dist[j] < h);
-          sim.hop(a, pick(down, rnd), a.born + 60, a.hd);
+          if (down.length) sim.hop(a, pick(down, rnd), a.born + 60, a.hd);
+          X.total++;
         }
       },
       policy(a, at, sim, rnd, X) {
@@ -510,69 +548,58 @@
         if (down.length) sim.hop(a, pick(down, rnd), at, a.hd);
       },
       draw(g, t, sim, X, W, H) {
-        const lit = t > 1900 || STATIC;
-        const hand = STATIC ? 1 : SL.clamp01((t - 1900) / 380);
-        SL.drawField(g, X.L, c => c.ring <= 1 ? 0 : Math.max(0, 1 - SL.sm(X.maxD * 0.35, X.maxD, c.d)), {});
-        SL.drawEdges(g, sim, t, { base: [0.4, 0.75], lw: 1.4 });
+        const hand = STATIC ? 1 : SL.clamp01((t - cfg.ignite) / 300);
+        SL.drawField(g, X.L, c => c.ring <= 1 ? 0 : Math.max(0, 1 - SL.sm(X.maxD * 0.35, X.maxD, c.d)) * (X.inBox(c.x, c.y) ? 0.3 : 1) * (cfg.edge ? cfg.edge(c.x, c.y, W, H) : 1), {});
+        SL.drawEdges(g, sim, t, { base: [0.4, 0.62], lw: 1.3 });
         if (hand < 1) {
           g.lineWidth = 1.5; g.strokeStyle = SL.COL.hive;
           for (const c of X.L.rings[1] || []) { if (c.lit < -1e8) continue; g.globalAlpha = SL.sm(c.lit, c.lit + 200, t) * (1 - hand); g.beginPath(); SL.hexPath(g, c.x, c.y, X.R * 0.97); g.stroke(); }
-          g.globalAlpha = (0.35 + 0.6 * Math.min(1, X.absorbed / 20)) * (1 - hand); g.strokeStyle = SL.COL.gold; g.beginPath(); SL.hexPath(g, X.cx, X.cy, X.R * 0.825); g.stroke(); g.globalAlpha = 1;
+          g.globalAlpha = (0.35 + 0.6 * Math.min(1, X.absorbed / Math.max(1, X.total))) * (1 - hand); g.strokeStyle = SL.COL.gold; g.beginPath(); SL.hexPath(g, X.cx, X.cy, X.R * 0.825); g.stroke(); g.globalAlpha = 1;
         }
-        SL.drawAgents(g, sim, t, { r: 2.6 });
-        if (mk) { mk.classList.toggle('lit', lit); mk.style.opacity = STATIC ? '' : hand.toFixed(3); mk.style.transform = hand < 1 ? `scale(${(0.93 + 0.07 * hand).toFixed(4)})` : ''; }
+        SL.drawAgents(g, sim, t, { r: X.phone ? 3.6 : 4.4, glyph: true, base: [1, 1], lw: 1.1 });
+        const bump = !STATIC && t >= cfg.ignite ? Math.sin(Math.PI * Math.pow(SL.clamp01((t - cfg.ignite) / 520), 0.7)) : 0;
+        if (mark) { mark.style.opacity = STATIC ? '' : hand.toFixed(3); mark.style.transform = bump > 0.001 ? `scale(${(1 + 0.07 * bump).toFixed(4)})` : ''; }
+        if (glow) { const gl = STATIC ? 1 : SL.outCubic(SL.clamp01((t - cfg.ignite) / 450)); glow.style.opacity = gl.toFixed(3); glow.style.transform = gl < 1 ? `scale(${(0.7 + 0.3 * gl).toFixed(3)})` : ''; }
       }
     });
+  }
+
+  /* pricing: a small field around the mark above "Early on purpose." */
+  (function joinField() {
+    const art = $('.join-art'), cv = $('#join-field'), mk = $('#join-mark'); if (!art || !cv || !SL) return;
+    converge({ cv, mark: mk, seed: 13, end: 2600, ignite: 1900, arrive: 1650, n: [34, 22],
+      height: W => W <= 640 ? 230 : 240,
+      core: (W, H, phone) => ({ x: W / 2, y: phone ? 115 : 120, R: (phone ? 112 : 128) / 7.5, maxD: phone ? 200 : 280 }) });
   })();
 
-  /* ---------- final CTA: the field, with a short pass of the swarm when it comes into view ---------- */
+  /* final CTA: the lit core returns above the last headline, as in the hero, with its warm light */
   (function finalField() {
-    const sec = $('#final'), cv = $('#final-field'); if (!sec || !cv || !SL) return;
-    lattice2D(cv, {
-      seed: 21, end: 4500, threshold: 0.35,
+    const sec = $('#final'), cv = $('#final-field'), mk = $('#final-mark'), spot = $('#final-core'); if (!sec || !cv || !SL || !spot) return;
+    const glow = document.createElement('div'); glow.className = 'final-glow'; cv.before(glow);
+    const start = () => converge({ cv, mark: mk, glow, seed: 21, end: 3000, ignite: 2200, arrive: 1900, n: [44, 24],
       height: () => sec.clientHeight,
-      setup(W, H) {
-        const phone = W <= 640, R = phone ? 22 : 30, P = 1.95 * R;
-        const L = SL.lattice({ R, ox: W / 2, oy: H / 2, x0: -P, x1: W + P, y0: -P, y1: H + P });
-        const maxD = Math.hypot(W / 2, H / 2);
-        const sr = sec.getBoundingClientRect(), boxes = [];
-        sec.querySelectorAll('.h2 span, .btn-gold, .cancel').forEach(el => { const r = el.getBoundingClientRect(); boxes.push([r.left - sr.left - 18, r.top - sr.top - 14, r.right - sr.left + 18, r.bottom - sr.top + 14]); });
-        const inBox = (x, y) => boxes.some(b => x > b[0] && x < b[2] && y > b[1] && y < b[3]);
-        const fade = (x, y) => (1 - SL.sm(0.15 * maxD, 0.85 * maxD, Math.hypot((x - W / 2) * 0.8, y - H / 2))) * Math.min(SL.sm(0, 120, y), 1 - SL.sm(H - 120, H, y));
-        const walk = L.V.map(v => fade(v.x, v.y) > 0.2);
-        return { L, maxD, fade, inBox, walk, phone };
+      core: (W, H, phone) => {
+        const sr = sec.getBoundingClientRect(), r = spot.getBoundingClientRect();
+        const R = parseFloat(getComputedStyle(sec).getPropertyValue('--fR')) || (phone ? 20 : 26);
+        return { x: W / 2, y: r.top - sr.top + (r.height - 26) / 2, R, maxD: phone ? 260 : 520, glow: phone ? [220, 170] : [460, 300] };
       },
-      spawn(sim, rnd, X) {
-        const ids = X.L.V.map((v, i) => i).filter(i => X.walk[i] && !X.inBox(X.L.V[i].x, X.L.V[i].y));
-        const n = X.phone ? 22 : 46;
-        for (let k = 0; k < n; k++) {
-          const id = pick(ids, rnd);
-          const a = sim.add(id, { kind: rnd() < 0.5 ? 1 : 0, born: rnd() * 500, fadeT: 3100 + rnd() * 500, fadeD: 420 });
-          const nb = X.L.V[id].nb.filter(j => X.walk[j]);
-          if (nb.length) sim.hop(a, pick(nb, rnd), a.born + rnd() * 200, 220 + rnd() * 80);
-        }
-      },
-      policy(a, at, sim, rnd, X) {
-        if (at > 3300) return;
-        const v = X.L.V[a.from];
-        const opts = v.nb.filter(j => j !== a.prev && X.walk[j]);
-        if (opts.length) sim.hop(a, pick(opts, rnd), at + 60 + rnd() * 300, 220 + rnd() * 80);
-      },
-      draw(g, t, sim, X) {
-        SL.drawField(g, X.L, c => X.fade(c.x, c.y), {});
-        const m = (x, y) => X.inBox(x, y) ? 0.12 : 1;
-        SL.drawEdges(g, sim, t, { base: [0.32, 0.55], alphaAt: m, lw: 1.4 });
-        SL.drawAgents(g, sim, t, { r: X.phone ? 2.4 : 2.8, base: [0.75, 0.9], alphaAt: m });
-      }
-    });
+      edge: (x, y, W, H) => SL.sm(0, 110, y) * (1 - SL.sm(H - 140, H - 10, y)),
+      boxes: () => {
+        const sr = sec.getBoundingClientRect(), out = [];
+        sec.querySelectorAll('.h2 span, .btn-gold, .cancel, .final-facts li').forEach(el => { const r = el.getBoundingClientRect(); out.push([r.left - sr.left - 22, r.top - sr.top - 16, r.right - sr.left + 22, r.bottom - sr.top + 16]); });
+        return out;
+      } });
+    // the copy's boxes are measured once the real fonts are in
+    const fontsReady = (S.fontsReady && S.fontsReady.then) ? S.fontsReady : Promise.resolve();
+    fontsReady.then(start);
   })();
 
   /* ---------- pricing: plan switch and Whop checkout stub ---------- */
   // Swap in the three Whop plan IDs (prefixed plan_) when Jesus has them. One line per plan.
   const PLANS = {
-    founding: { name: 'Founding monthly', price: '$49', unit: '/mo', note: 'Forever, while you stay subscribed. Cancel whenever. 50 seats only.', chip: 'Founding seat', gold: true, whopPlanId: null },
-    standard: { name: 'Standard monthly', price: '$99', unit: '/mo', note: 'The price once the founding seats are gone.', chip: 'Renews monthly', gold: false, whopPlanId: null },
-    yearly:   { name: 'Yearly', price: '$990', unit: '/yr', note: '2 months free.', chip: 'Billed yearly', gold: false, whopPlanId: null }
+    founding: { name: 'Founding monthly', price: '$49', unit: '/mo', note: 'Forever, while you stay subscribed. Cancel whenever. 50 seats only.', sub: 'Cancel and rejoin after prices go up, and you pay the price at that time.', chip: 'Founding seat', gold: true, whopPlanId: null },
+    standard: { name: 'Standard monthly', price: '$99', unit: '/mo', note: 'The price once the founding seats are gone.', sub: '', chip: 'Renews monthly', gold: false, whopPlanId: null },
+    yearly:   { name: 'Yearly', price: '$990', unit: '/yr', note: '2 months free.', sub: '', chip: 'Billed yearly', gold: false, whopPlanId: null }
   };
   window.SWARM_PLANS = PLANS;
   let currentPlan = 'founding', mounted = null, opened = false;
@@ -587,7 +614,7 @@
     slot.querySelector('[data-slot-plan]').textContent = plan.name;
     if (!plan.whopPlanId) {
       slot.dataset.state = 'placeholder';
-      $('#whop-status').textContent = 'The ' + plan.name.toLowerCase() + ' checkout mounts here once its Whop plan ID is added.';
+      $('#whop-status').textContent = 'Checkout for the ' + plan.name.toLowerCase() + ' plan opens here soon.';
       return false;
     }
     if (mounted && mounted.destroy) mounted.destroy();
@@ -601,6 +628,7 @@
     $('#pc-amt').textContent = p.price;
     $('#pc-unit').textContent = p.unit;
     $('#pc-note').textContent = p.note;
+    $('#pc-sub').textContent = p.sub;
     $('#pc-chip').textContent = p.chip;
     $('#pcard').classList.toggle('is-gold', p.gold);
     const slot = $('#whop-checkout'); if (slot) slot.querySelector('[data-slot-plan]').textContent = p.name;

@@ -28,13 +28,6 @@ const SQ3 = Math.sqrt(3);
 const clamp01 = x => Math.min(1, Math.max(0, x));
 const sm = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 function rng(seed) { let s = seed % 2147483647; if (s <= 0) s += 2147483646; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
-// CSS cubic-bezier timing, solved by bisection (robust at the ends)
-function bezier(x1, y1, x2, y2) {
-  const bx = t => 3 * x1 * t * (1 - t) * (1 - t) + 3 * x2 * t * t * (1 - t) + t * t * t;
-  const by = t => 3 * y1 * t * (1 - t) * (1 - t) + 3 * y2 * t * t * (1 - t) + t * t * t;
-  return x => { x = clamp01(x); let lo = 0, hi = 1; for (let i = 0; i < 26; i++) { const m = (lo + hi) / 2; if (bx(m) < x) lo = m; else hi = m; } return by((lo + hi) / 2); };
-}
-
 const COL = { faint: [0x1C, 0x1C, 0x21], hive: [0x55, 0x55, 0x5B], muted: [0x8E, 0x8A, 0x80], text: [0xEE, 0xEB, 0xE4], gold: [0xF5, 0xC5, 0x42] };
 const glc = c => `vec3(${(c[0] / 255).toFixed(5)}, ${(c[1] / 255).toFixed(5)}, ${(c[2] / 255).toFixed(5)})`;
 
@@ -57,21 +50,33 @@ const PROJ = `
 uniform float uT;
 uniform float uDpr;
 uniform vec2 uRes;
+uniform float uDc, uNear, uFar;
 vec4 projH(vec2 h) { return projectionMatrix * modelViewMatrix * vec4(h.x, -h.y, 0.0, 1.0); }
+// atmosphere while the camera is tilted: lights nearer than the core dim (the foreground, where the copy sits, stays
+// dark) and the far field fades into haze. Top-down every point is at the core's depth, so this vanishes on landing.
+float atmo(vec2 h) {
+  float rel = uDc / max(-(modelViewMatrix * vec4(h.x, -h.y, 0.0, 1.0)).z, 1.0);
+  return mix(1.0, uNear, smoothstep(1.05, 1.55, rel)) * mix(1.0, uFar, 1.0 - smoothstep(0.78, 0.98, rel));
+}
 vec2 toCss(vec4 c) { return c.xy / c.w * 0.5 * uRes; }
 float inOut(float x) { x = clamp(x, 0.0, 1.0); return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0; }
 `;
 
 const FIELD_VS = `
-varying vec2 vH;
-void main() { vH = vec2(position.x, -position.y); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+varying vec2 vH; varying float vDepth;
+void main() {
+  vH = vec2(position.x, -position.y);
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vDepth = -mv.z;
+  gl_Position = projectionMatrix * mv;
+}
 `;
 const FIELD_FS = COMMON + `
-uniform float uP, uR, uMaxD, uHc, uR1, uCoreA, uWaveT, uBoot;
+uniform float uP, uR, uMaxD, uHc, uR1, uCoreA, uCoreW, uWaveT, uBoot, uDc, uNear, uFar;
 uniform float uL0, uL1, uL2, uL3, uL4, uL5;
 uniform vec2 uCore;
 uniform mat4 uPV;
-varying vec2 vH;
+varying vec2 vH; varying float vDepth;
 vec4 over(vec4 top, vec4 bot) { return top + bot * (1.0 - top.a); }
 bool at(float q, float r, float a, float b) { return abs(q - a) < 0.5 && abs(r - b) < 0.5; }
 void main() {
@@ -93,11 +98,14 @@ void main() {
   float ri = uR * 0.97 * 0.8660254;
   vec4 col = vec4(0.0);
   if (ring > 1.5) {
-    float cov = outline(d, ri, g, 1.0) * smoothstep(2.4, 6.0, pitch);
+    float rel = uDc / max(vDepth, 1.0);
+    float air = mix(1.0, 0.5 + 0.5 * uNear, smoothstep(1.05, 1.55, rel)) * mix(1.0, uFar, 1.0 - smoothstep(0.78, 0.98, rel));
+    // small cells pack more line per pixel, so the mesh is thinned out until the cells are a usable size
+    float cov = outline(d, ri, g, 1.0) * smoothstep(2.4, 6.0, pitch) * mix(0.68, 1.0, smoothstep(8.0, 22.0, pitch)) * air;
     float vig = max(0.16, 1.0 - smoothstep(0.3 * uMaxD, 1.05 * uMaxD, dS)) * (1.0 - smoothstep(uHc - 170.0, uHc - 6.0, sc.y));
     // boot: a wave runs out from the core across the screen and lights the network as it passes
     float e = uBoot - dS / 1.9;
-    float reveal = 0.4 + 0.6 * smoothstep(0.0, 320.0, e);
+    float reveal = 0.62 + 0.38 * smoothstep(0.0, 320.0, e);
     col = vec4(${glc(COL.faint)}, 1.0) * (vig * reveal * cov);
     if (e > 0.0 && e < 1000.0) {
       float env = e < 110.0 ? e / 110.0 : 1.0 - pow((e - 110.0) / 890.0, 0.7);
@@ -115,7 +123,7 @@ void main() {
     if (L < 0.0) col = vec4(${glc(COL.faint)}, 1.0) * (uR1 * outline(d, ri, g, 1.0));
     else col = vec4(${glc(COL.hive)}, 1.0) * (L * outline(d, ri, g, 1.5));
   } else {
-    col = vec4(${glc(COL.gold)}, 1.0) * (uCoreA * outline(d, uR * 0.825 * 0.8660254, g, 1.5));
+    col = vec4(${glc(COL.gold)}, 1.0) * (uCoreA * outline(d, uR * 0.825 * 0.8660254, g, uCoreW));
   }
   gl_FragColor = col;
 }
@@ -124,36 +132,37 @@ void main() {
 const PING_VS = PROJ + `
 uniform float uR;
 attribute vec3 pC;
-varying vec2 vH; varying vec2 vC; varying float vT0;
+varying vec2 vH; varying vec2 vC; varying float vT0; varying float vAir;
 void main() {
   vC = pC.xy; vT0 = pC.z;
   float e = uT - vT0;
   if (e < 0.0 || e > 800.0) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
   vH = pC.xy + position.xy * uR * 1.08;
+  vAir = atmo(pC.xy);
   gl_Position = projH(vH);
 }
 `;
 const PING_FS = COMMON + `
 uniform float uR;
-varying vec2 vH; varying vec2 vC; varying float vT0;
+varying vec2 vH; varying vec2 vC; varying float vT0; varying float vAir;
 void main() {
   float e = uT - vT0;
   float env = e < 120.0 ? e / 120.0 : e < 280.0 ? 1.0 : 1.0 - (e - 280.0) / 520.0;
   float d = hexd(vH - vC);
   float g = max(length(vec2(dFdx(d), dFdy(d))), 1e-5);
-  float a = clamp(env, 0.0, 1.0) * 0.85 * maskHere() * outline(d, uR * 0.97 * 0.8660254, g, 1.0);
+  float a = clamp(env, 0.0, 1.0) * 0.85 * vAir * maskHere() * outline(d, uR * 0.97 * 0.8660254, g, 1.0);
   gl_FragColor = vec4(${glc(COL.hive)}, 1.0) * a;
 }
 `;
 
 // screen-space thick lines: corner.x = 0 at A, 1 at B; corner.y = -1 or 1 across
 const LINE_VS = PROJ + `
-uniform float uLw;
+uniform float uLw, uEdgeMul;
 attribute vec2 corner;
 #ifdef CURRENT
 attribute vec4 aAB; attribute vec4 aTD; attribute vec2 aF;
 #else
-attribute vec4 eAB; attribute vec2 eT;
+attribute vec4 eAB; attribute vec3 eT;
 #endif
 varying float vAcross; varying float vA; varying float vKind;
 void main() {
@@ -169,8 +178,9 @@ void main() {
   float age = uT - eT.x;
   vec2 A = eAB.xy, B = eAB.zw;
   vKind = eT.y;
-  vA = (age < 0.0 || age > 600.0) ? 0.0 : (vKind > 0.5 ? 0.78 : 0.44) * (1.0 - age / 600.0);
+  vA = (age < 0.0 || age > eT.z) ? 0.0 : (vKind > 0.5 ? 0.78 : 0.44) * (1.0 - age / eT.z);
 #endif
+  vA *= uEdgeMul * atmo(0.5 * (A + B));
   if (vA < 0.004) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
   vec4 cA = projH(A), cB = projH(B);
   vec2 sA = toCss(cA), sB = toCss(cB);
@@ -205,9 +215,9 @@ void main() {
   float vis = uT < aTD.z ? 0.0 : clamp((uT - aTD.z) / 160.0, 0.0, 1.0);
   if (aF.x >= 0.0) vis *= 1.0 - clamp((uT - aF.x) / aF.y, 0.0, 1.0);
   vKind = aTD.w;
-  vA = (vKind > 0.5 ? 1.0 : 0.92) * vis;
-  if (vA < 0.004) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
   vec2 Pp = mix(aAB.xy, aAB.zw, inOut((uT - aTD.x) / aTD.y));
+  vA = (vKind > 0.5 ? 1.0 : 0.92) * vis * atmo(Pp);
+  if (vA < 0.004) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
   vec4 cc = projH(Pp), c1 = projH(Pp + vec2(1.0, 0.0));
   float ppw = max(length(toCss(c1) - toCss(cc)), 1e-4);
   float rpx = max(uRmin, uRw * ppw);
@@ -229,20 +239,21 @@ void main() {
 
 /* ---------- the scene ---------- */
 export function createPushIn(o) {
-  const { before, W, Hc, DPR, phone, tablet, R, core, maskAt, copyAt, freeze, T } = o;
+  const { before, W, Hc, DPR, phone, tablet, R, core, maskAt, copyDist, freeze, T } = o;
   const P = 1.95 * R, Rc = P / SQ3, HH = P * SQ3 / 2;
   const maxD = Math.hypot(Math.max(core.x, W - core.x), Math.max(core.y, Hc - core.y));
 
   /* camera: focal length in CSS px; at the end the camera sits at distance F, so one world unit is one CSS px */
-  const F = 1.1 * Hc;
+  const F = 0.95 * Hc;
   const Z0 = phone ? 5.4 : (tablet ? 6 : 6.6);
-  const TH0 = (phone ? 40 : 44) * Math.PI / 180;
+  const TH0 = (phone ? 46 : 50) * Math.PI / 180;
   const PS0 = (phone ? -13 : -16) * Math.PI / 180;
-  const easeD = bezier(0.5, 0, 0.12, 1), easeP = bezier(0.42, 0, 0.1, 1);
+  // distance is eased in log space (a constant-feeling zoom); sine in-out holds the wide shot, dives, then lands softly
+  const sine = x => 0.5 - 0.5 * Math.cos(Math.PI * clamp01(x));
   function pose(t) {
     const x = (t - T.camIn) / (T.camEnd - T.camIn);
     if (x >= 1) return { d: F, th: 0, ps: 0, k: 1 };
-    const e = easeD(x), ep = easeP(clamp01((t - T.camIn - 140) / (T.camEnd - T.camIn - 140)));
+    const e = sine(x), ep = sine((t - T.camIn - 220) / (T.camEnd - T.camIn - 220));
     return { d: F * Math.pow(Z0, 1 - e), th: TH0 * (1 - ep), ps: PS0 * (1 - e), k: e };
   }
   const eul = new THREE.Euler(), quat = new THREE.Quaternion(), tmp = new THREE.Vector3();
@@ -263,6 +274,7 @@ export function createPushIn(o) {
     if (tmp.z > -1) return null;
     return [core.x + F * tmp.x / -tmp.z, core.y - F * tmp.y / -tmp.z];
   }
+  const TM = [['start', performance.now()]], tm = k => TM.push([k, performance.now()]);
   const cam0 = rig(pose(0)), camF = rig({ d: F, th: 0, ps: 0 });
 
   /* ---------- the lattice the agents live on (typed arrays; the field shader draws the honeycomb itself) ---------- */
@@ -305,41 +317,68 @@ export function createPushIn(o) {
   const walk = new Uint8Array(NV);
   for (let v = 0; v < NV; v++) walk[v] = vRing[v] >= 2 ? 1 : 0;
   // routes go around the copy as it sits in the final composition (world equals screen there)
-  const cost = new Uint8Array(NV);
-  for (let v = 0; v < NV; v++) cost[v] = copyAt(core.x + vX[v], core.y + vY[v]) < 0.6 ? 2 : 1;
+  const cost = new Uint8Array(NV), TRUNK_COST = 0.3;
+  for (let v = 0; v < NV; v++) {
+    const sx = core.x + vX[v], sy = core.y + vY[v];
+    if (sx < -40 || sx > W + 40 || sy < -40 || sy > Hc + 40) { cost[v] = 1; continue; }
+    const cd = copyDist(sx, sy);
+    cost[v] = cd < 3 ? 3 : cd < 26 ? 2 : 1;
+  }
 
   // shortest corridor distance to the cluster, from its outer corners (Dijkstra, binary heap on typed arrays)
-  const dist = new Float32Array(NV).fill(Infinity);
-  {
-    let hn = 0; const hv = new Int32Array(NV * 4), hd = new Float32Array(NV * 4);
+  const dist = new Float64Array(NV);
+  const hv = new Int32Array(NV * 4), hd = new Float64Array(NV * 4);
+  function dijkstra(vc) {
+    dist.fill(Infinity);
+    let hn = 0;
     const push = (d, v) => { let k = hn++; hv[k] = v; hd[k] = d; while (k) { const p = (k - 1) >> 1; if (hd[p] <= hd[k]) break; const tv = hv[p], td = hd[p]; hv[p] = hv[k]; hd[p] = hd[k]; hv[k] = tv; hd[k] = td; k = p; } };
     const pop = () => { const v = hv[0], d = hd[0]; hn--; hv[0] = hv[hn]; hd[0] = hd[hn]; let k = 0; for (;;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < hn && hd[l] < hd[m]) m = l; if (r < hn && hd[r] < hd[m]) m = r; if (m === k) break; const tv = hv[m], td = hd[m]; hv[m] = hv[k]; hd[m] = hd[k]; hv[k] = tv; hd[k] = td; k = m; } return [d, v]; };
     for (let v = 0; v < NV; v++) if (vRing[v] === 1) { dist[v] = 0; push(0, v); }
     while (hn && hn < hv.length - 4) {
       const [d, i] = pop(); if (d > dist[i]) continue;
-      for (let k = 0; k < 3; k++) { const j = vNb[i * 3 + k]; if (j < 0 || !walk[j]) continue; const nd = d + cost[i] + cost[j]; if (nd < dist[j]) { dist[j] = nd; push(nd, j); } }
+      for (let k = 0; k < 3; k++) { const j = vNb[i * 3 + k]; if (j < 0 || !walk[j]) continue; const nd = d + vc[i] + vc[j]; if (nd < dist[j]) { dist[j] = nd; push(nd, j); } }
     }
   }
-  // among equally short ways in, prefer the one nearest one of the six arteries leaving the cluster, so routes merge into trunks
+  // among equally short ways in, prefer the one nearest one of the six arteries leaving the cluster, so routes merge
   const art = [];
   for (let v = 0; v < NV; v++) if (vRing[v] === 1) {
     let n1 = 0; for (let k = 0; k < 3; k++) { const c = vCells[v * 3 + k]; if (c >= 0 && cellRing(c) === 1) n1++; }
     if (n1 === 2) art.push(Math.atan2(vY[v], vX[v]));
   }
   const artDev = (x, y) => { const a = Math.atan2(y, x); let m = 9; for (const b of art) { let d = Math.abs(a - b); if (d > Math.PI) d = 2 * Math.PI - d; if (d < m) m = d; } return m; };
-  const parent = new Int32Array(NV).fill(-1);
-  for (let i = 0; i < NV; i++) {
-    if (!walk[i] || dist[i] === Infinity) continue;
-    let best = -1, bs = 1e9;
-    for (let k = 0; k < 3; k++) {
-      const j = vNb[i * 3 + k]; if (j < 0 || dist[j] === Infinity) continue;
-      if (Math.abs(dist[j] + cost[i] + cost[j] - dist[i]) > 1e-3) continue;
-      const dj = Math.hypot(vX[j], vY[j]);
-      const s = artDev(vX[j], vY[j]) * (0.6 + 0.4 * Math.min(1, dj / (6 * P))) + dj * 1e-5;
-      if (s < bs) { bs = s; best = j; }
+  const parent = new Int32Array(NV);
+  function parents(vc) {
+    parent.fill(-1);
+    for (let i = 0; i < NV; i++) {
+      if (!walk[i] || dist[i] === Infinity) continue;
+      let best = -1, bs = 1e9;
+      for (let k = 0; k < 3; k++) {
+        const j = vNb[i * 3 + k]; if (j < 0 || dist[j] === Infinity) continue;
+        if (Math.abs(dist[j] + vc[i] + vc[j] - dist[i]) > 1e-6) continue;
+        const dj = Math.hypot(vX[j], vY[j]);
+        const s = artDev(vX[j], vY[j]) * (0.6 + 0.4 * Math.min(1, dj / (6 * P))) + dj * 1e-5;
+        if (s < bs) { bs = s; best = j; }
+      }
+      parent[i] = best;
     }
-    parent[i] = best;
   }
+  tm('lattice'); dijkstra(cost); parents(cost); tm('route1');
+  // trunks: trace the geodesic in from the far end of each artery and make those corridors cheap, then plan again,
+  // so routes leave their neighbourhood early to join one of six trunks (a river network running backwards)
+  const vc2 = new Float32Array(NV);
+  for (let v = 0; v < NV; v++) vc2[v] = cost[v];
+  const trunk = new Uint8Array(NV);
+  for (const a of art) {
+    let v = -1;
+    for (let rr = reach; rr > 6 * P && v < 0; rr -= P) {
+      const x = rr * Math.cos(a), y = rr * Math.sin(a);
+      const rf = y / HH, qf = x / P - rf / 2;
+      const c = cid(Math.round(qf), Math.round(rf)); if (c < 0) continue;
+      for (const w of [2 * c, 2 * c + 1]) if (walk[w] && dist[w] < Infinity) { v = w; break; }
+    }
+    for (let n = 0; v >= 0 && vRing[v] !== 1 && n < NV; n++) { trunk[v] = 1; vc2[v] = TRUNK_COST; v = parent[v]; }
+  }
+  dijkstra(vc2); parents(vc2); tm('route2');
   const hops = new Int32Array(NV).fill(-1);
   {
     const stack = new Int32Array(NV);
@@ -364,6 +403,7 @@ export function createPushIn(o) {
   const DIRS = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
   const dirOf = c => { for (let k = 0; k < 6; k++) if (cQ[c] === DIRS[k][0] && cR[c] === DIRS[k][1]) return k; return -1; };
 
+  tm('hops');
   /* ---------- GL ---------- */
   const dprGL = Math.min(DPR, phone ? 1.5 : 2);
   const canvas = document.createElement('canvas');
@@ -380,7 +420,7 @@ export function createPushIn(o) {
   const resDev = renderer.getDrawingBufferSize(new THREE.Vector2());
 
   // the reading mask: 1 in the open, faint behind the copy, 0 under the rail and at the bottom of the art
-  const MC = 4, MW = Math.ceil(W / MC) + 1, MH = Math.ceil(Hc / MC) + 1;
+  const MC = 8, MW = Math.ceil(W / MC) + 1, MH = Math.ceil(Hc / MC) + 1;
   const mdata = new Uint8Array(MW * MH * 4);
   const maskTex = new THREE.DataTexture(mdata, MW, MH, THREE.RGBAFormat, THREE.UnsignedByteType);
   maskTex.magFilter = maskTex.minFilter = THREE.LinearFilter; maskTex.generateMipmaps = false; maskTex.flipY = false;
@@ -389,15 +429,16 @@ export function createPushIn(o) {
     for (let j = 0; j < MH; j++) for (let i = 0; i < MW; i++) { const m = Math.round(255 * clamp01(fn(i * MC + MC / 2, j * MC + MC / 2))); const k = (j * MW + i) * 4; mdata[k] = mdata[k + 1] = mdata[k + 2] = m; mdata[k + 3] = 255; }
     maskTex.needsUpdate = true;
   }
-  fillMask(maskAt);
+  tm('renderer'); fillMask(maskAt); tm('mask');
 
   const U = {
     uT: { value: 0 }, uDpr: { value: dprGL }, uRes: { value: new THREE.Vector2(W, Hc) }, uResDev: { value: resDev.clone() },
-    uMask: { value: maskTex }, uMaskScale: { value: new THREE.Vector2(1 / (MW * MC), 1 / (MH * MC)) }
+    uMask: { value: maskTex }, uMaskScale: { value: new THREE.Vector2(1 / (MW * MC), 1 / (MH * MC)) },
+    uDc: { value: 1000 }, uNear: { value: 0.22 }, uFar: { value: 0.42 }
   };
   const mat = (vs, fs, extra, defines) => new THREE.ShaderMaterial({
     vertexShader: vs, fragmentShader: fs, uniforms: Object.assign({}, U, extra || {}), defines: defines || {},
-    transparent: true, depthTest: false, depthWrite: false, premultipliedAlpha: true, blending: THREE.NormalBlending,
+    transparent: true, depthTest: false, depthWrite: false, premultipliedAlpha: true, blending: THREE.NormalBlending, side: THREE.DoubleSide,
     extensions: { derivatives: true }
   });
   const scene = new THREE.Scene();
@@ -407,7 +448,7 @@ export function createPushIn(o) {
 
   // 1. field
   const FU = {
-    uP: { value: P }, uR: { value: R }, uMaxD: { value: maxD }, uHc: { value: Hc }, uR1: { value: 0 }, uCoreA: { value: 0 }, uWaveT: { value: -1e9 }, uBoot: { value: 0 },
+    uP: { value: P }, uR: { value: R }, uMaxD: { value: maxD }, uHc: { value: Hc }, uR1: { value: 0 }, uCoreA: { value: 0 }, uCoreW: { value: 1.5 }, uWaveT: { value: -1e9 }, uBoot: { value: 0 },
     uL0: { value: -1 }, uL1: { value: -1 }, uL2: { value: -1 }, uL3: { value: -1 }, uL4: { value: -1 }, uL5: { value: -1 },
     uCore: { value: new THREE.Vector2(core.x, core.y) }, uPV: { value: new THREE.Matrix4() }
   };
@@ -433,12 +474,12 @@ export function createPushIn(o) {
     return g;
   };
   const ECAP = phone ? 6144 : 16384;
-  const eAB = new Float32Array(ECAP * 4), eT = new Float32Array(ECAP * 2);
-  for (let i = 0; i < ECAP; i++) eT[i * 2] = -1e9;
-  const eABa = new THREE.InstancedBufferAttribute(eAB, 4), eTa = new THREE.InstancedBufferAttribute(eT, 2);
+  const eAB = new Float32Array(ECAP * 4), eT = new Float32Array(ECAP * 3);
+  for (let i = 0; i < ECAP; i++) { eT[i * 3] = -1e9; eT[i * 3 + 2] = 600; }
+  const eABa = new THREE.InstancedBufferAttribute(eAB, 4), eTa = new THREE.InstancedBufferAttribute(eT, 3);
   eABa.setUsage(THREE.DynamicDrawUsage); eTa.setUsage(THREE.DynamicDrawUsage);
   const edgeGeo = quad(); edgeGeo.setAttribute('eAB', eABa); edgeGeo.setAttribute('eT', eTa); edgeGeo.instanceCount = ECAP;
-  const LW = { uLw: { value: 1 } };
+  const LW = { uLw: { value: 1 }, uEdgeMul: { value: 1 } };
   addMesh(edgeGeo, mat(LINE_VS, LINE_FS, LW), 2);
 
   const N = phone ? 1000 : (tablet ? 1700 : 2600);
@@ -455,7 +496,7 @@ export function createPushIn(o) {
   agentGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(hexPos), 3));
   agentGeo.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 5, 6, 0, 6, 1]);
   agentGeo.setAttribute('aAB', aABa); agentGeo.setAttribute('aTD', aTDa); agentGeo.setAttribute('aF', aFa); agentGeo.instanceCount = N;
-  const AU = { uRw: { value: phone ? 2.4 : 3 }, uRmin: { value: phone ? 1.35 : 1.5 } };
+  const AU = { uRw: { value: phone ? 2.4 : 3 }, uRmin: { value: phone ? 1.5 : 1.75 } };
   addMesh(agentGeo, mat(AGENT_VS, AGENT_FS, AU), 4);
 
   /* ---------- the swarm ---------- */
@@ -463,7 +504,7 @@ export function createPushIn(o) {
   const DT = 1000 / 60;
   const hopD = () => 175 + rnd() * 85;
   const pick = arr => arr[(rnd() * arr.length) | 0];
-  const rMin = 3.2 * P, rMax = Math.max(reach, 6 * P);
+  const rMin = 3.2 * P, rMax = Math.max(reach, 6 * P), rNear = Math.min(rMax, 1.6 * maxD);
   const visStart = (x, y) => { const s = toScreen(cam0, x, y); return s && s[0] > -12 && s[0] < W + 12 && s[1] > -12 && s[1] < Hc + 12 ? s : null; };
   const inFinal = (x, y, m) => core.x + x > -m && core.x + x < W + m && core.y + y > -m && core.y + y < Hc + m;
 
@@ -475,10 +516,10 @@ export function createPushIn(o) {
     a.dirty = false; agentsDirty = true;
   }
   let agentsDirty = true;
-  function light(a, b, t, k) {
+  function light(a, b, t, k, fade) {
     const i = eHead; eHead = (eHead + 1) % ECAP; eWrites++;
     eAB[i * 4] = vX[a]; eAB[i * 4 + 1] = vY[a]; eAB[i * 4 + 2] = vX[b]; eAB[i * 4 + 3] = vY[b];
-    eT[i * 2] = t; eT[i * 2 + 1] = k;
+    eT[i * 3] = t; eT[i * 3 + 1] = k; eT[i * 3 + 2] = fade;
     if (i < eLo) eLo = i; if (i > eHi) eHi = i;
   }
   function ping(c, t) {
@@ -490,7 +531,7 @@ export function createPushIn(o) {
   function reset() {
     rnd = rng(23);
     simT = 0; resolved = false; eHead = 0; eWrites = ECAP + 1; eLo = 1e9; eHi = -1; pHead = 0; pDirty = true; live = []; flashT = -1e9; absorbed = 0;
-    for (let i = 0; i < ECAP; i++) eT[i * 2] = -1e9;
+    for (let i = 0; i < ECAP; i++) eT[i * 3] = -1e9;
     pingArr.fill(-1e9);
     cellPing = new Float32Array(NC).fill(-1e9);
     lit = new Float32Array(6).fill(-1e9);
@@ -499,9 +540,12 @@ export function createPushIn(o) {
     for (let n = 0; n < N; n++) {
       let v = -1, sx = 0;
       for (let tries = 0; tries < 50 && v < 0; tries++) {
-        // log-uniform in distance from the core: the same number of agents per screen at every altitude
-        const rr = rMin * Math.pow(rMax / rMin, rnd()), an = rnd() * 2 * Math.PI;
-        const x = rr * Math.cos(an), y = rr * Math.sin(an);
+        // most are spread evenly over the ground the opening shot sees (so the far field thickens with perspective,
+        // like city lights toward the horizon); the rest are log-uniform around the core (the dense centre the
+        // camera dives into, and the few hundred agents that are still on screen when it lands)
+        let x, y, rr;
+        if (n % 10 < 7) { x = x0 + rnd() * (x1 - x0); y = y0 + rnd() * (y1 - y0); rr = Math.hypot(x, y); if (rr < rMin) continue; }
+        else { rr = rMin * Math.pow(rNear / rMin, rnd()); const an = rnd() * 2 * Math.PI; x = rr * Math.cos(an); y = rr * Math.sin(an); }
         const s0 = visStart(x, y), fin = inFinal(x, y, 0);
         if (!s0 && !fin) continue;
         // thinner behind the copy, at the start and in the final composition
@@ -537,7 +581,7 @@ export function createPushIn(o) {
     if (a.fadeT >= 0 && at >= a.fadeT) return;    // fading out where it stands
     if (a.mode === 0) {
       // sense one of the three cells that meet at this corner
-      if (!resolved && rnd() < (at < 900 ? 0.5 : 0.34)) {
+      if (!resolved && at < T.resolve - 450 && rnd() < (at < 900 ? 0.5 : (at < T.commit1 ? 0.34 : 0.14))) {
         while (live.length && at - live[0] > 800) live.shift();
         if (live.length < (phone ? 40 : 110)) {
           const cs = [];
@@ -547,7 +591,7 @@ export function createPushIn(o) {
       }
       if (a.kind === 1 && !resolved && at >= a.ct && hops[v] > 0 && hops[v] < 99999) {
         a.mode = 1;
-        a.hd = Math.min(190, Math.max(phone ? 50 : 44, Math.max(160, T.arrive + a.jit - at) / hops[v]));
+        a.hd = Math.min(190, Math.max(phone ? 66 : 60, Math.max(160, T.arrive + a.jit - at) / hops[v]));
         return policy(a, at);
       }
       if (resolved) return;
@@ -583,7 +627,8 @@ export function createPushIn(o) {
       let guard = 0, ch = false;
       while (a.to >= 0 && t >= a.t0 + a.d && guard++ < 8) {
         const at = a.t0 + a.d;
-        light(a.from, a.to, at, a.kind);
+        // an edge stays lit for about two and a half hops, so a fast route never reads as a tail
+        light(a.from, a.to, at, a.kind, a.mode === 0 ? 600 : Math.min(600, Math.max(170, 2.6 * a.d)));
         a.prev = a.from; a.from = a.to; a.to = -1;
         policy(a, at); ch = true;
         if (a.dead) break;
@@ -626,14 +671,18 @@ export function createPushIn(o) {
     for (let k = 0; k < 6; k++) FU['uL' + k].value = lit[k] < -1e8 || t < lit[k] ? -1 : sm(lit[k], lit[k] + 220, t) * (1 - handE);
     const charge = sm(T.commit1, T.resolve, t);
     const flash = Math.max(0, 1 - (t - flashT) / 220);
-    FU.uCoreA.value = Math.min(1, sm(0, 260, t) * (0.34 + 0.56 * charge) + 0.25 * flash) * (1 - handE);
+    // seen from high up the core is a few pixels across, so it burns brighter and its outline is heavier: one signal
+    FU.uCoreA.value = Math.min(1, sm(0, 260, t) * (0.34 + 0.56 * charge + 0.42 * (1 - p.k)) + 0.25 * flash) * (1 - handE);
+    FU.uCoreW.value = 1.5 + 0.9 * (1 - p.k);
     FU.uWaveT.value = resolved ? T.resolve : -1e9;
     FU.uBoot.value = t;
     LW.uLw.value = 1 + ((phone ? 1.25 : 1.5) - 1) * p.k;
+    LW.uEdgeMul.value = 0.6 + 0.4 * p.k;
+    U.uDc.value = p.d;
     if (agentsDirty) { aABa.needsUpdate = aTDa.needsUpdate = aFa.needsUpdate = true; agentsDirty = false; }
     if (eWrites > 0) {
       if (eWrites >= ECAP || eHi < eLo) { eABa.needsUpdate = eTa.needsUpdate = true; }
-      else { eABa.addUpdateRange(eLo * 4, (eHi - eLo + 1) * 4); eTa.addUpdateRange(eLo * 2, (eHi - eLo + 1) * 2); eABa.needsUpdate = eTa.needsUpdate = true; }
+      else { eABa.addUpdateRange(eLo * 4, (eHi - eLo + 1) * 4); eTa.addUpdateRange(eLo * 3, (eHi - eLo + 1) * 3); eABa.needsUpdate = eTa.needsUpdate = true; }
       eWrites = 0; eLo = 1e9; eHi = -1;
     }
     if (pDirty) { pingAttr.needsUpdate = true; pDirty = false; }
@@ -644,12 +693,12 @@ export function createPushIn(o) {
   let lost = false;
   canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); lost = true; if (o.onLost) o.onLost(); }, { once: true });
 
-  reset();
+  tm('meshes'); reset(); tm('reset');
   return {
     canvas, render,
     setMask() { fillMask(maskAt); },
     get lost() { return lost; },
-    info: () => ({ cells: NC, vertices: NV, agents: agents.length, edgeCap: ECAP, dprGL, reach: Math.round(reach), Z0, extent: [Math.round(x0), Math.round(y0), Math.round(x1), Math.round(y1)] }),
+    info: () => ({ setup: TM.slice(1).map((x, i) => x[0] + ' ' + Math.round(x[1] - TM[i][1])).join(', '), cells: NC, vertices: NV, agents: agents.length, edgeCap: ECAP, dprGL, reach: Math.round(reach), Z0, extent: [Math.round(x0), Math.round(y0), Math.round(x1), Math.round(y1)] }),
     dispose() {
       for (const m of meshes) { m.geometry.dispose(); m.material.dispose(); }
       maskTex.dispose();

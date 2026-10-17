@@ -2,7 +2,8 @@
    Every agent on the page is a small pointy-top hexagonal node that lives ON the honeycomb: it hops from corner to
    corner along the channels between cells (the corridor lattice), one edge per hop with a short ease, and the edge it
    crosses lights for about 600ms. No tails, no trails, no curved paths, no glow. Cells it senses brighten briefly.
-   Used by hero.js (hero convergence) and page.js (why-now band, pricing core, final field). No text on canvas.
+   Used by hero.js (hero convergence), crowd.js (the glyph only) and page.js (why-now band, pricing core, final field,
+   tools still). drawGlyphs draws the page's one agent glyph: a hex outline with a head node. No text on canvas.
    drawEdges / drawAgents take optional edgeMul(edge, t) and agentMul(agent, t) multipliers (the hero dims its
    scouts once the chosen agents set off). */
 (() => {
@@ -148,8 +149,49 @@
     }
     g.globalAlpha = 1; g.lineCap = 'butt';
   }
+  /* The page's agent glyph: a small pointy-top hexagon outline with a solid head node at its centre (an agent, not a
+     dot). list items are { x, y, a, k } (k 0 = scout, muted; k 1 = committed, bright). The inside is cleared to the
+     ground so channel lines never run through a glyph. */
+  function drawGlyphs(g, list, o) {
+    const { r = 6, lw = 1.2, head = null, ground = '#0B0B0D' } = o || {};
+    const hr = head || Math.max(1.25, r * 0.3);
+    const groups = [new Map(), new Map()];
+    for (const p of list) {
+      const b = Math.round(Math.min(1, p.a) * BUCKETS); if (b <= 0) continue;
+      const m = groups[p.k ? 1 : 0]; let arr = m.get(b); if (!arr) m.set(b, arr = []); arr.push(p);
+    }
+    const colr = [COL.muted, COL.text];
+    g.lineWidth = lw; g.lineJoin = 'round';
+    for (let k = 0; k < 2; k++) {
+      for (const [b, arr] of groups[k]) {
+        const al = Math.min(1, b / BUCKETS);
+        g.globalAlpha = Math.min(1, al * 1.4); g.fillStyle = ground; g.beginPath();
+        for (const p of arr) hexPath(g, p.x, p.y, (p.r || r) + lw * 0.5);
+        g.fill();
+        g.globalAlpha = al; g.strokeStyle = colr[k]; g.beginPath();
+        for (const p of arr) hexPath(g, p.x, p.y, p.r || r);
+        g.stroke();
+        g.fillStyle = colr[k]; g.beginPath();
+        for (const p of arr) hexPath(g, p.x, p.y, p.r ? p.r * (hr / r) : hr);
+        g.fill();
+      }
+    }
+    g.globalAlpha = 1; g.lineJoin = 'miter';
+  }
   function drawAgents(g, S, t, o) {
-    const { alphaAt = null, r = 2.8, base = [0.9, 1], agentMul = null } = o || {}; const proj = (o && o.proj) || ID;
+    const { alphaAt = null, r = 2.8, base = [0.9, 1], agentMul = null, glyph = false } = o || {}; const proj = (o && o.proj) || ID;
+    if (glyph) {
+      const list = [];
+      for (const a of S.agents) {
+        const v = S.vis(a, t); if (v <= 0) continue;
+        let al = base[a.kind] * v;
+        if (agentMul) al *= agentMul(a, t);
+        if (alphaAt && al > 0) al *= alphaAt(a.x, a.y);
+        if (al > 0.02) { const p = proj(a.x, a.y); list.push({ x: p[0], y: p[1], a: al, k: a.kind }); }
+      }
+      drawGlyphs(g, list, { r, lw: o.lw || 1.2 });
+      return;
+    }
     const groups = [new Map(), new Map()];
     for (const a of S.agents) {
       const v = S.vis(a, t); if (v <= 0) continue;
@@ -185,5 +227,5 @@
     g.globalAlpha = 1;
   }
 
-  window.SwarmLattice = { SQ3, COL, clamp01, sm, inOut, outCubic, rng, hexPath, hexPathP, lattice, sim, ekey, drawEdges, drawAgents, drawField };
+  window.SwarmLattice = { SQ3, COL, clamp01, sm, inOut, outCubic, rng, hexPath, hexPathP, lattice, sim, ekey, drawEdges, drawAgents, drawGlyphs, drawField };
 })();
