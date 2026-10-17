@@ -1,0 +1,23 @@
+.swarm {
+  --swarm-ground: #0B0B0D;         
+  --swarm-surface: #111114;        
+  --swarm-surface-raised: #16161A; 
+  --swarm-line: #232328;           
+  --swarm-hive-faint: #1C1C21;     
+  --swarm-hive: #55555B;           
+  --swarm-text: #EEEBE4;           
+  --swarm-text-muted: #8E8A80;     
+  --swarm-gold: #F5C542;           
+  --swarm-gold-light: #FFF7CF;     
+  --swarm-gold-deep: #D99A1E;      
+  --swarm-on-gold: #141416;        
+  --swarm-font-display: "Unbounded", system-ui, sans-serif;
+  --swarm-font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --swarm-font-body: "Hanken Grotesk", system-ui, sans-serif;
+  --swarm-space-1: 4px;  --swarm-space-2: 8px;  --swarm-space-3: 16px;
+  --swarm-space-4: 24px; --swarm-space-5: 40px; --swarm-space-6: 56px;
+  --swarm-radius-sm: 10px; --swarm-radius-md: 18px; --swarm-radius-lg: 28px; --swarm-radius-full: 9999px;
+  background: var(--swarm-ground);
+  color: var(--swarm-text);
+  font-family: var(--swarm-font-body);
+}

@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Standalone browser app migrated from ClassyCrypto; syntax-checked with node --check.
     "public/tier-list-assets/**",
+    // Standalone Swarm page and the design lab it is built from (scripts/build-swarm-site.mjs);
+    // browser scripts, syntax-checked with node --check.
+    "public/swarm-site/**",
+    "design-lab/**",
   ]),
 ]);
 
