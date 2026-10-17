@@ -1,8 +1,8 @@
 /* Swarm A, Core Glow: the hero (Canvas 2D, two canvases, official swarm-mark.svg on the core cell).
    The honeycomb and the unlit Hive Core are drawn at first paint, and the swarm starts at once (it does not wait for
    the fonts). Every agent is the page's agent glyph: a hex outline with a head node.
-     0 to 0.6s   72 agents (28 on phones) spread over the whole first screen, outside the copy: the top band, the
-                 outer columns, the gaps beside the cards. Each drifts one channel of the honeycomb, dim.
+     0 to 0.6s   about 70 agents (about 20 on phones) spread over the whole first screen, outside the copy: the top
+                 band, the outer columns, the gaps beside the cards. Each drifts one channel of the honeycomb, dim.
      0.15 to 0.9s each one senses: a hex ring opens around it (0 to 20px, muted, 420ms), it holds 120ms, then its head
                  lights: decided.
      ~0.8 to 1.5s twelve routes light along the honeycomb (six on phones), one into each side of each neighbour cell,
@@ -177,7 +177,7 @@
     const usedV = new Map(), starts = new Set();
     const cost = j => (usedV.get(j) || 0) * 30;
     streams = [];
-    const gateLoad = new Map();
+    const gateLoad = new Map(), GP = 0.6;
     for (const dir of dirs) {
       // the farthest open vertex inside a narrow cone around this direction
       let best = -1, bd = 0;
@@ -191,7 +191,7 @@
       if (best < 0) continue;
       starts.add(best);
       // the closest usable gate by angle (at most two routes share a gate)
-      const cand = gates.filter(g => g.ok && (gateLoad.get(g) || 0) < 2).sort((a, b) => (angDiff(a.a, dir) + 0.6 * (gateLoad.get(a) || 0)) - (angDiff(b.a, dir) + 0.6 * (gateLoad.get(b) || 0)));
+      const cand = gates.filter(g => g.ok && (gateLoad.get(g) || 0) < 2).sort((a, b) => (angDiff(a.a, dir) + GP * (gateLoad.get(a) || 0)) - (angDiff(b.a, dir) + GP * (gateLoad.get(b) || 0)));
       let path = null, gate = null;
       for (const gt of cand.slice(0, 4)) { path = route(best, new Set([gt.O]), cost); if (path) { gate = gt; break; } }
       if (!path || path.length < 3) continue;
@@ -230,7 +230,7 @@
     }
     streams.forEach((st, si) => {
       const n = st.path.length - 2;                                     // vertices up to the gate
-      const want = n > 18 ? perLong : per;
+      const want = phone ? (n > 18 ? perLong : per) : Math.min(perLong, Math.max(per - 1, Math.round(n / 2.6)));
       const gap = Math.max(1, Math.min(3, Math.floor((n - 1) / want)));
       const idx = [];
       for (let ix = 0; ix <= n - 1 && idx.length < want; ix++) {
@@ -249,7 +249,7 @@
       });
       timeStream(st);
     });
-    const nFade = phone ? 9 : 22;
+    const nFade = phone ? 9 : 30;
     const free = V.map((v, i) => i).filter(i => walk[i] && !onRoute.has(i) && !taken.has(i));
     const pickFree = (near) => {
       let best = -1, bs = -1e9;
@@ -270,37 +270,52 @@
       agents.push({ kind: 'fade', q, home, born: rnd() * 140, d0: 80 + rnd() * 200, sense: s0, out: s0 + T.ring + T.hold + 200 + rnd() * 500 });
     }
     // never let two agents touch: where two would come closer than 1.25 glyph widths (outside the core's own cells,
-    // where they merge into the core), a later train waits a beat, or the less important agent is left out
+    // where they merge into the core), a later train waits a beat while that still lands before ignition; whatever
+    // still clashes is settled one agent at a time (trains first, front to back), so a clash costs one agent, never
+    // a whole train
     const prio = a => a.kind === 'train' ? 2 : 1;
     const AMAX = 2360 * kT;
     const cellSz = 2.5 * gR;
+    const visAt = (a, t, o) => { agentAt(a, t, o); return o.a > 0.25 && Math.hypot(o.x - core.x, o.y - core.y) > 1.75 * P; };
     for (let pass = 0; pass < 16; pass++) {
-      const drop = new Set(), shift = new Set(), o = {};
+      const shift = new Set(), o = {};
       for (let t = 0; t <= T.end; t += 40) {
         const grid = new Map();
         for (const a of agents) {
-          if (drop.has(a)) continue; agentAt(a, t, o);
-          if (o.a <= 0.25 || Math.hypot(o.x - core.x, o.y - core.y) <= 1.75 * P) continue;
+          if (a.kind !== 'train' || !visAt(a, t, o)) continue;
           const gx = Math.floor(o.x / cellSz), gy = Math.floor(o.y / cellSz);
           for (let ix = gx - 1; ix <= gx + 1; ix++) for (let iy = gy - 1; iy <= gy + 1; iy++) {
             const cell = grid.get(ix * 4096 + iy); if (!cell) continue;
             for (const [x, y, B] of cell) {
-              if (Math.hypot(o.x - x, o.y - y) >= cellSz) continue;
-              if (a.kind === 'train' && B.kind === 'train' && a.st !== B.st) {
-                const late = a.st.A >= B.st.A ? a.st : B.st;
-                if (late.A + 130 * kT <= AMAX) { shift.add(late); continue; }
-              }
-              drop.add(prio(a) < prio(B) ? a : (prio(B) < prio(a) ? B : (a.p > B.p ? a : B)));
+              if (B.st === a.st || Math.hypot(o.x - x, o.y - y) >= cellSz) continue;
+              const late = a.st.A >= B.st.A ? a.st : B.st;
+              if (late.A + 130 * kT <= AMAX) shift.add(late);
             }
           }
           const k = gx * 4096 + gy; let cell = grid.get(k); if (!cell) grid.set(k, cell = []); cell.push([o.x, o.y, a]);
         }
       }
-      if (!drop.size && !shift.size) break;
-      // shifts first (a later train may clear the clash on its own); drops only when nothing moved
-      if (shift.size) { for (const st of shift) st.A += 130 * kT; }
-      else agents = agents.filter(a => !drop.has(a));
+      if (!shift.size) break;
+      for (const st of shift) st.A += 130 * kT;
       for (const st of streams) timeStream(st);
+    }
+    {
+      const steps = Math.floor(T.end / 20) + 1, o = {};
+      const track = a => { const xs = new Float32Array(steps * 2).fill(NaN); for (let s2 = 0; s2 < steps; s2++) if (visAt(a, s2 * 20, o)) { xs[2 * s2] = o.x; xs[2 * s2 + 1] = o.y; } return xs; };
+      const order = agents.slice().sort((x, y) => (prio(y) - prio(x)) || (x.kind === 'train' ? (streams.indexOf(x.st) - streams.indexOf(y.st)) || (y.p - x.p) : 0));
+      const kept = [], tracks = [];
+      for (const a of order) {
+        const tr = track(a); let ok = true;
+        for (const tb of tracks) {
+          for (let s2 = 0; s2 < steps; s2++) {
+            const x = tr[2 * s2]; if (x !== x) continue; const xb = tb[2 * s2]; if (xb !== xb) continue;
+            if (Math.abs(x - xb) < cellSz && Math.hypot(x - xb, tr[2 * s2 + 1] - tb[2 * s2 + 1]) < cellSz) { ok = false; break; }
+          }
+          if (!ok) break;
+        }
+        if (ok) { kept.push(a); tracks.push(tr); }
+      }
+      agents = agents.filter(a => kept.includes(a));
     }
     streams = streams.filter(st => agents.some(a => a.st === st));
     for (const st of streams) {
@@ -390,7 +405,7 @@
         const e = t - (T.ignite + 40 + c.ring * 18);
         if (e < 0) return 0;
         const env = e < 80 ? e / 80 : Math.max(0, 1 - (e - 80) / 300);
-        return inRect(c.x, c.y, 0) ? 0 : env * 0.42 * Math.max(0.2, 1 - c.ring / 22);
+        return inRect(c.x, c.y, 0) ? 0 : env * 0.6 * Math.max(0.2, 1 - c.ring / 22);
       }, { color: COL.hive });
     }
     // the routes: drawn in as the trains decide, bright while the train runs, then a quiet trace on the honeycomb

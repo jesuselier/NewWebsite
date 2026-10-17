@@ -179,7 +179,7 @@
   const restH = [30, 46, 62, 40, 74, 58, 36, 66, 82, 52, 38, 60, 44, 70, 50, 34, 56, 40, 64, 48, 32, 54];
   const restBars = () => bars.forEach((b, i) => b.style.height = restH[i % restH.length] + '%');
   const CS_LABEL = { REVIEWED: 'Reviewed', LIVE: 'Live', 'UP NEXT': 'Up next', 'IN QUEUE': 'In queue' };
-  const CS0 = ['LIVE', 'UP NEXT', 'IN QUEUE', 'IN QUEUE'], CS1 = ['REVIEWED', 'LIVE', 'UP NEXT', 'IN QUEUE'];
+  const CS0 = ['LIVE', 'UP NEXT', 'IN QUEUE', 'IN QUEUE', 'IN QUEUE'], CS1 = ['REVIEWED', 'LIVE', 'UP NEXT', 'IN QUEUE', 'IN QUEUE'];
   function csSet(st) {
     csRows.forEach((r, i) => { r.dataset.st = st[i]; r.querySelector('.cs-st').textContent = CS_LABEL[st[i]]; });
     const live = csRows[st.indexOf('LIVE')];
@@ -405,6 +405,7 @@
     const labA = box.querySelector('.attn-l.a1'), labB = box.querySelector('.attn-l.a2'), arrow = box.querySelector('.attn-arrow');
     const SQ3 = SL.SQ3, T = { go: 450, spread: 90, travel: 1900, end: 3100 };
     const easeS = x => { x = SL.clamp01(x); return 0.5 - 0.5 * Math.cos(Math.PI * x); };      // one gentle ease in and out
+    const dxP = (A, B, P) => (B.x - A.x) / P;
     const CS6 = [], SN6 = [];
     for (let k = 0; k < 6; k++) { const an = Math.PI / 180 * (60 * k - 90); CS6.push(Math.cos(an)); SN6.push(Math.sin(an)); }
     function cluster(cx, cy, R, rings) {
@@ -439,9 +440,12 @@
         const xs = CA.V.map(v => v.x), xmin = Math.min(...xs), xmax = Math.max(...xs);
         const dep = CA.V.map(v => T.go + (1 - (v.x - xmin) / Math.max(1, xmax - xmin)) * T.spread);
         const land = T.go + T.spread + T.travel;
-        // the trail: seven corners on the middle row, evenly spaced between the clusters
-        const trail = [], tx0 = A.x + 3 * P, tx1 = B.x - 3 * P;
-        for (let i = 0; i < 7; i++) { const m = Math.round((tx0 + (tx1 - tx0) * i / 6 - A.x) / P - 0.5); trail.push({ x: A.x + (m + 0.5) * P, y: A.y - Rc / 2 }); }
+        // the trail: six to eight distinct corners on the middle row, evenly spaced between the two clusters
+        const trail = [], mEnd = Math.round(dxP(A, B, P)) - 4;
+        let ms = null;
+        for (const n of [7, 6, 8, 9, 5]) { for (const s0 of [3, 4]) if (!ms && (mEnd - s0) % (n - 1) === 0 && mEnd - s0 >= n - 1) ms = Array.from({ length: n }, (_, i) => s0 + i * (mEnd - s0) / (n - 1)); }
+        if (!ms) ms = [...new Set(Array.from({ length: 7 }, (_, i) => Math.round(3 + i * (mEnd - 3) / 6)))];
+        for (const m of ms) trail.push({ x: A.x + (m + 0.5) * P, y: A.y - Rc / 2 });
         // the quiet field, fading out well before every edge of the frame; the two clusters draw themselves
         const near = (c, o) => Math.hypot(c.x - o.x, c.y - o.y) < 2.6 * P;
         const top = phone ? 46 : 64;
@@ -496,7 +500,7 @@
         // the trail: once the back of the cluster has passed a corner, a dim agent stays on it
         const back = Math.min(...pos.map(p => p[0]));
         const list = [];
-        for (const p of trail) { const a = 0.55 * SL.sm(p.x, p.x + P, back); if (a > 0.01) list.push({ x: p.x, y: p.y, a, k: 0 }); }
+        for (const p of trail) { const a = 0.9 * SL.sm(p.x, p.x + P, back); if (a > 0.01) list.push({ x: p.x, y: p.y, a, k: 0 }); }
         for (const p of pos) list.push({ x: p[0], y: p[1], a: 1, k: 1 });
         SL.drawGlyphs(g, list, { r: phone ? 2.7 : 4.3, lw: phone ? 0.9 : 1.1, head: phone ? 1.05 : 1.5 });
       }
@@ -569,7 +573,9 @@
     const art = $('.join-art'), cv = $('#join-field'), mk = $('#join-mark'); if (!art || !cv || !SL) return;
     converge({ cv, mark: mk, seed: 13, end: 2600, ignite: 1900, arrive: 1650, n: [34, 22],
       height: W => W <= 640 ? 230 : 240,
-      core: (W, H, phone) => ({ x: W / 2, y: phone ? 115 : 120, R: (phone ? 112 : 128) / 7.5, maxD: phone ? 200 : 280 }) });
+      core: (W, H, phone) => ({ x: W / 2, y: phone ? 115 : 120, R: (phone ? 112 : 128) / 7.5, maxD: phone ? 200 : 280 }),
+      edge: (x, y, W, H) => SL.sm(0, 40, y) * (1 - SL.sm(H - 110, H - 46, y)),
+      boxes: () => [[-9999, 176, 9999, 9999]] });                        // the pill's band stays clear
   })();
 
   /* final CTA: the lit core returns above the last headline, as in the hero, with its warm light */

@@ -266,8 +266,8 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 @media (min-width: 1240px) {
   .hero {
     --vs: clamp(-140px, calc(100svh - 900px), 300px);
-    --R: clamp(31px, calc(38px + var(--vs) * .045), 44px);
-    --core-y: calc(80px + 2.69 * var(--R) + max(0px, var(--vs) * .22));
+    --R: clamp(31px, calc(40px + min(0px, var(--vs)) * .07 + max(0px, var(--vs)) * .045), 46px);
+    --core-y: calc(72px + 2.69 * var(--R) + max(0px, var(--vs) * .22));
   }
   .hero h1 { margin-top: calc(24px + var(--vs) * .05); }
   .hero-sub { margin-top: calc(20px + var(--vs) * .04); }
@@ -617,6 +617,7 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 .pricing { padding-top: 0; }
 .join-art { position: relative; height: 240px; margin-bottom: -36px; pointer-events: none; }
 .join-art canvas { position: absolute; left: 0; top: 0; display: block; }
+.pricing > .wrap { position: relative; z-index: 1; }                       /* the pill and copy sit above the field canvas */
 #join-mark { position: absolute; left: 50%; top: 120px; width: 128px; height: 128px; margin: -64px 0 0 -64px; transform-origin: 50% 50%; }
 html.js #join-mark { opacity: 0; }
 html.js #join-mark.lit, html.reduce #join-mark, html.frozen #join-mark { opacity: 1; }
@@ -645,8 +646,8 @@ html.js #join-mark.lit, html.reduce #join-mark, html.frozen #join-mark { opacity
 .amt { font: 500 84px/1 var(--swarm-font-mono); letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--swarm-text); }
 .pcard.is-gold .amt { color: var(--swarm-gold); }
 .unit { font: 500 20px/1 var(--swarm-font-mono); color: var(--swarm-text-muted); }
-.pc-note { margin-top: 14px; font-size: 16px; color: var(--swarm-text); }
-.pc-sub { margin-top: 6px; font-size: 14.5px; line-height: 1.5; color: var(--swarm-text-muted); }
+.pc-note { margin-top: 14px; font-size: 16px; color: var(--swarm-text); text-wrap: balance; }
+.pc-sub { margin-top: 6px; font-size: 14.5px; line-height: 1.5; color: var(--swarm-text-muted); text-wrap: balance; }
 .pc-sub:empty { display: none; }
 .pc-hr { border: 0; border-top: 1px solid var(--swarm-line); margin: 22px 0 18px; }
 .pc-label { font: 500 10.5px/1.3 var(--swarm-font-mono); letter-spacing: .28em; text-transform: uppercase; color: var(--swarm-text-muted); }
@@ -728,7 +729,7 @@ html.reduce #final-mark, html.frozen #final-mark { opacity: 1; }
   .nav-logo img { width: 118px; }
   .btn-line { height: 44px; padding: 0 16px; font-size: 14px; }
 
-  .hero { --R: 25px; --core-y: calc(68px + 2.69 * var(--R)); min-height: 0; padding-top: calc(var(--core-y) + 2.69 * var(--R) + 14px); padding-bottom: 32px; }
+  .hero { --R: 26px; --core-y: calc(68px + 2.69 * var(--R)); min-height: 0; padding-top: calc(var(--core-y) + 2.69 * var(--R) + 14px); padding-bottom: 32px; }
   .facts { gap: 6px; max-width: 380px; }
   .facts li { font-size: 10px; letter-spacing: .1em; padding: 8px 9px 8px 8px; gap: 7px; }
   .facts .f-wide { display: none; }
@@ -823,6 +824,7 @@ html.reduce #final-mark, html.frozen #final-mark { opacity: 1; }
   .call-grid { gap: 6px; }
   .tile { border-radius: 10px; }
   .t-tag { left: 4px; bottom: 4px; font-size: 9.5px; padding: 3px 4px; letter-spacing: .06em; }
+  .t-host .mic { display: none; }
   .call-share { padding: 10px 10px; }
   .cs-row { grid-template-columns: 18px minmax(0, 1fr) auto; gap: 6px; height: 38px; padding: 0 2px; }
   .cs-row .tok { width: 16px; height: 18px; }
