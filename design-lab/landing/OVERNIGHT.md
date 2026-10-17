@@ -1,3 +1,7 @@
+# LIVE (October 17, 11:18 UTC)
+
+Jesus said to merge it live. https://www.joinswarm.ai serves the Swarm page (pull request #1, squash-merged to `main`), with the internal notes hidden on the live site. Every route on both domains was checked in production. What is still open is in `LAUNCH-CHECKLIST.md`.
+
 # Morning summary (October 17, 09:09 UTC)
 
 **Review it here:** https://claude.ai/artifact/HMMSbU5c4MjW4SibaJoQAJ (version 4). Open the full page on your phone and scroll it.
