@@ -2,65 +2,72 @@
 
 Picked by Jesus on October 16, 2026 ("Core glow definitely"), with one note: the agents' head-and-tapering-tail look read as sperm and did not make sense. Every agent on the page now uses one glyph: a small pointy-top hexagon outline with a solid head node at its centre (an agent, not a dot), living on the honeycomb's own channels. No tails, trails or curved paths anywhere. The only glows are the core's own light (hero, pricing, final CTA) and the revolving light on the gold Join Swarm buttons that Jesus asked for (kept crisp: no blur, no halo).
 
-**The idea.** The joinasymmetric.xyz flow (fact chips, a two-line two-tone headline, tilted floating cards, pill eyebrows, a product-mock grid, one centered pricing card) rebuilt inside the Swarm kit, with the Hive Core as the hero's light from above. The honeycomb and the unlit core are there from the first frame; the swarm spreads over the whole first screen, senses, decides, and comes in as trains along twelve routes, one into each side of each neighbour cell; each neighbour lights as its first train lands, and the official mark ignites on the core as its warm light opens under the honeycomb. The page closes by echoing it: the lit core returns above the final headline.
+**The idea.** The joinasymmetric.xyz flow (fact chips, a short two-tone headline framed by two floating cards, pill eyebrows, a product-mock grid, one compact centered pricing card) rebuilt inside the Swarm kit, with the Hive Core as the hero's light from above. The honeycomb, the ghost of the core and about 40 agents are on screen from the first frame (at 40%, full by 0.4s); each agent decides on its own (its own pace, a sensing ring at every corner, some checking a branch and flashing the one they reject) and, once it commits, turns bright and moves 1.6 times faster. They gather in queues behind the twelve gates around the hive, so it is visibly crowded at 1.5s; the gates open clockwise from 1.56s, the official mark lands at about 2.1s (crossfade 250ms, 0.92 to 1.0 over 450ms) with one hexagonal ripple out to an 1100px radius, and a single signal runs from the core behind Scout 03 into the Join Swarm button by 2.9s. Every route then fades, so the rest frame is only the lit core, its light and the honeycomb. The page closes by echoing it: the lit core returns above the final headline.
 
 ## Files
 
 - `index.html`: the page (CSP meta, kit tokens, `.swarm` on body, Swarm icons and og:image). The kit fonts load from Google Fonts in two requests (Unbounded with `display=block`, Hanken Grotesk and JetBrains Mono with `display=swap`), with their latin woff2 files preloaded. Each gold button carries its ring as inline SVG (`.ring`).
 - `core-glow.css`: all styles, including an `Unbounded Fallback` face (Arial with size-adjust 130%, measured) so a late font never re-wraps the headings.
 - `lattice.js`: the shared honeycomb lattice (cells at pitch 1.95R, copied from the mark) and the agent engine: corridor-lattice graph, hop scheduling, lit edges, optional per-edge and per-agent alpha multipliers, and `drawGlyphs`, the page's one agent glyph (hex outline plus head node). Used by every animated piece.
-- `hero.js`: the hero (a static field canvas drawn at first paint, the agent canvas, the core's warm light as one CSS radial layer under the field, and the official `swarm-mark.svg` on the core cell). Positions are a pure function of time: the plan (routes, trains, scouts) is computed from the layout one frame after first paint. Drives the Scout 03 card (Scanning, Analyzing, Reporting). Test hooks: `window.__heroPlan` (counts), `window.__heroGap()` (closest two agents over the pass), `window.__heroBench(n)`, and `window.__heroSeek(ms)` under `?t=`.
+- `hero.js`: the hero (a static field canvas drawn at first paint, the agent canvas, the core's warm light as one CSS radial layer under the field, and the official `swarm-mark.svg` on the core cell). Positions are a pure function of time: the plan (a breadth-first forest of routes from the twelve gates, each agent's start, pace, junction check and yield waits, and the handoff pulse's route to the hero button) is computed from the layout one frame after first paint. Drives the Scout 03 card (Scanning, Analyzing, Reporting, with three progress bars) and publishes `window.SWARM.heroSignal` (when and where on the ring the pulse lands) with a `swarm:hero-signal` event. Test hooks: `window.__heroPlan` (counts, paces, last arrival, dropped plans), `window.__heroGap()` (closest two agents over the pass), `window.__heroAt(ms)` (visible agents and how many are below the headline), `window.__heroClash` (the safety net's rejections; empty when the plan is clean), `window.__heroForest()` (routes and starts, for overlays), `window.__heroBench(n)`, `window.__heroInfo()` (handoff timing and route), `window.__heroSigDbg()` (the planner's free corners), and `window.__heroSeek(ms)` under `?t=`. Round 7 adds `window.__heroNear(t, r)` (visible agents within r px of the core at time t), `window.__heroSigPlan` (the planner's contact and settled counts) and the `swarm:hero-land` event (fired on the hero clock when the pulse lands, or the ripple reaches the button).
 - `crowd.js`: "The crowd" curve: one agent glyph per honeycomb cell under the curve, groups moving as rigid blocks, the YOU tick walking the curve with the story (time-driven, so the lit group, tab and copy always agree), settled by 4.4s. `window.__crowdAt(ms)` and `window.__crowdGap(ms)` draw any moment and report the closest two agents.
-- `page.js`: nav, the revolving light on the gold buttons, the four mocks, the four-squad scout-field model for the tools card, the why-now band (`window.__attnAt(ms)` draws any moment), `converge()` (the pricing core and the final CTA core), the pricing switch, `PLANS` and `mountCheckout(planKey)`.
+- `page.js`: nav, the revolving light on the gold buttons (a quiet line-colour track; a gold comet runs one lap when a button comes into view; the hero's starts where the swarm's signal lands, with a 400ms lift of the button's fill), the four mocks, the four-squad scout-field model for the tools card, the why-now band (three streams; `window.__attnAt(ms)` draws any moment, `window.__attnInfo()` gives its end), `lockMoment()` (the pricing card's "Lock in your seat" moment, now three sockets on the card's edge: `window.__lockSeek(ms)`, `window.__lockDebug()`), `converge()` (the final CTA core), the pricing switch, `PLANS` and `mountCheckout(planKey)`. Each mock's steps run on `mockClock(el)`, a clock that only advances while that mock is on screen and the tab is visible.
 - `terms.html`, `privacy.html`, `refunds.html`, `legal.css`: the generated legal drafts, written by a separate run; this page only links them from the footer and the FAQ.
 - `tools3d.js`: Three.js r160 renderer for the tools card's scout field (lazy import, 2D still fallback), in three draw calls; the agents use the glyph as one merged instanced geometry.
-- `media/`: `fold-desktop.png`, `fold-phone.png` (from the r5 capture), `hero-desktop.mp4`, `hero-phone.mp4`, `scroll-desktop.mp4` (recorded with `rec.mjs`), and `hero-desktop-frames.mp4`, `hero-phone-frames.mp4` (frame-accurate 30fps renders: `?t=0` stepped with `window.__heroSeek`).
+- `media/`: `fold-desktop.png`, `fold-phone.png` (from the r8 capture), `hero-desktop.mp4`, `hero-phone.mp4`, `scroll-desktop.mp4` (recorded with `rec.mjs`), and `hero-desktop-frames.mp4`, `hero-phone-frames.mp4` (frame-accurate 30fps renders: `?t=0` stepped with `window.__heroSeek`).
 
-URL switches: `?t=<ms>` freezes the hero at that time and shows every mock settled; `?reduce=1` forces the reduced-motion still.
+URL switches: `?t=<ms>` freezes the hero at that time and shows every mock settled; `?reduce=1` forces the reduced-motion still; `?lock=<ms>` freezes the pricing lock moment at that time.
 
-## Hero timeline (ms after first paint; phones run 8% faster and are still by 2.95s)
+## Hero timeline (ms on the hero's own clock, at 1440x900; phones run 8% faster)
 
-- First paint: the honeycomb (#1C1C21, fading to the edges, quieter behind the small copy) and the unlit Hive Core (a dim gold outline on the core cell, #232328 outlines on its neighbours). The swarm does not wait for the fonts; the headline still waits for Unbounded (at most 2.5s). The plan is computed in the next frame, then the clock starts.
-- 0 to 600: about 70 agents on desktop (68 at 1440x900, 68 to 80 from 1280 to 1920 wide; about 20 on phones) fade in across the whole first screen outside the copy: the top band, the outer columns, the gaps around the cards (they pass under the cards, never over text). Each drifts one channel at 35%, the crossed channel lit briefly in muted grey.
-- 150 to 900: sensing. Each agent opens a hex ring (to about 20px, #8E8A80, 50% to 0 over 420ms), holds 120ms, and its head lights (#EEEBE4): decided.
-- About 800 to 1500: up to twelve routes light along the honeycomb (ten fit at 1440x900, nine to eleven at the other desktop sizes, six on phones), each into one side of a neighbour cell; the lower ones climb the outer screen columns and turn in above the chips. The decided agents commit along them as trains, in step (a soft start, cruise, a short settle), so no two ever come closer than 1.25 glyph widths outside the core's own cells (measured with `__heroGap`: 1.96 widths at 1440x900, at least 1.32 at every desktop size checked, 1.95 on phones). Clashes are settled first by letting a later train wait a beat (while it still lands before ignition), then one agent at a time, trains first and front to back, so a clash costs one agent instead of a whole train.
-- 1600 to 2360: arrivals, clockwise from the left. Each neighbour lights #55555B as its first train reaches it; the core outline charges with every arrival. The rear agent of each train stops two corners short and stays.
-- 2400: ignition. The official mark lands (280ms, scale 1, 1.08, 1 over 560ms), the warm light opens to its peak at 2800 (an ellipse with radii of 600 and 430px under the honeycomb lines, warm enough to reach the chip row), and one ring wave runs out across the field (never over the copy).
-- 3200: still; the loop stops. The rest frame keeps the routes as quiet traces (#55555B at 42%, 1.25px) on the honeycomb and 9 dim agents parked around the core (7 on phones). Identical to `?t=4800` and the reduced-motion still.
+- First paint: the honeycomb (#1C1C21, fading toward the edges and down to 12% inside the copy's line boxes), a lift layer that draws the cells around the core a step brighter in #55555B (more once it ignites), the ghost of the Hive Core (the six neighbours in #55555B at 80%, the core's outline in dim gold) and the whole swarm, planned before the first frame (about 40 to 130ms here), each agent at its start at 40%. Some start just off the screen's edges, already on their way in.
+- 0 to 400: every agent fades up to full; each opens a sensing ring (1px, 13 to 30px, 36%, 300ms) and sets off in one of four short waves (0, 60, 120, 180ms). One soft wave runs out from the core across the field (0 to 700).
+- 0 to about 1500: each agent hops corner to corner along a breadth-first forest of routes from the twelve gates (merge, never cross), at its own pace (0.8 to 1.3 times 0.56px/ms), with a sensing ring at every corner. About one in four stops at a junction for 110 to 230ms, leans down one branch and takes the other; the rejected edge flashes once (1px, 25%). Scouting agents are muted; at the decision (back from the check, or 40% of the way in) an agent turns bright and moves 1.6 times faster. The edge an agent is crossing lights at 75% (2px), with a 220ms tail.
+- About 1000 to 1560: the arrivals gather. An agent that reaches its gate early holds there; the ones behind it queue on the corners behind, a beat apart, so the hive is crowded (13 to 22 agents within 200px of the core at 1.5s, depending on the screen; every agent visible is within about 300px).
+- 1560 to 1760: the rush. The gates open clockwise from the top, 18ms apart; each neighbour lights (#8E8A80, 2.75px) as its gate opens, the queues stream into the core and the core's outline charges with every arrival.
+- About 2100: ignition (it follows the last arrival, at most 2.1s). The official mark crossfades in over 250ms and settles from 0.92 to full size over 450ms, the warm light opens (an ellipse about 1680 by 1120px, reaching across the top of the screen and down past the chips), and one hexagonal ripple runs from the core to an 1100px radius over 900ms (35% to 0, stepping out of the way of every line of copy); each cell it crosses brightens toward #3A3A42 and falls back within 400ms.
+- 2240 to 2900 (desktop, 1240px and up): the handoff. One bright agent glyph leaves the core along the honeycomb, runs right and down the outer right column, behind Scout 03 at about 2.6s (the card flips to REPORTING and its Report bar fills), out under the card and along the honeycomb into the right end of the hero button's ring at 2.9s. The button's fill lifts once (400ms) and the gold comet leaves the contact point for one 1.4s lap. Phones and tablets get the ripple instead: the comet starts at the top of the ring when the ripple reaches it (about 2.1s on a 390x844 phone).
+- 2100 to 3500: everything settles. The route traces fade out within 650ms of ignition and the pulse's path within 600ms of landing; pocket scouts beside the copy stand down as the ripple passes. The loop stops at 3.5s. The rest frame is the honeycomb, the lifted cells, the lit official mark and its light, with no lines and no agents; it is identical to `?t=4800` and to the reduced-motion still (Scout 03 at REPORTING with three full bars, the quiet ring).
+- On a slow first second (a stalled main thread), the hero's clock advances at most 250ms per frame, so the opening is never skipped; the button's light starts from the hero clock's landing event (`swarm:hero-land`), not from a wall-clock timer.
 
 ## Placeholders, [DATA NEEDED] and [CONFIRM]
 
-Visible as dashed mono chips:
+The launch page now shows one bracketed chip, the Whop checkout's `[Data needed: Whop plan IDs]` (Jesus has not finished them; `PLANS` in `page.js` holds `whopPlanId: null` for founding, standard and yearly, and adding the IDs plus the Elements mount in `mountCheckout()` is the only change needed; once a plan is mounted the slot reserves 560px).
 
-- Whop plan IDs (checkout slot; Jesus has not finished them). `PLANS` in `page.js` holds `whopPlanId: null` for founding, standard and yearly; adding the IDs and the Elements mount in `mountCheckout()` is the only change needed.
-- Launch date (FAQ).
-- [CONFIRM] the AI tools do not place trades; [CONFIRM] which tools are live at launch. The support@joinswarm.ai inbox still has to be created (the chip left the footer in this round; it is tracked here).
-- Settled by Jesus on October 17 and no longer marked: the weekly calls carry no day or time; Swarm lives on Discord; the founding price on cancel and rejoin; Terms, Privacy and Refund policy are linked drafts.
-- Mocks are illustrations, each labelled "Illustration · not live data": watch-list rows read Asset 01 to Asset 05 with short reasons in words and a theme tag (Attention, Revenue, Users), no tickers, prices or percentages, and one members-only note shown blurred; scout states are SCANNING, ANALYZING and REPORTING only; watch-list chips WATCHING, NEW THIS WEEK and REMOVED; live-call rows Portfolio 01 to 04 with REVIEWED, LIVE, UP NEXT and IN QUEUE and a participant grid (Jesus plus five hex avatars, no names); the Swarm Discord shows channels, a weekly live call voice channel, a member list grouped Host, Multi-cycle, Members (no counts), and member messages as grey bars. Only Jesus's own words appear as text there.
-- The video is the founder card's poster and opens https://youtu.be/n15W6X84IGg in a new tab; production should use a youtube-nocookie click-to-load embed.
+Open questions for Jesus that are no longer chips on the page (the copy was reworded so it makes no claim that needs them), tracked here because LAUNCH-CHECKLIST.md is a shared file this run does not edit:
+
+- Whether the AI tools ever place trades. The FAQ answer says the tools help you research and every decision stays yours (Jesus-approved wording); it no longer carries a [Confirm] chip. If he confirms they never trade, add "The tools don't place trades for you."
+- Which tools are live at launch (the FAQ says they are being built and gives no dates).
+- A launch date (the FAQ no longer has the chip; LAUNCH-CHECKLIST item 3 already asks whether to drop it).
+- Whose portfolios are reviewed on the weekly calls (the live-call mock now says "The reasons" and its aria label says "portfolios", not "members' portfolios").
+- The support@joinswarm.ai inbox still has to be created (LAUNCH-CHECKLIST item 2).
+
+The legal drafts carry their own [CONFIRM] chips; this round added them to the 18+ age lines (terms and privacy), the 12-month liability cap (terms) and the 30-day reply time (privacy).
+
+Mocks are illustrations, each with one "Illustration · not live data" label that wraps between its two halves on a narrow mock and never truncates: the agent console has four scouts and a six-line event log with illustrative times (09:12 to 09:31, identifiers like Scout 03, not data), and a plain line under it defines a scout; the scout field shows four squads of 11 (8 on phones), each joined by 1px links at 30%; watch-list rows read Asset 01 to Asset 05 (Jesus's call) with five different reasons and themes (AI, Revenue, Agents, Users, Attention), no tickers, prices or percentages, and Jesus's note as a plain mono line ("Why it's on the list") with a Members only lock; scout states are SCANNING, ANALYZING and REPORTING only; the live call lists Portfolio 01 to 05, each with its own focus (Too many positions, Heavy on AI, No exit plan yet, Mostly long term, Off the sidelines), the host tile and four seats by role, each avatar a hex in one of three greys with a role mark (T3, T2, M1, M2: trader or member and their cycle, never a name); the Swarm Discord shows channels, a weekly live call voice channel, the pinned Q20 note and two messages from Jesus only, with the multi-cycle traders and founding members as open dashed hex places (Swarm has no members yet).
 
 ## Quotes on the page (all from FOUNDER-DOSSIER.md section 3 or Draft A)
 
-- Hero card: Q09, 3:51 (?t=231). The hero headline is Q01's words (0:34), not set as a quote.
+- Hero card: Q09, 3:51 (?t=231). The hero headline is a light edit of Q01 (0:34), "Most people need three cycles. / I want to get you there in one.", the direction's own wording, not set as a quote.
 - Why this cycle chips: Q04, 2:23 (?t=143), each sentence its own quoted chip, with the source line right under the frame.
 - Founder transcript: Draft A word for word, 2:33, 2:48 and 3:02, source line "Jesus Martinez, "Welcome To Swarm", JM Crypto on YouTube, October 16, 2026." Only "I stayed through the bear market when everyone else left." is set bright; "It wasn't luck" sits unemphasized inside its passage (C2).
 - Who it's for: one transcript card stamped 3:39 holding both of his lines from that passage verbatim, in quotation marks, with the plain source line.
-- Swarm Discord mock: Jesus's message is his 0:17 words, "right curve knows what it's buying, why it's buying it, and when to get out." (lowercase start, as said); the pinned note is Q20.
-- Before you join: Q15, labeled "The Attention Cycle, Aug 7, 2026", linking to the X Article.
-- FAQ: Q20 as the disclaimer line, introduced as "on @JesusMartinezTrades, my second YouTube channel" (it is that channel's About text).
-- Nothing from section 10 is used.
+- Swarm Discord mock: only Jesus speaks. His two messages are verbatim from the 3:18 passage: "You get weekly calls where I do live portfolio reviews." and "And of course, we have traders who have made it through several cycles sharing how they see the market right now." The pinned note is Q20.
+- Before you join: Q15 and, under it, Q14, each labeled "The Attention Cycle, Aug 7, 2026" and linking to the X Article.
+- FAQ: the first answer ends in his own words without quotation marks ("I show my work; always do your own research.").
+- Nothing from section 10 is used. Q17 (STORY 34:24) is not used: the dossier marks it "auto-caption; check audio", and the audio has not been checked.
 
 ## Copy I wrote around his lines (to check with Jesus)
 
-The hero sub ("I'm Jesus Martinez of JM Crypto. Swarm is my AI crypto trading community for the new era, and it lives on Discord."); the curve definitions; the why-now lede; the headlines "Only one knows when to get out.", "Two cycles behind me. This one is my third.", "No more believing and hoping. Here's what you get instead.", "Your first cycle or your second. Either way, this is where you start.", "Not financial advice. Not a promise. / Here's exactly what you're joining." and "Be on the right side of this cycle. / I'll see you inside."; the check lines under each benefit (the tools card now reads "Scans, analyzes and reports to the watch list" and carries the footer's line "AI tools can be wrong. Treat what they show as information to check, not instructions."); the FAQ answers; "Education and research, not financial advice. You make your own decisions." under the hero CTA; the hero rail's short lines; the AI tools line ("I'm still building them. Join early and you get each one as it's finished. Prices for new members go up as they're completed."); the pricing lede ("The first 50 founding seats lock in $49/month for as long as you stay subscribed. After that it's $99/month, and the price for new members goes up as the tools are completed.") and the founding plan's second line ("Cancel and rejoin after prices go up, and you pay the price at that time."); the scout lines; the watch-list reasons and theme tags; the live call's review chips (Allocation, Your reasons, Exit plan); the Discord channel names (# market-now, # watch-list, # live-calls, # questions) and "Weekly live call". None of it claims a result.
+The hero sub ("I'm Jesus Martinez of JM Crypto. Swarm is my AI crypto trading community on Discord, built to get you to the right curve: knowing what you're buying, why, and when to get out."); the hero note, now the approved FAQ wording ("Education and research, not financial advice. The AI tools help you research the market, and every decision stays yours."); the scout definition on Scout 03 and the tools card ("Each scout is one of my AI tools: it scans the market, analyzes what changed and reports to my watch list."); the curve definitions; the why-now lede; the headlines (all two-tone): "Most people need three cycles. / I want to get you there in one.", "Every cycle has three kinds of people. / Only one knows when to get out.", "Two cycles behind me. / This one is my third.", "No more believing and hoping. / Here's what you get instead.", "Your first cycle or your second. / Either way, this is where you start.", "50 founding seats. / Early on purpose.", "Not financial advice. Not a promise. / Here's exactly what you're joining." and "Be on the right side of this cycle. / I'll see you inside."; the founder proof line (On YouTube since August 2021. Full time in finance for five years. 323,452 followers on X and 41.1K subscribers on JM Crypto, as of October 16, 2026; the dossier's usable numbers, now outside the transcript card, with both counts linked); the check lines under each benefit; the FAQ answers (the first question is now "Is this financial advice? Who makes the decisions?"); the AI tools line ("I'm still building them. Join early and you get each one as it's finished. Prices for new members go up as they're completed."); the pricing lede ("The first 50 founding seats keep $49 a month for as long as they stay subscribed. After that it's $99 a month, and prices rise as the tools are completed."); the founding plan's second line; the price steps (Now: Founding price; After 50 seats: Standard · $99/mo; Then: Rises as the tools are completed); the joining note ("Discord access comes right after checkout. The AI tools arrive one by one as I finish them. Founding members get each one as it's completed."); the scout and log lines; the watch-list reasons and themes; the call's review chips, portfolio focus lines and seat roles; the Discord channel names and "Weekly live call". None of it claims a result.
 
 ## Known issues
 
-- Headless Chrome here renders with software GL, so `rec.mjs` captures only a few distinct frames a second (the screencast also stops emitting once the page settles, so the hero videos end about 6s in). Timing is right because every piece runs on wall-clock time; the `*-frames.mp4` renders show the hero at a true 30fps. Not yet checked on an iPhone 12-class device.
-- Full-page screenshots taller than about 8,192px wrap in this Chrome build. From round 4 the `d-NN` and `p-NN` tiles are cut from a viewport-stepped, stitched capture instead (`scratchpad/acg/restitch.sh` runs `tools/stitch.mjs` on `?t=6000` and re-cuts the tiles), so the last tiles end on the footer and the hero appears once.
-- Page length: 10,654px on desktop (11.8 viewports at 1440x900; RESEARCH-NOTES aims for 6,300 to 9,000), 14,034px on phone.
-- At 1366x768 the hero rail's bottom sits under the fold (titles visible), and the tilted quote card's corner comes within about 1px of the rail's top line. 1280x800, 1440x900, 1536x864 and 1920x1080 end on the rail.
-- The hero's plan takes about 30ms on a warm desktop run here (up to about 130ms on this loaded machine); it runs one frame after first paint, so it never delays the first frame. Not yet timed on a phone.
+- Headless Chrome here renders with software GL. Its first two or three seconds stall the compositor (frame gaps of 0.6 to 1.4s, even with the hero's script blocked), so `rec.mjs` captures only a few distinct frames a second and the first frames of `hero-desktop.mp4` repeat. The hero's clock now advances at most 250ms per frame, so the recording still shows the swarm moving early, but its clock runs a little behind wall time in that recording (the pulse lands about 5.3s after load here, 2.9s of hero time). The `*-frames.mp4` renders show the hero at a true 30fps. Not yet checked on an iPhone 12-class device.
+- Full-page screenshots taller than about 8,192px wrap in this Chrome build. The `d-NN` and `p-NN` tiles are cut from a viewport-stepped, stitched capture instead (`scratchpad/acg/restitch8.sh`, which runs `scratchpad/acg/stitch8.mjs` on `?t=6000`). Unlike the earlier `restitch.sh`, it keeps the fixed nav in every viewport chunk (it is sticky on the real page, with the outlined Join Swarm), except the last chunk, which is pulled up to end on the footer.
+- Page length: 10,521px on desktop (11.7 viewports at 1440x900; RESEARCH-NOTES aims for 6,300 to 9,000), 14,506px on phone (the bigger phone hive, the taller mocks that no longer clip, Q14 and the proof line added about 360px).
+- The hero's plan takes about 40 to 140ms here and now runs before the first frame, so the first frame already shows the swarm. Not yet timed on a phone.
+- At 1.5s, 13 to 15 agents sit within 200px of the core at 1440x900, 1536x864 and 1920x1080 (19 to 22 at 1280x800 and 1366x768). The queues behind the gates hold more agents just outside 200px; the rest of the 44 planned agents are dropped by the planner because they could not reach the core before ignition.
 - The why-now band labels games "2021 Games" (his first cycle); the video's games example starts in 2020.
 
 ## Review history
@@ -204,3 +211,235 @@ Skipped, and why:
 - Desktop height is still above RESEARCH-NOTES' 9,000px.
 
 Checked with renders at 1440x900, 1280x800, 1366x768, 1536x864, 1512x982, 1920x1080, 820x1180, 390x844 and 360x640 (settled, t1500, t3000, t4800, reduced; hero, crowd and band frames with the hooks; hero plan and `__heroGap` at every size). The gold scan (every 20px at 1440x900, 390x844 and 820x1180, reduced mode) finds at most one gold button, one gold number and one lit mark per view. No horizontal overflow, no console errors or warnings, no em or en dashes, no non-ASCII except the middle dot, hosts unchanged (Google Fonts, gstatic, jsdelivr for three@0.160.0; cdnjs and unpkg only in the CSP). Zero rAF calls over 2s at rest in the hero and at the bottom after a full scroll. Media re-recorded (`hero-desktop.mp4`, `hero-phone.mp4`, `scroll-desktop.mp4` with rec.mjs; `hero-desktop-frames.mp4`, `hero-phone-frames.mp4` with `scratchpad/acg/frames.mjs`); folds from the r5 capture (`scratchpad/polish/a-core-glow/r5`).
+
+### Graft: the creative bake-off winners (October 17, 2026)
+
+Done as `a-lab/GRAFT-PLAN.md` says. The winning code was ported into the live files; no lab file was copied over a live one. Jesus's round 3 and round 5 notes and the round 4 review fixes are unchanged: weekly calls with no day or time, Discord, the founding price policy, "Why I built Swarm", six FAQs, the legal links, support@joinswarm.ai, no martinezaccess.com, the crowd, the attention band, no pause buttons, his photos, the Asset rows, the revolving light, Scanning / Analyzing / Reporting, and the tools in development with prices rising as they are completed. `terms.html`, `privacy.html`, `refunds.html`, `legal.css`, `crowd.js`, `lattice.js` and `tools3d.js` were not touched.
+
+What was grafted, and from where:
+
+- **Hero: h2 Signal Handoff, on the round 6 hero (`hero.js`).**
+  - `measure()` records three things: the hero button's ring box (6px outside `.btn-hero`, rx 24); Scout 03 as the relay when it floats beside the copy (1240px and up); and which glyph boxes the planner skips.
+  - `ringSD()` and `ringPos()` are h2's, unchanged.
+  - `planSignal()` is adapted from h2's `planRoute()`:
+    - Walkable corners must clear every glyph box by 16px more than the swarm's own margins. Edges are checked at their 0.25, 0.5 and 0.75 points. The reading zone is a hard exclusion (no `prects`, no `pulseMaskAt()`, no 30% floor).
+    - Cost is the edge length, with h2's x40 on the core cell's edges.
+    - Speed uses the live `prof()` and `profInv()`, with D = clamp(len / 1.8, 650, 850).
+    - h2's relay entry and exit search is kept.
+  - `drawPulse()` lights each crossed edge in #EEEBE4 at 2.25px, fading over 450ms. Its head is the page's one agent glyph.
+  - The pulse's path joins the rest-frame traces.
+  - `updatePhase()` adds the three progress bars: Scan, Analyze, Report. SCANNING runs until 900ms, ANALYZING until the relay entry (or departure), then REPORTING. The spinner runs until the pulse lands.
+  - `window.SWARM.heroSignal` and the `swarm:hero-signal` event tell page.js when and where the pulse lands. New test hook: `window.__heroInfo()`.
+- **Hero ring (`page.js`).**
+  - `HERO_RING_AT` now comes from `heroSignal`.
+  - `playSig()` animates only `.r-head` and `.r-fill` with the Web Animations API: 1.4s, `cubic-bezier(.33,.7,.3,1)`. The head starts at the contact point and the fill grows behind it. At the end the ring rests full (`ring-done`).
+  - `seekRing()` creates the same animations paused, so `?t=` and the frame renders show the lap.
+  - If hero.js fails, the ring keeps the old 2.25s normal lap.
+  - Hover, focus and re-entry replays stay the normal 3.6s ring. Reduced motion is unchanged (full ring, still).
+- **Hero CSS.** The bar-fill block from h2: `--p` on each step and a `::after` scaled by it.
+- **Pricing: m2 Lock In Your Seat, stripped (`index.html`, `core-glow.css`, `page.js`).**
+  - **HTML.** `.join-art` is gone. The plan area is m2's `.lock-stage`: two canvases, `.lock-band`, and `#pcard` with an open `.pc-seat` (holding `#join-mark` from `../brand/`) and a `.pc-body`.
+    - `.pc-body` keeps the live copy in m2's order: name and chip, price row, notes, plan switch, rule, checklist, Join, and the live compact Whop row.
+    - Under the card: the live risk line, then m2's ladder with the plan's copy, then the live How joining works strip.
+  - **CSS.** m2's section rules and phone and 760px blocks are ported. `--lockR` is 20px on desktop and 16px on phones. The seat is three lattice rows above and below the core (`10.13R - 2px`, 200px and 160px). The "Now" chip has a 10px radius.
+  - **JS.** `lockMoment()` is ported from m2, with these changes:
+    - Agents are the page's one glyph (r 4.4 desktop, 3.6 phones, lw 1.1): 40 on desktop, 20 on phones.
+    - Scouts are dimmed (glyphs at 55%, their edges at 22%).
+    - All badge code and `motionOff` are removed.
+    - `lock-pending` is added only in live mode and with `?lock=`.
+    - Kept from m2: the trigger at 75% of the price row, play once, the pause offscreen and while the tab is hidden, the resize and rotation path, `?lock=`, `window.__lockSeek()` (now moves only the pricing button's ring) and `window.__lockDebug()`.
+    - `joinField()` is deleted. `PLANS` and `showPlan()` are unchanged.
+
+Left out, and why:
+
+- h1 Rising Routes, h3 Push-in and h4 Scroll Convergence: not adopted, so no code came from them (plan section 1). h4's idea of phase bars arrived through h2's version.
+- m1 The Crowd: not adopted, and `crowd.js` is unchanged. Its two follow-ups (an open seat for YOU, quoted definitions once the line-level timestamps are checked) are in GRAFT-PLAN section 7 for Jesus.
+- From h2, left out:
+  - `ringLead()`, `ringAt()`, `handRing()`, the `sig-drive` class and the dark ring before landing. The live ring keeps its static track from first paint and plays once.
+  - h2's simulation engine.
+  - The card border lift (a #55555B card border is outside the kit) and the `calm` fade.
+  - The muted colour for completed bars.
+  - The one-pixel stale-buffer workaround: the 30fps renders show no stale trail.
+- From m2, left out:
+  - The LOCKING and LOCKED badge with its six dots: the dots could read as seats filling, and LOCKED as a held seat.
+  - The source line (removed in round 4).
+  - m2's lede, founding note and FAQ edits (the live copy already follows the October 17 policy).
+  - The `.join-after` Whop block, m2's `.whop` sizes, and `lock: true` / `has-lock` in `PLANS`.
+
+Calls where the plan met the live page:
+
+1. **Contact rule.** The plan's rule (right half of the ring, above its bottom edge) found no route at 1440x900 or 1280x800. The only corners there sit 11 to 22px under the sub line, closer than the 16px clearance allows.
+   - The pulse may now also land on the ring's right end cap, when its last corner is right of the cap. It still never passes under "Cancel anytime."
+   - The short last leg into the ring is checked against the swarm's own margins, without the extra 16px.
+   - It lands at the ring's lower right.
+2. **Relay preference.** With plain length costs, the 1440x900 route skimmed the top of Scout 03 instead of passing behind it. Edges inside the card now cost half, so every desktop size passes behind the card.
+3. **Parked agents.** Corners where resting agents park cost two pitches more, so the pulse never runs over one.
+4. **Rest trace.** At the routes' own 42%, the pulse's path vanished at rest. It is drawn at 85% of #55555B, still a quiet grey channel line, so `?t=6000` and the reduced still show the line from the core to the button.
+5. **Fallbacks.** Phones skip the planner (no pulse). At 820x1180 no route clears the copy, so tablets fall back too. In both cases the ring starts at the top centre after ignition: 2.35s on phones, 2.55s on tablets.
+6. **No-JS card.** The HTML keeps SCANNING, with the Scan bar full (`html:not(.js)`). With JS every bar starts empty, which is the hero's t=0, so there is no flash. hero.js draws the reduced still and the `?t=` frames.
+7. **Lock field.** At the plan's size (card half width plus 2 pitches, 200px on phones), the side ports reached 2 corners on desktop and none on phones, and nearly every agent started inside the seat.
+   - Now: card half width plus 2.5 pitches (338px at 1440), 250px on phones, and a walk threshold of 0.2 instead of 0.28.
+   - Ports now reach 21/10/10 corners on desktop and 9/4/4 on phones. The field still ends about a cell beyond the card.
+8. **Price colour.** m2's transition faded $99 from gold for 360ms when switching plans after the lock. It is now scoped to `.pcard.is-gold:not(.lock-pending)`, so only turning gold is eased, and $99 and $990 turn white at once.
+9. **Spacing.** Pricing top padding is 40px (24px on phones), the band above the card 72px (64px on phones), and the ladder sits 48px under the risk line.
+   - The page grows 411px on desktop and 539px on phones, not the plan's estimate of about 200px, because the 200px seat and the ladder were kept at the plan's sizes.
+10. **No-canvas fix.** `drawToolsStill()` threw when `getContext` returned null, which stopped the rest of page.js, the pricing switch included. It is now guarded. `crowd.js` has the same throw, but inside its own IIFE, so it breaks nothing else. It stays untouched, as the plan asks.
+11. **Not run here.** The plan's step 13 production build (`node scripts/build-swarm-site.mjs`) and the Host-header checks were outside this step.
+
+Checked:
+
+- **Hero plan.** At 1440x900, 1280x800, 1366x768, 1536x864, 1512x982 and 1920x1080 the pulse departs at 2.6s, passes behind Scout 03 (relay entry 3.16 to 3.18s), lands at 3.45s, and the hero ends at 3.9s. 820x1180, 390x844 and 360x640 fall back. The pulse stays 41 to 59px from every text line box in the hero copy, the chips and the quote card.
+- **Live at 1440x900.** No moving light at 3.27s. The lap runs from the contact point at 3.77s and rests full by 5.17s. Zero rAF calls over 2s after 5s at the top, and zero at the bottom after a full scroll. The nav is solid over the members rail.
+- **#join jump.** At 1440x900, 1366x768, 1280x800 and 390x844 the seat and the price row are in view. The moment locks 2.39 to 2.43s after it starts and settles at 3.85 to 3.90s.
+- **Pricing behaviour.**
+  - Before the lock, $99 and $49 are white. After it, $49 is gold and $99 and $990 are white at once; Founding again is gold.
+  - It plays once, and a rotation mid-play shows the settled card.
+  - `?reduce=1`, no JS and no canvas show the settled card: the mark on the seat and a gold $49.
+- **Gold scan.** Every 20px at 1440x900, 390x844 and 820x1180, settled and reduced: at most one gold button, one gold number and one mark per view. The ladder's $49 is never gold.
+- **Cost.** About 0.3ms extra per plan when warm (2 to 7ms on the first run). Hero frames cost 0.29ms during the handoff, against 0.19ms during the swarm. The lock moment averages 0.25ms per frame, p95 0.9ms on desktop (0.14 and 0.4ms on phones).
+- **Hygiene.** No console errors or warnings, no horizontal overflow, no em or en dashes, no non-ASCII except the middle dot, hosts unchanged.
+- **Media.** `hero-desktop.mp4`, `hero-phone.mp4`, `scroll-desktop.mp4`, `hero-desktop-frames.mp4` and `hero-phone-frames.mp4` re-recorded. Folds from the r6 capture (`scratchpad/polish/a-core-glow/r6`).
+
+For Jesus to confirm (GRAFT-PLAN section 7):
+
+- On desktop the hero button's moving light starts when the swarm's signal reaches it, at about 3.45s; on phones it starts at 2.35s. The thin gold track is there from the first frame.
+- The faint trace from the core to the button stays on the settled hero.
+- The founding $49 lights gold as the swarm docks into the card.
+- The ladder copy.
+
+### Round 6 reviews (October 17, 2026)
+
+Review averages: reference 7.6 (flow 8, density 7, energy 8, premium 7, conversion 8), motion 6.8 (drama 5.5, agentic read 6.5, legibility 8.5, type and spacing 7, mock craft 6.5), buyer 7.6 (clarity 8, trust 7.5, founder 8, objections 7.5, desire 7). The code audit raised 3 blocking items (#55555B '#' glyphs in the Discord mock, "Scout field · 4 squads", the live-call mock implying members' own portfolios). Captures: `scratchpad/polish/a-core-glow/r7-pre` (working) and `r7` (final).
+
+What changed:
+
+- **The leaked [CONFIRM] chip is gone (all three reviews).** FAQ answer 1 now reads "No. Swarm is education and research, not financial advice. The AI tools help you research the market, and every decision stays yours. I show my work; always do your own research." (no chip, no second-channel detour; his Q20 words unquoted, in his voice). The launch-date and tools-live-at-launch chips also left the FAQ; the only bracketed text on the page is the Whop `[Data needed: Whop plan IDs]` chip. The open questions are listed under Placeholders above.
+- **Audit blocking items.** The Discord '#' glyphs are #8E8A80. The scout field caption is "Scout field". The live call says "The reasons" (not "Your reasons"), its aria label says "portfolios" (not "members' portfolios"), and the check line reads "Portfolio reviews, live and out loud".
+- **Hero first paint (ref, motion).** Root cause found: in live mode the plan's second `setup()` resized the canvases, which cleared the field, and nothing redrew it until a font-driven rebuild, so recordings opened on black. The field is now drawn again in the same frame, canvases are only resized when their size changes, and `lattice.js` and `hero.js` are preloaded so the field and the ghost hive are in the first frame on desktop and phone (checked in fresh `rec.mjs` recordings: frame 1 shows the honeycomb, the grey neighbours at 55% and the dim gold core). The font gate is 0.8s (audit).
+- **Hero motion, rebuilt (motion 1 to 3).** About 36 agents (33 at 1440x900, 12 on phones) instead of about 70, in four waves from 150ms (200ms on phones), each with its own pace (0.8 to 1.3 times the mean), a sensing ring at every corner (1px, 14 to 28px, 40%, 250ms), about one in four stopping at a junction to lean down one branch and take the other, a muted scouting look that turns bright when it decides, and a few stand-downs. Routes are a breadth-first forest from the twelve gates (merge, never cross), with yield waits, so the safety net drops nothing at 1440x900. Arrivals 1.38 to 1.88s, ignition at 2.0s with one 600ms ripple from the core to the edges of the screen (outside the copy), handoff from 2.12s landing on the button at 2.80s with a 400ms fill lift. Still by 3.25s. The field steps back to 12% inside the copy's line boxes (motion gate item) and fades toward the edges. Scout 03 reads "One of the AI tools" and "Analyzing what changed" (no "setup" anywhere, buyer 4); its cards tilt 1 degree (motion 7) with 11 to 12px mono labels.
+- **Gold stays inside the button (motion gate, ref 8).** The ring at rest is a 1px track in the kit's line colour (#232328); the gold comet (shorter tail) runs one 2.4s lap when a button comes into view and goes out; the hero's runs one 1.4s lap from the pulse's contact point. Reduced motion shows the still track. On phones every gold button is inset 8px each side, so the ring and comet clear the 16px gutter.
+- **Pricing (ref 2, buyer 5 and 6).** One compact card: the plan switch on top with the price in each tab ($49/mo, $99/mo, $990/yr, with a "2 months free" tag on the Yearly tab's edge), then the plan name, the big price, the policy lines right under it, the price steps as one line of three (Now, After 50 seats, Then: rises as the tools are completed; no repeated numbers), the checklist, Join Swarm, "Card or ACH through Whop. Cancel anytime.", the Whop slot and How joining works (three steps, folded into the card, ref 6). The 200px seat band and the separate price ladder are gone, and the lede no longer repeats the prices. At 1440x900 the card from the switch to the Join button is about 680px, inside one screen. The lock moment is reworked: agents on the field around the card route along the honeycomb to three sockets on the card's edge (left, right, top; three along the top on phones) and dock under it; the sockets light, the $49 turns gold as the card locks, one ring wave runs out, and the routes stay as quiet traces with one docked agent at each socket. No lit cell in the card (the final CTA carries the core). The headline is two-tone: "50 founding seats. / Early on purpose."
+- **Two-tone headlines everywhere (ref 3).** Founder, members and who-it's-for headlines now set line 1 in #8E8A80 (phone founder wrap: "Two cycles behind me. / This one is my third.").
+- **Mocks (ref 4, motion 6, buyer 7).** Discord: real role labels in the member list (Trader · 3 cycles, Trader · 2 cycles, Member · 1st cycle ...), two short member lines about their own process, Jesus's full 0:17 sentence (audit), the flat mark at 32px in a 10px-radius tile (motion, audit). Live call: the host tile spans the top row; four seats by role with a speaking indicator that moves while the call plays (about 4s). Watch list: the blurred note is a plain mono line "Why it's on the list" with its lock (buyer 7, audit). Tools card: its text in two columns on wide screens (motion 7), and "Built to help you research the market" replaces "Scans, analyzes and reports to the watch list" (audit). Watch list check line: "What's new, and what came off" (audit). Attention band: the clusters grew from R 15 to R 23 (about 225px wide) and the crowd now flows in three balanced streams along three channels of the honeycomb, a fixed beat apart so nobody closes the gap, filling the AI cluster from the back; the channels stay as worn traces at rest and no agent is left between the clusters (Jesus's round 5 "no stragglers").
+- **Founder proof (buyer 8).** Under the 2021 / 2023 / Now row: "On YouTube since August 2021 · full time in finance for five years · 323,452 followers on X and 41.1K subscribers on JM Crypto, as of October 16, 2026." in small mono, with a JM Crypto on YouTube link (the dossier's safe form, numbers dated).
+- **Hero copy and phone order (buyer 2, 3).** The sub defines "there": "...built to get you to the right curve: knowing what you're buying, why, and when to get out." (720px wide on desktop, 17px between 1240 and 1400px, so the hero still closes on the rail at 1280x800, 1440x900, 1536x864 and 1920x1080). On phones the four benefits sit right under the CTA (the grid starts at about 760px), above the floating cards, inset to the gutter.
+- **CTA rhythm (ref 7, buyer 5).** New Join Swarm buttons under the curve's three columns, between the two rows of the members grid, and under the who-it's-for card. "Cancel anytime." stays only at the hero, the price card and the final CTA; the final chip row is gone. Desktop button spacing: 1170, 1082, 1274, 1247, 962, 967, 1419, 1590px; every pair is at least 956px apart, so no view holds two gold buttons (on tablets the why and who buttons step out for the same reason).
+- **Audit fixes.** Radii 10px on the video thumb, its play badge and the Discord server tile. Mono labels raised from 9.5px to 10.5px or more (phone yearly tag 10px). Small face crops (96px JPEGs) as CSS data URIs for the hero thumb and every avatar, so the hero no longer loads full portraits for 28 to 44px images (data URIs because the production build only copies photos from `../assets/`, a shared folder). The hero ring fallback (if hero.js fails) is the same 1.4s lap at 2.2s, done by 3.6s. `tools3d.js` uses #111114 and #232328. Legal drafts got [CONFIRM] chips on the 18+ lines, the 12-month cap and the 30-day reply. The Whop slot reserves 560px once a plan is mounted (`[data-state="mounted"]`).
+
+Calls where reviewers disagreed:
+
+- **The ring.** Jesus asked for a revolving highlight on every gold button (static under reduced motion); the motion and ref reviews read the permanent gold ring as a halo. The highlight still revolves on every button, in gold, but only while it runs; at rest and under reduced motion the ring is the kit's line colour. Jesus should confirm the still ring is fine in #232328.
+- **Chips.** The ref review wanted no bracketed text but the Whop chip; the audit wanted more [CONFIRM] chips (the tools line, the weekly cadence, the inbox, whose portfolios). I reworded each line so it makes no unconfirmed claim and moved the questions into these notes, which satisfies both.
+- **"Cancel anytime." under every CTA (ref) vs only three times (buyer).** Buyer: it appears at the hero, the price card and the final CTA; the mid-page buttons stand alone.
+- **Lower band (motion 1).** The motion review asked for 35 to 40% of agents in the lower band with 32px clearance from every text and card box. With that clearance no corridor links the pockets beside the cards and the button to the core, so 9 of 33 agents start there as pocket scouts (they sense, check a corner, hold and stand down as the ignition ripple passes), and the ripple and the handoff carry the motion through the lower half. Cards keep 22px (text 32px), which lets the outer columns connect.
+- **Agent count.** The motion review asked for 36 desktop and 18 phone; desktop has 33 to 37 at the checked sizes. Phones have 12, because the free field above the chips is small and more agents there read as clutter.
+- **Nav and footer lockups (motion).** Kept as `swarm-wordmark-for-dark-bg.svg` (the official SVG, not typed text), as DIRECTIONS section 0 specifies for the nav, so the hero core stays the only lit cell in the first screen; the footer keeps the wordmark because the final CTA's lit mark is within one screen of it (an intentional deviation from DIRECTIONS section 12's horizontal lockup, recorded for Jesus as the audit asked). The Discord server icon is the flat mark at 32px.
+- **The final chip row.** Motion asked for a 2x2 row; the buyer asked to remove it. Removed.
+- **Pricing headline.** Two-tone ("50 founding seats. / Early on purpose.") so every section headline follows the reference's pattern.
+
+Skipped, and why:
+
+- The pricing lede keeps Jesus's founding policy but drops the numbers (the tabs and the big price carry them), so each price shows at most twice below the hero, except inside the FAQ question title "What does "$49 forever" mean?", which is his approved wording.
+- Self-hosting the three woff2 files (audit): the production build (`scripts/build-swarm-site.mjs`) already serves the fonts and Three.js from the site; the lab keeps the Google Fonts links. The production CSP for Whop and youtube-nocookie belongs to that build.
+- LAUNCH-CHECKLIST.md is a shared file, so the new open questions are recorded here instead.
+- Pricing to final CTA is 1,590px on desktop (1.8 screens): one more gold button there would share a view with the final one. Hero to curve CTA on phones is about 1,900px (the stacked hero cards); acceptable on a phone.
+- Desktop height is 10,784px, still above RESEARCH-NOTES' 9,000px; the new CTAs added about 260px back after the removals.
+
+Checked: renders at 1440x900, 1280x800, 1366x768, 1536x864, 1920x1080, 820x1180 and 390x844 (settled, t1500, t3000, t4800, reduced; hero frames every 250 to 500ms with `__heroSeek`; band frames with `__attnAt`; pricing frames with `__lockSeek`). The gold scan (every 20px in reduced mode at 1440x900, 390x844, 820x1180 and 1280x800) finds at most one gold button, one gold number and one mark per view. `__heroClash` is empty and `__heroGap` is at least 1.43 glyph widths at every desktop size checked. No horizontal overflow, no console errors or warnings from the page (only the software-GL driver's ReadPixels notice), no em or en dashes, no non-ASCII except the middle dot, hosts unchanged. Zero rAF calls over 2s at rest at the top and after a full scroll. Media re-recorded (`hero-desktop.mp4`, `hero-phone.mp4`, `scroll-desktop.mp4` with rec.mjs; `hero-desktop-frames.mp4`, `hero-phone-frames.mp4` with `scratchpad/acg/frames.mjs`); folds from the r7 capture.
+
+### Round 7 reviews (October 17, 2026)
+
+Review averages: reference 7.8 (flow 8, density 8, energy 7, premium 7.5, conversion 8.5), motion 6.5 (drama 5, agentic read 6, legibility 8, type and spacing 7, mock craft 6.5), buyer 7.8 (clarity 8, trust 8, founder 8, objections 8, desire 7). The code audit raised 4 blocking items: two gold buttons in one view on tall screens, clipped mock text at 1024 to 1239px and on 360 to 375px phones, the unconfirmed "No" to "will the AI trade for me?", and invented member messages in the Discord mock. Captures: `scratchpad/polish/a-core-glow/r8-pre` (working) and `r8` (final).
+
+What changed:
+
+- **Gate fails.**
+  - Phone watch list: Jesus's note row wraps onto two lines below 640px (the note chip and "Why it's on the list", then Members only). No ellipsis is left anywhere: a clip check over every text run at 320 to 1920px wide finds nothing clipped or truncated.
+  - Hive Core: it is the official `swarm-mark.svg` in an `<img>`, placed on the canvas's core cell. Its 3-unit strokes are about 6px at the hero's 300px box. That is the kit file as drawn, so it stays (see the calls below). The canvas draws the thin ghost neighbours only before ignition; the mark crossfades in over them.
+  - The gold comet outside the button during the handoff is Jesus's revolving light (his explicit exception). It is unchanged: one 1.4s lap, then the quiet #232328 track.
+- **Audit blocking items.**
+  - One gold button per view: the mid-grid button, the why-now button and the who-it's-for button are gone (6 gold buttons, down from 9). A per-view check at 1440x900, 1920x960, 1680x950, 1536x864, 1366x768, 1280x800, 1024x1260, 820x1180, 390x844 and 360x640 finds no scroll position with parts of two buttons. At 1160px of height and up (2560x1440), the curve's button steps out. Another check finds at most one gold button, one gold number and one mark per view at every size.
+  - Mocks at 1024 to 1239px get the full width (single column up to 1239px). The illustration label wraps between "Illustration ·" and "not live data" and never truncates. The Discord drops its member column between 1240 and 1400px and between 641 and 1000px. The call drops its header lock and its non-live focus lines between 1240 and 1400px. The console log uses short objects. The watch-list reasons and the call's detail chips wrap.
+  - FAQ 1 is now "Is this financial advice? Who makes the decisions?" and answers with the approved wording only (no "No."), so the page makes no claim about whether the tools place trades.
+  - Discord: only Jesus speaks, with two verbatim lines from 3:18. The member list is open dashed places, under "Multi-cycle traders" and "Founding members".
+- **Hero motion (motion 1 to 5, ref 1 to 3, 6).**
+  - The swarm is in the first frame: the plan runs before first paint, every agent starts at 40% and is full by 0.4s, and some come in from just off the screen.
+  - Agent glyphs are 22px tall on desktop (about 19px across) and 16px on phones. The edge being crossed lights at 75% and 2px, with a 220ms tail.
+  - Sense, decide, commit: a sensing ring at every corner; at a junction an agent leans down one branch and the rejected edge flashes once; once it decides it turns bright and moves 1.6 times faster.
+  - The crowd: agents that arrive early hold at the twelve gates and the rest queue behind them. The gates then open clockwise from 1.56s, each neighbour lighting as its gate opens.
+  - Ignition at about 2.1s: the mark crossfades in (250ms) and settles from 0.92 to full size (450ms). One hexagonal ripple runs out to 1100px over 900ms (35% to 0, never over a line of copy), and each cell it crosses brightens toward #3A3A42 and falls back within 400ms.
+  - Light: the core's warm light is about 1680x1120px and reaches across the top 40% of the screen. A lift layer draws the cells around the core a step brighter, fading toward the edges.
+  - Phone hive: about 190px across (R 34).
+  - The handoff now routes at every desktop size checked (1240 to 2560px wide). It goes core, right column, behind Scout 03 (REPORTING), out under the card and into the right end of the ring at 2.9s. The planner treats a corner that lands exactly on the ring's outline as a contact, accepts the ring's whole right part, and keeps 8px (not 16px) beyond the swarm's margins.
+  - The rest frame is clean: route traces fade within 650ms of ignition, the pulse's path within 600ms of landing, and no agent parks. Settled, t4800 and reduced are identical.
+  - The button's light now starts from the hero clock's landing event. The clock advances at most 250ms per frame, so a stalled first second never skips the opening.
+- **Hero layout (ref 6).** The headline is the direction's short setup line ("Most people need three cycles.") over a two-line punchline. Both floating cards now start level with the headline's first line and frame it. The "Why I built Swarm 4:05" video chip moved into the quote card's footer (with the city portrait, as the brief asks for small avatars). Only "Cancel anytime." and the note sit under the button. The rail closes the first screen at 1240x800, 1280x800, 1366x768, 1440x900, 1536x864 and 1920x1080.
+- **Copy (buyer 1 to 8).**
+  - The hero note says the decisions are yours (the approved FAQ wording, in Hanken Grotesk 14px).
+  - Pricing names $99: "...keep $49 a month for as long as they stay subscribed. After that it's $99 a month, and prices rise as the tools are completed." The ladder reads "Standard · $99/mo".
+  - The joining steps add "Discord access comes right after checkout. The AI tools arrive one by one as I finish them. Founding members get each one as it's completed."
+  - "Scout" is defined in plain words on Scout 03 (its first appearance) and on the tools card.
+  - The proof line left the transcript card. It is now a 16px Hanken line under the founder section, with both counts linked.
+  - Q14 sits under Q15 in "Before you join", with its source line.
+  - "When to get out" now appears in the hero sub, the curve's headline and the right-curve definition. The full sentence appears twice; the FAQ no longer repeats it.
+  - One illustration label per mock: the console's second label is gone.
+- **Pacing (ref 4, 5, verdict; motion 8; buyer 8).**
+  - The founder story moved up, right after the curve. The order is now hero, curve, founder, why this cycle, members, who it's for, before you join, pricing, FAQ, final.
+  - "Cancel anytime." is under every gold button.
+  - The 2x2 product grid is one piece, with a single button after all four cards.
+  - Two headlines are left-aligned. The founder's sits beside his portrait, as in the reference's story section. The FAQ's sits beside its questions on wide screens.
+  - The tools card keeps one chip (In active development).
+- **Mocks (motion 7).**
+  - The console log has six timestamped lines (09:12 to 09:31; two at the start, four arrive as the scouts work).
+  - The scout field reads as four squads of 11 (8 on phones), each joined by a minimum spanning tree of 1px links at 30% (in the 3D render and the 2D still).
+  - Watch-list themes are all different.
+  - Portfolio rows each carry a focus line.
+  - Seat avatars come in three greys with role marks.
+  - The mock steps run on visibility-gated clocks (audit), so a quick scroll-past never reaches the end unseen.
+- **Type (motion 6, buyer 6).**
+  - Every mono label is at least 12px on desktop and 11px on phones.
+  - Long mono strings are tracked down to 0.04 to 0.16em.
+  - Mock captions and the disclaimer are #8E8A80 at full opacity.
+  - The card tilt stays at 1 degree.
+- **Phone footer (ref 8, motion 8).** One left-aligned column: wordmark, the two social links, the legal links and the support email.
+- **Audit fixes.**
+  - `#hero-mark` sits outside the masked art container.
+  - The headline comment now says 0.8s.
+  - The why-now AI cluster no longer fills its centre cell (links only), so the page keeps one lit cell.
+  - privacy.html's calls chip now asks only whether calls are recorded (the calls run in the Swarm Discord).
+  - The hero thumbnail uses the city portrait.
+
+Calls where reviewers disagreed, or where a fix met the kit:
+
+- **The Hive Core's strokes (ref 1, motion gate 2, motion 4).** The ref review asked for ~2px neighbour outlines; the motion review asked to crossfade to `swarm-mark.svg` at ignition. The page already uses the SVG, and its stroke is the file's own (3 of 150 units). Thinning it would redraw the mark, which ANTI-SLOP fails. So the mark stays as drawn. The lift layer and the wider light make it sit in the field rather than on it, and the canvas only ever draws the thin ghost before ignition.
+- **Nav and footer lockups (motion 4).** Kept as `swarm-wordmark-for-dark-bg.svg`, the official SVG, not typed text. In the nav, the compact lockup would put a second lit core in the first screen with the hero's (DIRECTIONS section 0 asks for the wordmark there). In the footer, the final CTA's lit mark is in the same view. This is a recorded deviation from DIRECTIONS section 12.
+- **Sticky bar (ref 8).** The nav was already fixed, with the outlined Join Swarm. The old stitched tiles hid it after the first chunk. The new `restitch8.sh` keeps it in every chunk, so the d and p tiles show what a visitor sees.
+- **CTA count.** Ref wanted "Cancel anytime." under every mid-page button. Motion and buyer wanted fewer buttons (down to 6 or at most 7). Both are done: 6 gold buttons (hero, curve, founder, members, pricing, final), each with "Cancel anytime." The buyer also asked to drop the curve's button. It stays, because ref and motion keep it and the founder story now follows it directly. It steps out on screens 1160px tall or taller.
+- **Watch-list rows (motion 7).** Motion asked to replace "Asset 01 to 05" with descriptive names. Jesus asked for the Asset rows (October 16), so the rows keep them and carry five distinct reasons and themes instead.
+- **Seat avatars (motion 7).** Motion asked for initials. Swarm has no members, and initials would read as real people, so each avatar shows a role mark (T3 = trader, 3 cycles) in one of three greys.
+- **Agents through the middle band (motion 1).** The cards now frame the headline, so the band between the chips and the cards is copy. Agents use the outer columns and the band above the chips instead, and a few start off-screen, so the swarm comes in from every side. The ripple and the handoff carry the motion through the lower half.
+- **Phone handoff (motion 5).** A vertical pulse from the hive to the button would cross the copy, which fills a 390px screen. On phones the ignition ripple, which now covers the full 844px height, is the handoff: the ring's comet starts at its top centre the moment the ripple reaches it.
+- **Ignition time.** Motion asked for 2.0s; ref asked for 20 agents crowding the hive at 1.5s. The queues need the gates to open after 1.5s, so ignition follows the last arrival at about 2.1s.
+- **Q17 (buyer 7).** Not added: the dossier marks it "auto-caption; check audio", and the buyer made it conditional on that check.
+- **support@joinswarm.ai chip, CSP hosts (audit).** No chip was added: the inbox is tracked in LAUNCH-CHECKLIST item 2 and in these notes, and the ref review asked for no bracketed text but the Whop chip. The Whop and youtube-nocookie hosts belong in the CSP in the same change that fills `whopPlanId` (the brief's host allowlist applies to the previews).
+- **Hanken Grotesk 600 (audit).** Kept for buttons, FAQ questions and card titles (ANTI-SLOP allows Hanken for UI); to confirm with the kit owner.
+
+Skipped, and why:
+
+- Thinning the mark's neighbours (see above).
+- Exactly 20 agents within 200px at 1.5s on every desktop size. The count is 19 to 22 at 1280x800 and 1366x768, and 13 to 15 at 1440x900 and wider: with 40px cells the third queue corner sits just past 200px. The frame reads as a crowded hive.
+- Page height is 10,521px on desktop, still over RESEARCH-NOTES' 9,000px. Three buttons and the duplicate label went; the proof line, Q14 and the joining note came in.
+
+Checked:
+
+- **Renders.** Settled, t1500, t3000, t4800 and reduced, at 1440x900 and 390x844 (shootall), plus hero frames at 0, 0.6, 1.5 and 2.15s.
+- **Hero layout.** Measured at 1240x800, 1280x800, 1366x768, 1440x900, 1536x864, 1920x1080, 820x1180, 390x844 and 360x640: the rail closes every desktop first screen, and the CTA is in the first screen everywhere.
+- **Handoff.** Routes at 1240x800, 1280x800, 1366x768, 1440x900, 1536x864, 1680x1050, 1920x1080 and 2560x1300 (lands at 2.75 to 2.9s, through Scout 03 at 2.45 to 2.6s).
+- **Agent spacing.** `__heroGap` is at least 1.32 glyph widths on screen at every size. `__heroNear(1500)` as above.
+- **Live run.** At 1440x900 and 390x844: no console errors, the ring lap starts on `swarm:hero-land`, and zero rAF calls over 2s at rest.
+- **Hygiene.** The clip check is clean at 13 sizes from 320 to 1920px. The gold check passes at 7 sizes. No horizontal overflow, no em or en dashes, no non-ASCII except the middle dot, hosts unchanged.
+- **Media.** `hero-desktop.mp4`, `hero-phone.mp4` and `scroll-desktop.mp4` (5.7 MB) re-recorded with rec.mjs. `hero-desktop-frames.mp4` and `hero-phone-frames.mp4` re-rendered with `scratchpad/acg/frames.mjs`. Folds are from the r8 capture.
+
+## Ring rest state (October 17, after round 7)
+
+Round 6 had the Join Swarm ring go back to a grey track after its lap, because two reviewers read a resting gold ring as a halo. Jesus asked for a highlight around the button "so people focus on it", and the brief makes his request the one exception to the no-glow rule and says reduced motion shows a static ring. So the comet still runs one lap (2.4s, no loop), and then the track stays lit as a thin gold ring (1.25px at 70%). Reduced motion and `?t=` frames after the lap show the same lit ring. It goes back to grey only while the button is off screen, so the lap can replay when it returns.
