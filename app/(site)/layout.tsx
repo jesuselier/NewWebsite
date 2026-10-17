@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { LINKS } from "@/lib/site";
+import { SWARM_ORIGIN } from "@/lib/swarm";
 import "../globals.css";
 const inter = Inter({
   subsets: ["latin"],
@@ -44,19 +45,34 @@ export const metadata: Metadata = {
     ],
   },
 };
-const person = {
+// Jesus as a Person, plus Swarm, the community he founded (joinswarm.ai). The link runs from this site to Swarm only:
+// the Swarm pages never mention martinezaccess.com.
+const PERSON_ID = "https://www.martinezaccess.com/#person";
+const structuredData = {
   "@context": "https://schema.org",
-  "@type": "Person",
-  name: "Jesus Martinez",
-  url: "https://www.martinezaccess.com",
-  image: "https://www.martinezaccess.com/media/jesus-martinez-portrait.jpg",
-  jobTitle: "Creator of JM Crypto",
-  sameAs: [LINKS.crypto, LINKS.x, LINKS.instagram],
-  knowsAbout: [
-    "Cryptocurrency",
-    "Bittensor",
-    "Artificial intelligence",
-    "Digital assets",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": PERSON_ID,
+      name: "Jesus Martinez",
+      url: "https://www.martinezaccess.com",
+      image: "https://www.martinezaccess.com/media/jesus-martinez-portrait.jpg",
+      jobTitle: "Creator of JM Crypto",
+      sameAs: [LINKS.crypto, "https://www.youtube.com/@JesusMartinezTrades", LINKS.x, LINKS.instagram],
+      knowsAbout: [
+        "Cryptocurrency",
+        "Bittensor",
+        "Artificial intelligence",
+        "Digital assets",
+      ],
+    },
+    {
+      "@type": "Organization",
+      "@id": `${SWARM_ORIGIN}/#organization`,
+      name: "Swarm",
+      url: `${SWARM_ORIGIN}/`,
+      founder: { "@id": PERSON_ID },
+    },
   ],
 };
 export default function RootLayout({
@@ -70,7 +86,7 @@ export default function RootLayout({
         </a>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         <Navbar />
         <main id="main-content">{children}</main>

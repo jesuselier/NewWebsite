@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LINKS } from "@/lib/site";
+import { SWARM_ORIGIN } from "@/lib/swarm";
 export default function Footer() {
   return (
     <footer className="site-footer">
@@ -16,6 +17,9 @@ export default function Footer() {
           </a>
           <Link href="/press-kit">Media kit</Link>
           <Link href="/#attention-cycle">The Attention Cycle</Link>
+          <a href={`${SWARM_ORIGIN}/`} target="_blank" rel="noopener">
+            Swarm
+          </a>
         </nav>
         <div className="footer-meta">
           <span className="copyright">

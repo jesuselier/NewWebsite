@@ -1,0 +1,70 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://www.joinswarm.ai/#website",
+      "url": "https://www.joinswarm.ai/",
+      "name": "Swarm",
+      "alternateName": ["joinswarm.ai"],
+      "inLanguage": "en",
+      "publisher": { "@id": "https://www.joinswarm.ai/#organization" }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.joinswarm.ai/#organization",
+      "name": "Swarm",
+      "url": "https://www.joinswarm.ai/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.joinswarm.ai/brand/swarm/icons/app-icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "image": "https://www.joinswarm.ai/brand/swarm/social/swarm-og-1200x630.png",
+      "description": "Swarm is an AI crypto trading community on Discord, founded by Jesus Martinez of JM Crypto. Education and research, not financial advice.",
+      "founder": { "@id": "https://www.joinswarm.ai/#founder" }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://www.joinswarm.ai/#webpage",
+      "url": "https://www.joinswarm.ai/",
+      "name": "Swarm: AI Crypto Trading Community by JM Crypto",
+      "description": "Swarm is an AI crypto trading community on Discord by Jesus Martinez of JM Crypto: custom AI tools, his watch list, weekly live calls. Founding seats $49/mo.",
+      "inLanguage": "en",
+      "isPartOf": { "@id": "https://www.joinswarm.ai/#website" },
+      "about": { "@id": "https://www.joinswarm.ai/#organization" },
+      "video": { "@id": "https://www.joinswarm.ai/#launch-video" }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.joinswarm.ai/#founder",
+      "name": "Jesus Martinez",
+      "description": "Founder of Swarm and creator of the JM Crypto YouTube channel.",
+      "image": "https://www.joinswarm.ai/swarm-site/img/jesus-interview.jpg",
+      "sameAs": [
+        "https://www.youtube.com/@jm_crypto",
+        "https://www.youtube.com/@JesusMartinezTrades",
+        "https://x.com/JesusMartinez",
+        "https://www.instagram.com/jesusmartinezbuilds/"
+      ]
+    },
+    {
+      "@type": "VideoObject",
+      "@id": "https://www.joinswarm.ai/#launch-video",
+      "name": "Welcome To Swarm | AI Agentic Trading",
+      "description": "Jesus Martinez of JM Crypto explains the crypto curve, why crypto cycles are about attention, and why he built Swarm, his AI crypto trading community for the new era.",
+      "uploadDate": "2026-10-16T08:32:51-07:00",
+      "duration": "PT4M5S",
+      "thumbnailUrl": [
+        "https://i.ytimg.com/vi/n15W6X84IGg/maxresdefault.jpg",
+        "https://i.ytimg.com/vi/n15W6X84IGg/sddefault.jpg",
+        "https://i.ytimg.com/vi/n15W6X84IGg/hqdefault.jpg"
+      ],
+      "embedUrl": "https://www.youtube-nocookie.com/embed/n15W6X84IGg",
+      "url": "https://www.youtube.com/watch?v=n15W6X84IGg",
+      "inLanguage": "en",
+      "author": { "@id": "https://www.joinswarm.ai/#founder" }
+    }
+  ]
+}

@@ -4,6 +4,7 @@
 // Fonts and Three.js are fetched once into public/swarm-site/{fonts,vendor} and kept between runs
 // (pass --refetch to download them again), so the page loads nothing from third parties until a
 // visitor presses play on the video.
+import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -19,6 +20,11 @@ const FONTS_URL =
 // Google serves woff2 only to browsers it recognises.
 const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const PAGES = { "index.html": "/", "terms.html": "/terms", "privacy.html": "/privacy", "refunds.html": "/refunds" };
+// Served with a 404 status by app/(swarm)/swarm/page-not-found/route.ts for unknown joinswarm.ai paths:
+// built like the legal pages, but with no canonical and never in the sitemap.
+const NOT_FOUND = "404.html";
+// Sitemap dates for app/(swarm)/swarm/sitemap.xml/route.ts, kept true by this script (see writeSitemapDates).
+const SITEMAP_DATES = `${root}lib/swarm-pages.json`;
 const refetch = process.argv.includes("--refetch");
 
 function fail(message) {
@@ -110,11 +116,12 @@ function transformPage(name, html) {
     `href="${page === "index" ? "/" : `/${page}`}${hash}"`,
   );
   html = html.replaceAll(THREE_URL, `${BASE}/vendor/three.module.min.js`);
-  if (!html.includes('rel="canonical"')) {
+  if (name !== NOT_FOUND && !html.includes('rel="canonical"')) {
     html = replaceOnce(html, "</title>\n", `</title>\n<link rel="canonical" href="${ORIGIN}${path}">\n`, `${name} title`);
   }
   if (name === "index.html") {
-    html = replaceOnce(html, "</head>", `<link rel="stylesheet" href="${BASE}/swarm-site.css">\n</head>`, "index head");
+    html = replaceOnce(html, "</head>", `<link rel="stylesheet" href="${BASE}/swarm-site.css">\n${structuredData(html)}\n</head>`, "index head");
+    html = inlineHeroMark(html);
   }
   if (name === "privacy.html") html = fixPrivacy(html);
   // The [CONFIRM ...] and [Data needed ...] notes and the legal pages' draft badge are for Jesus; they stay in the lab copy and never show on the live
@@ -143,6 +150,57 @@ function fixPrivacy(html) {
   );
 }
 
+// JSON-LD for search engines, home page only, from design-lab/landing/swarm-site/structured-data.json.
+// JSON.parse fails the build on a broken edit; the WebPage node must repeat the page's own title and description.
+function structuredData(html) {
+  const data = JSON.parse(readFileSync(`${root}design-lab/landing/swarm-site/structured-data.json`, "utf8"));
+  const text = (s) => s.replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
+  const title = text(html.match(/<title>([^<]*)<\/title>/)[1]);
+  const description = text(html.match(/<meta name="description" content="([^"]*)">/)[1]);
+  const page = data["@graph"].find((node) => node["@type"] === "WebPage");
+  if (!page || page.name !== title || page.description !== description) {
+    fail("structured-data.json: the WebPage name and description must match index.html's <title> and meta description");
+  }
+  // Real data only: no ratings, reviews or product listings (none exist).
+  if (/"@type":"(?:AggregateRating|Review|Product)"/.test(JSON.stringify(data))) fail("structured-data.json: rating, review or product markup");
+  return `<script type="application/ld+json">${JSON.stringify(data).replaceAll("<", "\\u003c")}</script>`;
+}
+
+// The hero mark fades in at the hero's ignition, about 2 s after first paint. As an <img> it was the page's Largest
+// Contentful Paint, so LCP measured the animation instead of the headline. The same file inlined as <svg> is never an
+// LCP candidate. Same bytes, same id, same CSS and hero.js animation: nothing on screen changes.
+function inlineHeroMark(html) {
+  const svg = readFileSync(`${root}public/brand/swarm/logo/swarm-mark.svg`, "utf8").trim();
+  const open = svg.match(/^<svg[^>]*>/);
+  const viewBox = open && open[0].match(/viewBox="([^"]+)"/);
+  if (!viewBox || !svg.endsWith("</svg>")) fail("swarm-mark.svg: expected one <svg> element with a viewBox");
+  const inline = `<svg id="hero-mark" xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox[1]}" aria-hidden="true" focusable="false">${svg.slice(open[0].length)}`;
+  return replaceOnce(html, '<img id="hero-mark" src="/brand/swarm/logo/swarm-mark.svg" alt="" aria-hidden="true">', inline, "hero mark");
+}
+
+// lastmod moves only when a page really changes: the legal pages use their visible "Last updated" date, and the home
+// page gets today's date only when its built HTML differs from the last build. Google trusts lastmod only while it is accurate.
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function writeSitemapDates() {
+  const previous = existsSync(SITEMAP_DATES) ? JSON.parse(readFileSync(SITEMAP_DATES, "utf8")) : [];
+  const today = new Date().toISOString().slice(0, 10);
+  const pages = Object.entries(PAGES).map(([name, path]) => {
+    const html = readFileSync(`${out}${name}`, "utf8");
+    const hash = createHash("sha256").update(html).digest("hex").slice(0, 16);
+    const shown = html.match(/<span class="lg-date">Last updated (\w+) (\d{1,2}), (\d{4})<\/span>/);
+    if (name !== "index.html" && !shown) fail(`${name}: no "Last updated" date for the sitemap`);
+    const before = previous.find((p) => p.path === path);
+    let lastmod = before && before.hash === hash ? before.lastmod : today;
+    if (shown) {
+      const month = MONTHS.indexOf(shown[1]) + 1;
+      if (!month) fail(`${name}: unreadable "Last updated" month ${shown[1]}`);
+      lastmod = `${shown[3]}-${String(month).padStart(2, "0")}-${shown[2].padStart(2, "0")}`;
+    }
+    return { path, lastmod, hash };
+  });
+  writeFileSync(SITEMAP_DATES, `${JSON.stringify(pages, null, 2)}\n`);
+}
+
 function stripCssComments(css) {
   return `${css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\n\s*\n+/g, "\n").trim()}\n`;
 }
@@ -155,7 +213,7 @@ for (const entry of readdirSync(out)) {
 await fetchFonts();
 await fetchThree();
 
-for (const name of Object.keys(PAGES)) {
+for (const name of [...Object.keys(PAGES), NOT_FOUND]) {
   writeFileSync(`${out}${name}`, transformPage(name, readFileSync(`${src}${name}`, "utf8")));
 }
 for (const entry of readdirSync(src)) {
@@ -203,7 +261,42 @@ const prodSelectors = stripCssComments(readFileSync(`${out}swarm-site.css`, "utf
 for (const [, cls] of prodSelectors.matchAll(/\.([a-z][\w-]*)/gi)) {
   if (new RegExp(`(class="[^"]*\\b|['"\\s.])${cls}(\\b|['"\\s])`).test(labText)) problems.push(`swarm-site.css: class .${cls} is also used by the lab page`);
 }
+// Structured data: only the home page carries it, the built block still parses, it has no rating, review or product
+// type at any depth, and every image it names on this site exists. The 404 page stays out of the index.
+for (const name of [...Object.keys(PAGES), NOT_FOUND]) {
+  const blocks = [...readFileSync(`${out}${name}`, "utf8").matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  if (blocks.length !== (name === "index.html" ? 1 : 0)) problems.push(`${name}: ${blocks.length} JSON-LD blocks`);
+  for (const [, json] of blocks) {
+    let data;
+    try {
+      data = JSON.parse(json);
+    } catch (error) {
+      problems.push(`${name}: JSON-LD does not parse (${error.message})`);
+      continue;
+    }
+    const types = [];
+    const walk = (node) => {
+      if (Array.isArray(node)) node.forEach(walk);
+      else if (node && typeof node === "object") {
+        if (node["@type"]) types.push(...[node["@type"]].flat());
+        Object.values(node).forEach(walk);
+      }
+    };
+    walk(data);
+    for (const type of types) if (/^(?:AggregateRating|Review|Product)$/.test(type)) problems.push(`${name}: JSON-LD has a ${type}`);
+    for (const [, ref] of json.matchAll(new RegExp(`"${ORIGIN.replaceAll(".", "\\.")}(/(?:swarm-site|brand)/[^"#?]+)"`, "g"))) {
+      if (!existsSync(`${root}public${decodeURIComponent(ref)}`)) problems.push(`${name}: JSON-LD names missing ${ref}`);
+    }
+  }
+}
+{
+  const notFound = readFileSync(`${out}${NOT_FOUND}`, "utf8");
+  if (!notFound.includes('<meta name="robots" content="noindex">') || notFound.includes('rel="canonical"')) {
+    problems.push(`${NOT_FOUND}: must be noindex with no canonical`);
+  }
+}
 if (problems.length) fail(`\n  ${problems.join("\n  ")}`);
+writeSitemapDates();
 console.log(`Built ${out}`);
 if (blockers.length) {
   console.log(`\nOpen items, hidden on the live site until resolved (${blockers.length}):\n  ${blockers.join("\n  ")}`);

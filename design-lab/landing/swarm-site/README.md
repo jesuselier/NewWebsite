@@ -4,5 +4,6 @@
 
 - `swarm-site.js` plays the launch video in a youtube-nocookie player after a click (the privacy policy promises this) and fixes the legal links on preview hosts.
 - `swarm-site.css` styles that player. Its classes start with `sv-` so they never touch the page's own elements; the build fails if a class here is also used by the lab page.
+- `structured-data.json` is the home page's JSON-LD. The build injects it and fails if its WebPage name and description differ from the page's title and meta description.
 
 Rebuild after any change to the lab page: `node scripts/build-swarm-site.mjs`. Do not edit `public/swarm-site/` by hand.
