@@ -196,6 +196,13 @@ for (const name of Object.keys(PAGES)) {
     if (!chip.includes("youtube-nocookie")) blockers.push(`${name}: ${chip}`); // resolved by swarm-site.js
   }
 }
+// The production-only styles must not touch the page's own elements: a class they style may not already be used by
+// the lab page or its scripts (a shared ".yt" once stretched the curve's YOU tag to the full height of the figure).
+const labText = ["index.html", ...readdirSync(src).filter((f) => /\.(css|js)$/.test(f))].map((f) => readFileSync(`${src}${f}`, "utf8")).join("\n");
+const prodSelectors = stripCssComments(readFileSync(`${out}swarm-site.css`, "utf8")).replace(/\{[^}]*\}/g, " ");
+for (const [, cls] of prodSelectors.matchAll(/\.([a-z][\w-]*)/gi)) {
+  if (new RegExp(`(class="[^"]*\\b|['"\\s.])${cls}(\\b|['"\\s])`).test(labText)) problems.push(`swarm-site.css: class .${cls} is also used by the lab page`);
+}
 if (problems.length) fail(`\n  ${problems.join("\n  ")}`);
 console.log(`Built ${out}`);
 if (blockers.length) {

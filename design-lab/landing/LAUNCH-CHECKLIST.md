@@ -1,6 +1,6 @@
 # Swarm launch checklist
 
-Jesus approved going live on October 17, 2026, with the internal notes hidden on the live site: the `[CONFIRM]` and `[Data needed]` notes and the legal pages' draft badge stay in the lab copy and the build strips them. What is left below still needs answering; until then the checkout shows "Opens here soon" and the legal pages are unreviewed drafts.
+**Live since October 17, 2026, 11:18 UTC** at https://www.joinswarm.ai (pull request #1, squash-merged to `main`). Jesus approved going live with the internal notes hidden on the live site: the `[CONFIRM]` and `[Data needed]` notes and the legal pages' draft badge stay in the lab copy and the build strips them. What is left below still needs answering; until then the checkout shows "Opens here soon" and the legal pages are unreviewed drafts.
 
 ## Needed from Jesus
 

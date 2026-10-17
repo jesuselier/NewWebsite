@@ -21,12 +21,12 @@
   let dialog, frame, opener;
   function build() {
     dialog = document.createElement("dialog");
-    dialog.className = "yt";
+    dialog.className = "sv-player";
     dialog.setAttribute("aria-label", "Why I built Swarm, the launch video");
     dialog.innerHTML =
-      '<div class="yt-in"><button class="yt-x" type="button">Close video</button><div class="yt-frame"></div></div>';
-    frame = dialog.querySelector(".yt-frame");
-    dialog.querySelector(".yt-x").addEventListener("click", () => dialog.close());
+      '<div class="sv-in"><button class="sv-close" type="button">Close video</button><div class="sv-frame"></div></div>';
+    frame = dialog.querySelector(".sv-frame");
+    dialog.querySelector(".sv-close").addEventListener("click", () => dialog.close());
     dialog.addEventListener("click", (e) => {
       if (e.target === dialog) dialog.close();
     });
