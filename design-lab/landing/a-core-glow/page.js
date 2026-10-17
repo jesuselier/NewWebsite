@@ -570,7 +570,7 @@
   /* ---------- pricing: plan switch and Whop checkout stub ---------- */
   // Swap in the three Whop plan IDs (prefixed plan_) when Jesus has them. One line per plan.
   const PLANS = {
-    founding: { name: 'Founding monthly', price: '$49', unit: '/mo', note: 'Forever. Cancel whenever. 50 seats only.', chip: 'Founding seat', gold: true, whopPlanId: null },
+    founding: { name: 'Founding monthly', price: '$49', unit: '/mo', note: 'Forever, while you stay subscribed. Cancel whenever. 50 seats only.', chip: 'Founding seat', gold: true, whopPlanId: null },
     standard: { name: 'Standard monthly', price: '$99', unit: '/mo', note: 'The price once the founding seats are gone.', chip: 'Renews monthly', gold: false, whopPlanId: null },
     yearly:   { name: 'Yearly', price: '$990', unit: '/yr', note: '2 months free.', chip: 'Billed yearly', gold: false, whopPlanId: null }
   };
