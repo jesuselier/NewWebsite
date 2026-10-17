@@ -234,7 +234,7 @@
   const charge = () => Math.min(1, absorbed / Math.max(1, spokes.filter(Boolean).length));
   function glowAt(t) {
     const pre = 0.16 * charge() * sm(T.arrive0 - 200, T.ignite, t);
-    return Math.max(pre, t >= T.ignite ? outCubic((t - T.ignite) / T.glowIn) : 0);
+    return Math.max(pre, t >= T.ignite ? sm(0, 1, (t - T.ignite) / T.glowIn) : 0);
   }
   function fieldA(c) {
     if (c.ring <= 1) return 0;
@@ -296,7 +296,7 @@
       g.globalAlpha = 1;
     }
     // the agents: small hexagonal nodes, scouts muted, the chosen bright
-    drawAgents(g, Sx, t, { alphaAt: maskAt, r: phone ? 2.3 : 2.6, base: [0.85, 1], agentMul: aMul });
+    drawAgents(g, Sx, t, { alphaAt: maskAt, r: phone ? 2.2 : 2.4, base: [0.72, 1], agentMul: aMul });
     // the official mark lands on the core cell, with a small pulse; the warm light opens under the field
     const pe = clamp01((t - T.ignite) / T.pulse), bump = t >= T.ignite ? Math.sin(Math.PI * Math.pow(pe, 0.7)) : 0;
     const ms = (hand ? hand.toFixed(3) : '0') + '|' + (bump > 0.001 ? (1 + 0.08 * bump).toFixed(4) : '');

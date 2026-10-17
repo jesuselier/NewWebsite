@@ -134,7 +134,7 @@
     li.querySelector('.lid').textContent = id; li.querySelector('.lst').textContent = st; li.querySelector('.ltx').textContent = tx;
     if (anim) li.classList.add('enter');
     conLog.prepend(li);
-    while (conLog.children.length > 4) conLog.lastElementChild.remove();
+    while (conLog.children.length > 3) conLog.lastElementChild.remove();
     if (anim) requestAnimationFrame(() => requestAnimationFrame(() => li.classList.remove('enter')));
   }
   function settleSpinners() { conRows.forEach(r => { const sp = r.querySelector('.spin'); setSpin(sp, -1); sp.classList.add('done'); }); }
@@ -381,7 +381,8 @@
   /* ---------- why now: the crowd moves from the games basin to the AI basin ----------
      The crowd starts packed in the 2021 games basin. From 0.3s, four in five set off one after another and stream
      across the field along the honeycomb's channels to a free corner in the AI basin, so the AI basin fills from the
-     middle out; the rest stay behind. Lit edges trace the current. Everything rests by 4.6s. */
+     middle out; the rest stay behind. Every crossing wears its edge in a little, so the route the crowd took stays
+     on the field as a worn path between the two basins. Everything rests by 4.6s. */
   (function attention() {
     const box = $('#attn'); if (!box || !SL) return;
     const cv = box.querySelector('canvas');
@@ -389,10 +390,10 @@
       seed: 5, end: 4600, threshold: 0.5,
       height: W => W < 600 ? 250 : 330,
       setup(W, H) {
-        const phone = W < 600, R = phone ? 9 : 17, P = 1.95 * R;
-        const A = { x: W * (phone ? 0.22 : 0.2), y: H * (phone ? 0.58 : 0.56) }, B = { x: W * (phone ? 0.78 : 0.8), y: A.y };
+        const phone = W < 600, R = phone ? 7.5 : 13, P = 1.95 * R;
+        const A = { x: W * (phone ? 0.21 : 0.2), y: H * (phone ? 0.59 : 0.56) }, B = { x: W * (phone ? 0.79 : 0.8), y: A.y };
         const L = SL.lattice({ R, ox: W / 2, oy: A.y, x0: -P, x1: W + P, y0: -P, y1: H + P });
-        const rad = (phone ? 3.1 : 3.3) * P;
+        const rad = (phone ? 3.9 : 4.5) * P;
         for (const c of L.cells) { c.inA = Math.hypot(c.x - A.x, c.y - A.y) < rad; c.inB = Math.hypot(c.x - B.x, c.y - B.y) < rad; }
         const inA = L.V.map(v => v.cells.length === 3 && v.cells.every(c => c.inA));
         const inB = L.V.map(v => v.cells.length === 3 && v.cells.every(c => c.inB));
@@ -406,16 +407,16 @@
           for (let h = 0; h < q.length; h++) for (const j of L.V[q[h]].nb) if (dist[j] < 0 && walk[j]) { dist[j] = dist[q[h]] + 1; q.push(j); }
           fields.set(tg, dist); return dist;
         };
-        return { L, A, B, rad, inA, inB, walk, targets, field, phone, W, H, P, moved: 0, movers: 0 };
+        return { L, A, B, rad, inA, inB, walk, targets, field, phone, W, H, P, moved: 0, movers: 0, worn: new Map() };
       },
       spawn(sim, rnd, X) {
         const ids = X.L.V.map((v, i) => i).filter(i => X.inA[i]);
         for (let i = ids.length - 1; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; [ids[i], ids[j]] = [ids[j], ids[i]]; }
-        const n = Math.min(ids.length, X.phone ? 54 : 96);
+        const n = Math.min(ids.length, X.phone ? 64 : 120);
         const movers = Math.min(Math.round(n * 0.8), X.targets.length);
         X.movers = movers;
         for (let k = 0; k < n; k++) {
-          const id = ids[k], go = k < movers ? 300 + 1500 * (k / Math.max(1, movers - 1)) + rnd() * 120 : Infinity;
+          const id = ids[k], go = k < movers ? 250 + 1300 * (k / Math.max(1, movers - 1)) + rnd() * 100 : Infinity;
           const a = sim.add(id, { kind: 0, born: rnd() * 260, go, tg: k < movers ? X.targets[k] : -1 });
           const nb = X.L.V[id].nb.filter(j => X.inA[j]);
           if (nb.length) sim.hop(a, pick(nb, rnd), a.born + 80 + rnd() * 300, 220 + rnd() * 80);
@@ -428,7 +429,12 @@
           const dist = X.field(a.tg);
           if (dist[a.from] === 0) { a.mode = 'there'; return; }
           const down = v.nb.filter(j => dist[j] >= 0 && dist[j] < dist[a.from]);
-          if (down.length) { sim.hop(a, pick(down, rnd), at, X.phone ? 72 + rnd() * 14 : 58 + rnd() * 12); return; }
+          if (down.length) {
+            const nx = pick(down, rnd), d = X.phone ? 58 + rnd() * 10 : 44 + rnd() * 8, key = SL.ekey(a.from, nx);
+            let w = X.worn.get(key); if (!w) X.worn.set(key, w = { a: a.from, b: nx, t: [] });
+            w.t.push(at + d);
+            sim.hop(a, nx, at, d); return;
+          }
           a.mode = 'there'; return;
         }
         if (a.mode === 'there' || at > 3400) return;
@@ -441,11 +447,21 @@
         const k = X.movers ? there / X.movers : 0;
         const fade = c => Math.max(0, 1 - SL.sm(W * 0.4, W * 0.56, Math.abs(c.x - W / 2))) * (1 - SL.sm(H - 40, H, c.y)) * SL.sm(0, 30, c.y);
         SL.drawField(g, X.L, c => c.inA || c.inB ? 0 : 0.9 * fade(c), {});
-        SL.drawField(g, X.L, c => c.inA ? 1 - 0.5 * k : 0, { color: SL.COL.line });
-        SL.drawField(g, X.L, c => c.inB ? 0.55 + 0.45 * k : 0, { color: SL.COL.line });
+        SL.drawField(g, X.L, c => c.inA ? 1 - 0.45 * k : 0, { color: SL.COL.line });
+        SL.drawField(g, X.L, c => c.inB ? 0.6 + 0.4 * k : 0, { color: SL.COL.line });
+        // the worn path: each crossing so far wears its edge in a little
+        const wb = new Map();
+        for (const w of X.worn.values()) {
+          let n = 0; for (const x of w.t) if (x <= t) n++;
+          if (!n) continue;
+          const b = Math.min(10, Math.round(n * 0.9)); let arr = wb.get(b); if (!arr) wb.set(b, arr = []); arr.push(w);
+        }
+        g.lineWidth = 1; g.strokeStyle = SL.COL.hive;
+        for (const [b, arr] of wb) { g.globalAlpha = 0.07 + 0.06 * b; g.beginPath(); for (const w of arr) { const A = X.L.V[w.a], B = X.L.V[w.b]; g.moveTo(A.x, A.y); g.lineTo(B.x, B.y); } g.stroke(); }
+        g.globalAlpha = 1;
         SL.drawField(g, X.L, c => { const e = t - c.ping; if (e < 0 || e > 800) return 0; return (e < 120 ? e / 120 : e < 280 ? 1 : 1 - (e - 280) / 520) * 0.7; }, { color: SL.COL.hive });
         SL.drawEdges(g, sim, t, { base: [0.3, 0.5], lw: X.phone ? 1.1 : 1.3 });
-        SL.drawAgents(g, sim, t, { r: X.phone ? 2 : 2.6, base: [0.7, 1] });
+        SL.drawAgents(g, sim, t, { r: X.phone ? 1.7 : 2.3, base: [0.7, 1] });
       }
     });
   })();
@@ -455,12 +471,12 @@
     const art = $('.join-art'), cv = $('#join-field'), mk = $('#join-mark'); if (!art || !cv || !SL) return;
     lattice2D(cv, {
       seed: 13, end: 2600, threshold: 0.35,
-      height: W => W <= 640 ? 240 : 300,
+      height: W => W <= 640 ? 230 : 240,
       setup(W, H) {
         const phone = W <= 640, S_ = phone ? 112 : 128, R = S_ / 7.5, P = 1.95 * R;
-        const cx = W / 2, cy = phone ? 120 : 150;
+        const cx = W / 2, cy = phone ? 115 : 120;
         const L = SL.lattice({ R, ox: cx, oy: cy, x0: cx - 520, x1: cx + 520, y0: -P, y1: H + P });
-        const maxD = phone ? 200 : 300;
+        const maxD = phone ? 200 : 280;
         const walk = L.V.map(v => !v.core && v.d < maxD * 0.95);
         const dist = new Int32Array(L.V.length).fill(-1), q = [];
         L.V.forEach((v, i) => { if (v.core) { dist[i] = 0; q.push(i); } });
@@ -468,7 +484,7 @@
         return { L, cx, cy, maxD, walk, dist, phone, R, absorbed: 0 };
       },
       spawn(sim, rnd, X) {
-        const ids = X.L.V.map((v, i) => i).filter(i => X.walk[i] && X.L.V[i].ring >= 3 && X.dist[i] > 0 && X.L.V[i].y > 6 && X.L.V[i].y < (X.phone ? 234 : 294));
+        const ids = X.L.V.map((v, i) => i).filter(i => X.walk[i] && X.L.V[i].ring >= 3 && X.dist[i] > 0 && X.L.V[i].y > 6 && X.L.V[i].y < (X.phone ? 224 : 234));
         const n = X.phone ? 22 : 34;
         for (let k = 0; k < n; k++) {
           const id = pick(ids, rnd), h = X.dist[id];
