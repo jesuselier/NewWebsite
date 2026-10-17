@@ -1,0 +1,187 @@
+<title>Swarm Launch Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&family=JetBrains+Mono:wght@500&family=Unbounded:wght@600&display=swap">
+<style>
+  /* Review page for the three Swarm launch directions. Swarm kit colors (ink first, no gold
+     here, so the directions' own gold is the only gold you see) and kit fonts.
+     Layout: one centered column of three direction blocks, each with its motion, phone view and links. */
+  :root {
+    --ground: #0B0B0D;
+    --surface: #111114;
+    --raised: #16161A;
+    --line: #232328;
+    --text: #EEEBE4;
+    --muted: #8E8A80;
+    --display: "Unbounded", system-ui, sans-serif;
+    --body: "Hanken Grotesk", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    color-scheme: dark;
+  }
+  html { background: var(--ground); }
+  body { background: var(--ground); color: var(--text); font-family: var(--body); font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 96px; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .top img { width: 120px; height: auto; display: block; }
+  .label { font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--muted); margin: 0; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 10px; }
+  h1 { font-family: var(--display); font-weight: 600; font-size: clamp(34px, 6vw, 64px); line-height: 1.04; letter-spacing: -0.02em; margin: 56px 0 0; text-wrap: balance; }
+  h1 span { display: block; color: var(--muted); }
+  .lead { max-width: 64ch; margin: 20px 0 0; color: var(--text); font-size: clamp(17px, 1.6vw, 19px); }
+  .status { margin-top: 28px; padding: 16px 20px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); display: grid; gap: 6px; max-width: 760px; }
+  .status p { margin: 0; color: var(--muted); font-size: 15px; }
+  .dir { margin-top: 88px; padding-top: 40px; border-top: 1px solid var(--line); display: grid; gap: 24px; }
+  .dir h2 { font-family: var(--display); font-weight: 600; font-size: clamp(26px, 3.4vw, 40px); line-height: 1.12; margin: 10px 0 0; text-wrap: balance; }
+  .dir .idea { margin: 10px 0 0; max-width: 62ch; color: var(--muted); }
+  .media { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 820px) { .media { grid-template-columns: minmax(0, 3.2fr) minmax(0, 1fr); } }
+  figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+  .frame { border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--surface); }
+  .frame video, .frame img { display: block; width: 100%; height: auto; }
+  .desk { aspect-ratio: 1440 / 900; }
+  .desk video { width: 100%; height: 100%; object-fit: cover; }
+  .phone { max-width: 260px; margin: 0 auto; width: 100%; }
+  figcaption { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 18px; border: 1px solid var(--text); color: var(--text); text-decoration: none; font-weight: 600; }
+  .btn:hover { background: var(--raised); }
+  .btn:focus-visible, summary:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  details { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+  summary { cursor: pointer; padding: 14px 18px; font-weight: 600; min-height: 48px; display: flex; align-items: center; }
+  details[open] summary { border-bottom: 1px solid var(--line); }
+  details .frame { border: 0; border-radius: 0 0 18px 18px; }
+  .scores { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .scores li { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .scores b { color: var(--text); font-weight: 500; }
+  .notes { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 6px; max-width: 72ch; }
+  .need { margin-top: 96px; padding-top: 40px; border-top: 1px solid var(--line); }
+  .need h2 { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 3vw, 34px); margin: 12px 0 0; }
+  .need ol { margin: 20px 0 0; padding-left: 22px; display: grid; gap: 10px; max-width: 70ch; }
+  .need li { padding-left: 6px; }
+  .need li span { color: var(--muted); }
+  .foot { margin-top: 56px; color: var(--muted); font-size: 14px; }
+  @media (prefers-reduced-motion: reduce) { video { display: none; } .desk { background: var(--surface); } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <img src="brand/swarm/logo/swarm-wordmark-for-dark-bg.svg" alt="Swarm" width="120" height="32">
+    <p class="label">Launch page · joinswarm.ai</p>
+  </header>
+
+  <h1><span>Three ways to launch Swarm.</span>Pick the one that feels like you.</h1>
+  <p class="lead">All three follow the flow of the page you sent (joinasymmetric.xyz), built inside your Swarm brand kit, with your own words from the launch video. They differ in the hero motion and the treatment. Open each full page on your phone and scroll it top to bottom, then reply with A, B or C, or a mix like “A’s hero with C’s founder section”.</p>
+
+  <div class="status" id="status">
+    <p class="label">Status</p>
+    <p id="status-text">Core Glow with your seven notes applied: your photos from your personal site, Asset rows on the watch list, a fuller first screen, a light that circles every Join Swarm button, scouts that scan, analyze and report, the AI tools marked as in active development with prices rising as they ship, and no personal-site link in the footer. Overnight: a final review round, four new hero concepts and two signature moments judged against this one, the winners merged in, then the move into the real site. This link updates as each step lands.</p>
+  </div>
+
+
+  <section class="dir" id="a" aria-labelledby="a-title">
+    <div>
+      <p class="label pill">Direction A · Core Glow · Your pick, with your notes</p>
+      <h2 id="a-title">Agents converge on one gold cell above your headline.</h2>
+      <p class="idea">Closest to the page you sent. Agents scan the honeycomb, agree, and stream into a single gold cell above the headline; its glow is the light from above. The curve section shows the crowd under the curve: left curve herds, mid curve twitches, right curve holds.</p>
+    </div>
+    <div class="media">
+      <figure>
+        <div class="frame desk"><video src="a-core-glow/media/hero-desktop-frames.mp4" poster="a-core-glow/media/fold-desktop.png" autoplay muted loop playsinline preload="metadata" aria-label="Core Glow hero motion on desktop"></video></div>
+        <figcaption>Hero motion · desktop</figcaption>
+      </figure>
+      <figure>
+        <div class="frame phone"><img src="a-core-glow/media/fold-phone.png" alt="Core Glow first screen on a phone" width="390" height="844" loading="lazy"></div>
+        <figcaption>First screen · phone</figcaption>
+      </figure>
+    </div>
+    <div class="actions">
+      <a class="btn" href="a-core-glow/index.html">Open the full page</a>
+    </div>
+    <details>
+      <summary>Watch the scroll-through (28 seconds)</summary>
+      <div class="frame"><video src="a-core-glow/media/scroll-desktop.mp4" controls muted playsinline preload="none" aria-label="Core Glow full page scroll-through"></video></div>
+    </details>
+    <div>
+      <p class="label">Blind review before this round’s fixes (out of 10)</p>
+      <ul class="scores" style="margin-top:10px"><li>Reference fit <b>6.5</b></li><li>Agentic feel <b>6</b></li><li>Premium <b>6.5</b></li><li>Clarity <b>6</b></li><li>Kit <b>7</b></li><li>Phone <b>7</b></li></ul>
+    </div>
+    <ul class="notes"><li>Your photos from your personal site: the professional portrait in the founder card, the New York portrait in small avatars.</li><li>The watch list shows Asset 01, Asset 02 and so on; scouts cycle Scanning, Analyzing and Reporting.</li><li>Every gold Join Swarm button has a thin light circling it; it holds still for people who turn motion off.</li><li>New line by the founding price, on the AI tools card and in the FAQ: “The custom AI tools are still being built. Join now and you get each one as it ships, at the founding price. Prices go up as they’re completed.”</li><li>The motion preview here is stepped frame by frame; open the full page for the real thing.</li></ul>
+  </section>
+
+  <section class="dir" id="b" aria-labelledby="b-title">
+    <div>
+      <p class="label pill">Direction B · Landing</p>
+      <h2 id="b-title">A 3D drone shot lands on the lit core as the logo appears.</h2>
+      <p class="idea">Cinematic. The camera skims low over a field of hex cells, cranes up and lands top-down on the one lit cell while agents converge on it. A second 3D moment in “Why this cycle” carries the crowd from games to AI.</p>
+    </div>
+    <div class="media">
+      <figure>
+        <div class="frame desk"><video src="b-landing/media/hero-desktop.mp4" poster="b-landing/media/fold-desktop.png" autoplay muted loop playsinline preload="metadata" aria-label="Landing hero motion on desktop"></video></div>
+        <figcaption>Hero motion · desktop</figcaption>
+      </figure>
+      <figure>
+        <div class="frame phone"><img src="b-landing/media/fold-phone.png" alt="Landing first screen on a phone" width="390" height="844" loading="lazy"></div>
+        <figcaption>First screen · phone</figcaption>
+      </figure>
+    </div>
+    <div class="actions">
+      <a class="btn" href="b-landing/index.html">Open the full page</a>
+    </div>
+    <details>
+      <summary>Watch the scroll-through (28 seconds)</summary>
+      <div class="frame"><video src="b-landing/media/scroll-desktop.mp4" controls muted playsinline preload="none" aria-label="Landing full page scroll-through"></video></div>
+    </details>
+    <div>
+      <p class="label">Blind review, round 1 (out of 10)</p>
+      <ul class="scores" style="margin-top:10px"><li>Reference fit <b>6</b></li><li>Agentic feel <b>6</b></li><li>Premium <b>5</b></li><li>Clarity <b>6</b></li><li>Kit <b>5</b></li><li>Phone <b>7</b></li></ul>
+    </div>
+    <ul class="notes"><li>The first build used a heavy 3D copy of the logo; the fix replaced it with the official mark on the kit’s honeycomb field.</li><li>The field and agents are still squeezed above the headline. Round 2 opens the drone shot up to the whole first screen.</li></ul>
+  </section>
+
+  <section class="dir" id="c" aria-labelledby="c-title">
+    <div>
+      <p class="label pill">Direction C · Three Cycles</p>
+      <h2 id="c-title">Your three cycles, 2021, 2023 and now, collapse into one view.</h2>
+      <p class="idea">Founder-led. Three honeycomb planes labelled 2021, 2023 and NOW hang in depth; a dolly zoom locks them into one field as the core lights. It is the promise made visual: “I want to get you there in one.”</p>
+    </div>
+    <div class="media">
+      <figure>
+        <div class="frame desk"><video src="c-three-cycles/media/hero-desktop.mp4" poster="c-three-cycles/media/fold-desktop.png" autoplay muted loop playsinline preload="metadata" aria-label="Three Cycles hero motion on desktop"></video></div>
+        <figcaption>Hero motion · desktop</figcaption>
+      </figure>
+      <figure>
+        <div class="frame phone"><img src="c-three-cycles/media/fold-phone.png" alt="Three Cycles first screen on a phone" width="390" height="844" loading="lazy"></div>
+        <figcaption>First screen · phone</figcaption>
+      </figure>
+    </div>
+    <div class="actions">
+      <a class="btn" href="c-three-cycles/index.html">Open the full page</a>
+    </div>
+    <details>
+      <summary>Watch the scroll-through (28 seconds)</summary>
+      <div class="frame"><video src="c-three-cycles/media/scroll-desktop.mp4" controls muted playsinline preload="none" aria-label="Three Cycles full page scroll-through"></video></div>
+    </details>
+    <div>
+      <p class="label">Blind review, round 1 (out of 10)</p>
+      <ul class="scores" style="margin-top:10px"><li>Reference fit <b>6</b></li><li>Agentic feel <b>6</b></li><li>Premium <b>5.5</b></li><li>Clarity <b>6</b></li><li>Kit <b>7.5</b></li><li>Phone <b>7</b></li></ul>
+    </div>
+    <ul class="notes"><li>The most dramatic resting frame, but the motion crosses the top headline mid-animation and the split headline leaves a gap early on. Both are round 2 fixes.</li><li>The founder section is the strongest of the three: real portrait, word-for-word transcript card from the launch video.</li></ul>
+  </section>
+
+  <section class="need" aria-labelledby="need-title">
+    <p class="label pill">Before launch</p>
+    <h2 id="need-title">What I still need from you</h2>
+    <ol>
+      <li>Your three Whop plan IDs (Founding $49, Standard $99, Yearly $990). <span>The checkout spot is ready for them.</span></li>
+      <li>The day and time of the weekly live call. <span>Shown on the live-calls card and in the FAQ.</span></li>
+      <li>Where Swarm lives once someone joins (Whop, Discord or something else). <span>Used in “How joining works” and the FAQ.</span></li>
+      <li>Confirm the AI tools don’t place trades for members. <span>The FAQ answers “Will the AI trade for me?”</span></li>
+      <li>What happens to the $49 founding price if a founder cancels and rejoins. <span>The FAQ answers “What does $49 forever mean?”</span></li>
+      <li>Your refund policy, Terms and Privacy links, and the legal name to show. <span>Whop also shows these under the pay button.</span></li>
+      <li>Approve the risk and disclaimer wording. <span>Plain-English drafts are on every page; I’d have a lawyer look before launch.</span></li>
+    </ol>
+  </section>
+
+  <p class="foot">Previews only. Nothing here is live on joinswarm.ai yet; the chosen direction goes into the real site after you pick it. The full pages open YouTube in a new tab and show a placeholder where the Whop checkout will load.</p>
+</div>

@@ -1,0 +1,133 @@
+# Swarm brief
+
+## Decisions (October 16, 2026)
+
+- **Direction picked: A, Core Glow** (Jesus, October 16, 2026, after the first look). His note: the agents' head-and-tapering-tail look "doesn't really make much sense" (it reads as sperm). Agents are now small hexagonal nodes that hop along the honeycomb's own edges, lighting each edge briefly as they pass; no tails, no swimming curves, everything on the grid. Directions B and C are kept for reference only.
+- **Jesus's notes on Core Glow (October 16, 2026, after round 2):**
+  - **New fact from Jesus: the custom AI tools are actively still being built.** That is a perk of being early: founding members get each tool as it is completed, and **prices will rise as the tools are completed.** Say this on the AI tools card, in pricing and in the FAQ. Never give completion dates.
+  - Use photos from martinezaccess.com: the professional portrait (`assets/jesus-interview.jpg`) for the founder card, the city portrait (`assets/jesus-city.jpg`) for small avatars. Do not use `jesus-studio-smile.jpg`.
+  - The watch list mock shows the word "Asset" on its rows (Asset 01, Asset 02, ...) instead of redaction bars. No real tickers.
+  - Scout states: "Flagged for review" makes no sense to him. Use SCANNING, ANALYZING and REPORTING (for example "Reporting to the watch list").
+  - Every gold "Join Swarm" button gets a highlight revolving around it so people focus on it. This is Jesus's explicit request and the one exception to the kit's no-glow rule; under reduced motion it is a static ring.
+  - The hero must not end in an empty band at the bottom of the first screen.
+  - **No martinezaccess.com anywhere on the Swarm page or its legal pages** (Jesus, October 17): not in the footer, links, emails or meta. Contact address: support@joinswarm.ai (Jesus still needs to create this inbox).
+  - **Weekly live calls: no day or time.** People just need to know the calls are weekly.
+  - **Swarm lives on Discord.** After checkout through Whop, members get access to the Swarm Discord.
+  - **Founding price policy:** a founding member keeps $49 a month for as long as they stay subscribed. If they cancel and rejoin after prices have gone up, they pay the price at that time.
+  - **The intro video caption is "Why I built Swarm"** (his words at 3:14), not "Watch the intro".
+  - **FAQ:** Jesus approved the Q&A copy; keep it to at most six questions with no near-duplicates.
+  - **Terms, Privacy and Refund policy pages are generated drafts** (terms.html, privacy.html, refunds.html), linked from the footer, to be reviewed before launch.
+  - **Whop plan IDs are not finished yet;** the checkout placeholder stays.
+  - **No "Pause motion" buttons anywhere** (Jesus: they are useless). To stay accessible without them, every motion piece plays once and settles within 5 seconds of coming into view, with no ambient loops (WCAG 2.2.2 only requires a pause control for motion that runs longer than 5 seconds). Under reduced motion, show the settled still. Reviewers should not flag the missing pause control when this holds.
+- **The page is 100% the Swarm offer.** It is the landing page for the agentic AI crypto trading community, not a personal site. Jesus appears as the founder (his story, his face, his voice) inside it. martinezaccess.com stays his personal site and links here.
+- **Because the whole page is a Swarm page, the Swarm brand kit applies to the whole page:** the `.swarm` wrapper goes on the page root, the Swarm og:image and Swarm icons go in its head. The three style directions differ in composition, motion language, narrative and texture, all inside the kit's colors and fonts.
+- **Domain:** Jesus bought `joinswarm.ai` on October 16, 2026 (Namecheap). Plan: add it to the existing Vercel project and route that host to the Swarm page, so martinezaccess.com is untouched. Until the Swarm page ships, previews live in the design lab.
+- **Checkout:** Whop embedded checkout on the page. Jesus does not have the Whop plan IDs yet, so every page shows a clearly marked placeholder where the Whop checkout will mount, wired so that swapping in the three plan IDs later is a one-line change per plan.
+- **Taste reference from Jesus:** https://www.joinasymmetric.xyz/ (a paid trading community page). Reference only, never copy its layout, copy, assets or code. See "Taste notes" below.
+- **The graphics:** original 2D and 3D motion that amplifies the agentic feel: many independent agents sensing, deciding and converging on one signal, which is also the Hive Core logo's meaning.
+
+## Pricing (from Jesus's pre-launch checkout screenshot, October 16, 2026)
+
+- Eyebrow: `// PRE-LAUNCH · JOIN THE SWARM`. Headline: **Early on purpose.**
+- "The first 50 founding seats lock in $49/month forever. After that it goes to $99/month. Cancel anytime."
+- Plans, in this order:
+  1. **Founding Monthly, $49/mo.** "Forever. Cancel whenever. 50 seats only." Renews at $49.00 per month.
+  2. **Standard Monthly, $99/mo.**
+  3. **Yearly, $990/year, 2 months free** (twelve months of the $99 standard plan for the price of ten; confirmed by Jesus on October 16, 2026).
+- Checkout takes card or ACH (Whop).
+- Not provided, so never invented: how many founding seats are left, member count, testimonials, results, a launch date, a refund policy beyond "cancel anytime".
+- The screenshot's checkout used a condensed italic display face. The brand kit's type (Unbounded, JetBrains Mono, Hanken Grotesk) wins on the page; the copy and prices above are what to follow.
+
+## Taste: build it like joinasymmetric.xyz (updated October 16, 2026)
+
+Jesus looked at the first Swarm page and said it "looks way different than https://www.joinasymmetric.xyz/#cta". **He wants the Swarm page to look and flow like that page**: same kind of structure, pacing, density and energy, in the Swarm brand kit (ink, one gold signal, Unbounded / Hanken Grotesk / JetBrains Mono, honeycomb field) and with our own words, photos and graphics. Never copy its text, images, logos, icons or code. Reference screenshots: `scratchpad/taste/asym-tile0.png` to `asym-tile5.png` (whole page) and `scratchpad/taste2/cta-d.png`, `cta-p.png` (pricing at desktop and phone).
+
+What to carry over, translated into Swarm:
+
+- **Centered, single-column flow.** Big centered two-line headlines, centered body copy (max about 60ch), centered CTA with "Cancel anytime." under it, repeated after most sections.
+- **Two-tone headlines.** Their second line is an accent; in Swarm the kit allows no gold text, so set the setup line in `--swarm-text-muted` and the punchline in `--swarm-text` (or the reverse), both Unbounded 600.
+- **Hero atmosphere.** Their hero has light falling from above. Swarm's atmosphere is the Hive Core's own glow and the honeycomb field with agents converging on it (the only glow the kit allows).
+- **A strip of short fact chips** at the top of the hero (pre-launch, 50 founding seats, weekly live calls, custom AI tools, card or ACH through Whop).
+- **Floating cards beside the hero** (theirs are testimonials). Swarm has none, so use quote cards with Jesus's real lines from the intro video with their timestamps, or agent-status cards labelled as illustrations.
+- **Small pill eyebrows** above each section headline (mono, uppercase, 1px border, radius 10px chip).
+- **The founder story in its own frame.** Theirs is an email; ours is a framed transcript card from the intro video with real timestamps (2:33, 2:48, 3:02, verbatim from `swarm-intro-transcript.md`), plus a portrait.
+- **What members get as a grid of product-mock cards**, each with a working mock on top, a small tag chip, a title and short lines. Swarm has 4 benefits, so a 2 x 2 grid (or 2 wide plus 2), never 3 equal icon cards. No dollar "value" tags: we have no values to show.
+- **Pricing as one centered card** (their #cta): a segmented plan switch (Founding, Standard, Yearly), a big price, a short checklist of the four benefits, a full-width gold "Join Swarm" button, and the Whop checkout placeholder right under it.
+- **Who it's for, how joining works, FAQ, final CTA, footer disclosure**, in that spirit.
+
+Still never: invented testimonials, member counts, wins, results, seats-left counts, value-stack dollars, or their exact wording. Their blue, serif italic and drop-shadow glows are not used; the kit's ink, gold core glow and fonts replace them.
+
+## Founder details
+
+`FOUNDER-DOSSIER.md` (being compiled October 16, 2026 from his site, the Attention Cycle story bible, his own videos, his profiles and the launch video, then fact-checked) is the reference for anything about Jesus on the page: timeline, story beats, a verbatim quote bank with timestamps, sourced numbers, photo inventory and founder-section drafts. When it exists, use it for the founder section and quote cards, and never use anything in its "Unverified" section.
+
+## Verified transcript
+
+`swarm-intro-transcript.md` is the timestamped transcript from YouTube's captions (fetched October 16, 2026). It supersedes the vidIQ wording below, and the quote bank in `FOUNDER-DOSSIER.md` (section 3) is the final authority for exact wording and timestamps. **Anything shown as a quote (quotation marks, a quote card, or a timestamp) must match it word for word, with its real timestamp.** Headlines may lightly edit his lines when they are not presented as quotes. Correct timestamps for the founder story are 2:33, 2:48 and 3:02; the closing line is at 3:51 and reads "Being early and being wrong a lot of the time feels the same way. But I want you to be early and actually know exactly why."
+
+## The video
+
+Source: Jesus's intro video "Welcome To Swarm | AI Agentic Trading", JM Crypto, published October 16, 2026, 4:05 long. https://youtu.be/n15W6X84IGg
+
+The notes below come from a vidIQ watch-through of the video on October 16, 2026 (scene breakdown, near-verbatim transcript, on-screen text). Captions were not yet available from YouTube. Re-check the quotes against the official captions once they appear.
+
+## What Swarm is
+
+- **Name:** Swarm
+- **Line under the logo:** "AI Crypto Trading Community" and "For The New Era"
+- **What members get (his words, in order):**
+  1. **Custom AI tools** that he builds and maintains himself to trade the markets
+  2. **His watch list**, so you always know what he is looking at
+  3. **Weekly live calls** with live portfolio reviews
+  4. **Multi-cycle traders**: traders who have made it through several cycles sharing how they see the market now
+- **Who it is for:**
+  - First cycle: "this saves you from learning it the expensive way" (on screen: SKIP THE EXPENSIVE LESSON)
+  - Second cycle, burned and waiting on the sideline: "this is how you get back in with a plan" (on screen: GET BACK IN WITH A PLAN)
+- **Call to action:** "If you want to be on the right side of this cycle, hit the button below and join Swarm. I'll see you inside."
+- **Not stated anywhere in the video:** price, launch date, member count, results, or the join link. On any page these are `[DATA NEEDED]`. Never invent them.
+
+## The idea the video sells
+
+- **The crypto curve.** Every cycle has three kinds of people. Left curve (first cycle): buys because everyone is buying, no idea when to sell. Mid curve (second cycle): got burned, overthinks, sells too early. Right curve (third cycle): looks like left curve from outside because both are buying, but knows what it is buying, why, and when to get out.
+- **The promise:** "Most people need three cycles and a lot of pain to get there. I want to get you there in one."
+- **The thesis:** cycles are about attention, not crypto. The crowd's money goes to the riskiest bet on whatever everyone is excited about. Since 2023 that is AI. The money coming back is a more informed crowd that wants "real things, real revenue, real users".
+- **His cycles:** 2021 (first), 2023 (second), now (third). "I'm doing the same deep work on AI that I did on gaming."
+- **Closing line worth reusing** (verbatim, 3:51): "Being early and being wrong a lot of the time feels the same way. But I want you to be early and actually know exactly why." As a headline (not a quote) it may be shortened to "Being early and being wrong feel the same."
+
+## His story as told in this video (use this version on Swarm-related copy)
+
+In 2021 he was working as a server and studying economics. His brother had just lost everything trading. For his brother's birthday he gave him three Axies (Axie Infinity creatures); two months later they were worth tens of thousands of dollars, which helped his brother get back on his feet. "It wasn't luck. I grew up playing video games, so I understood how these game economies worked." He did the same with other crypto games, which started the channel. He stayed through the bear market.
+
+The website's existing story ($700 into Axie Infinity, half of what he had in the bank, grown to mid-five figures through the breeding market) is also his own account. Both can stand; do not merge them into new numbers.
+
+## Market figures in the video (do not use on the page without a source line)
+
+The video cites Activision up about 2.5x in 2020, Axie Infinity up over 1,000x with over $4 billion in revenue in a calendar year, riskier AI stocks up 4x to 10x, and Robinhood crypto trading volume up 61% in August 2026 in one month. These have not been verified for the website. Leave them off the landing previews, or mark them `[SOURCE NEEDED]`.
+
+## Swarm brand kit (binding for anything Swarm)
+
+The approved kit lives at `public/brand/swarm/` with its handoff doc at `docs/swarm-brand.md` (from the `swarm-brand` branch, brought in on October 16, 2026). **Read `docs/swarm-brand.md` and follow it.** Where this brief or any direction disagrees with the kit, the kit wins. In the design lab, `design-lab/landing/brand` links to `public/brand`, so prototypes reference `../brand/swarm/...`.
+
+The rules that matter most for the previews:
+
+- **Logo: Hive Core.** Use the SVG files in `brand/swarm/logo/` as they are, in an `<img>`. Never rebuild the mark, re-type `SWARM`, recolor it, or light a second cell. Default lockup `swarm-horizontal-for-dark-bg.svg` (hero, footer); `swarm-horizontal-compact-for-dark-bg.svg` under 240px wide; `swarm-stacked-for-dark-bg.svg` for square spaces; `swarm-mark.svg` alone on dark; `swarm-mark-flat.svg` under 48px or over photos. Minimum sizes: mark 24px tall, horizontal 160px wide, compact 120px, stacked 96px. `alt="Swarm"` on lockups, `alt=""` when the word Swarm sits next to the mark.
+- **Tokens are scoped.** Load `brand/swarm/swarm-tokens.css` and put every Swarm section inside a `.swarm` wrapper. The `--swarm-*` tokens and the Swarm fonts apply only inside that wrapper, never to the rest of the page, which keeps its own direction's look.
+- **Color inside `.swarm`:** ink-first (`#0B0B0D` ground, `#EEEBE4` text, `#8E8A80` muted). Gold `#F5C542` is the signal: the core cell, ONE primary button per view, one highlighted number. Text on gold is `#141416`. Never a gold section background. Grey `#55555B` is for hex outlines only, never text. No gradients except the core cell's radial gradient and soft glow. No drop shadows; borders are 1px `#232328`.
+- **Type inside `.swarm`:** Unbounded 600 headlines (uppercase only on short title cards, +0.06em tracking), JetBrains Mono 500 for labels and numbers (labels uppercase, +0.32em tracking), Hanken Grotesk 400 for paragraphs. Never paragraphs in Unbounded.
+- **Shape inside `.swarm`:** radius 28px panels, 18px buttons and inputs, 10px chips. No emoji.
+- **The only decorative pattern** is the honeycomb field: pointy-top hex outlines in `#1C1C21` fading toward the edges, exactly one gold lit cell and its six neighbours outlined in `#55555B` (see `brand/swarm/social/swarm-x-header-1500x500.png`). Keep text off the lit cell. Motion built for Swarm (3D or 2D) animates this field and the idea "the swarm converges on one signal"; it never builds a 3D or redrawn copy of the mark and never lights a second cell.
+- **Meta:** Swarm pages use `brand/swarm/social/swarm-og-1200x630.png` as og:image and Twitter card, and the Swarm icons in `brand/swarm/icons/`. The landing page itself is a martinezaccess.com page, so it keeps the site's own og:image and favicon; a dedicated Swarm page gets the Swarm ones.
+
+## Visual language in the video (secondary to the kit)
+
+- The video's lower thirds use a condensed uppercase sans, mono eyebrow labels with `//` separators (`CASE STUDY // 2020`, `SWARM // MEMBERS GET`), and dark panels with thin gold borders. Its gold reads slightly warmer than the kit's; use the kit's `#F5C542`.
+- Motion: technical HUD cards, line charts that plot themselves, a gold bell curve with left, mid and right zones lighting up.
+- Frame `assets/swarm-intro-frame.jpg` is YouTube's auto thumbnail (Jesus at the mic with two lower thirds). The video's logo reveal is at 3:18; we cannot extract frames until we have the file. For a poster, prefer a composed panel with the kit lockup over the auto thumbnail.
+
+## Video on the page
+
+Artifact previews cannot embed YouTube, so the preview shows a designed poster with a play control that opens the video on YouTube. The production site will embed it inline (youtube-nocookie, click to load). A short muted loop needs the original file, shared from Google Drive with "Anyone with the link".
+
+## Brand note
+
+Swarm's kit is ink with a single gold signal. Gold on ink is also The Attention Cycle's palette, and the JM Crypto channel is cyan. Keep Swarm's gold inside the `.swarm` sections; the rest of the landing page carries its own direction's palette, so the page as a whole reads as Jesus's site with a Swarm section, not as a Swarm or Attention Cycle asset.

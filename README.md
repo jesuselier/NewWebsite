@@ -1,6 +1,6 @@
 # Martinez Access
 
-Personal website for Jesus Martinez, creator of JM Crypto. Built with Next.js 16 App Router, React 19, and TypeScript. Production deploys from `main` to the Vercel project `new-website` at https://www.martinezaccess.com.
+Personal website for Jesus Martinez, creator of JM Crypto. Built with Next.js 16 App Router, React 19, and TypeScript. Production deploys from `main` to the Vercel project `new-website` at https://www.martinezaccess.com. The same project serves Swarm at https://www.joinswarm.ai (see below).
 
 ## Develop and verify
 
@@ -30,6 +30,18 @@ The original press-kit Google Drive folder was unavailable. `/press-kit` now hos
 The landing-page introduction uses `jesus-martinez-city-portrait.png`, an AI-assisted crop and restrained color correction of Jesus's supplied New York nighttime photograph. Jesus requested a tighter crop and color correction after choosing the camera-facing city portrait. Keep the natural smile, eye contact, and visible skyline. The studio originals remain available. The candid professional portrait sits to the left of the homepage story text and also appears on `/about`, so his gaze leads toward the story on desktop.
 
 `public/media/jesus-martinez-professional.jpg` is the original `C2_09680.JPG` selected from Jesus's supplied professional shoot folder on September 23, 2026. Source: https://drive.google.com/file/d/1zlg4FdtsuWOLd5-gnTlpZhqzc1W-z0cz/view (folder `16j5_T-xpDHJVKr27UzPVgFS5amWheSMw`). Original photographs are preserved; Next Image handles orientation and optimized responsive delivery. Check both portrait crops at desktop, tablet, and phone widths when changing their containers.
+
+## Swarm (joinswarm.ai)
+
+Swarm is Jesus's AI crypto trading community. Its launch page is served from this project at https://www.joinswarm.ai (the bare `joinswarm.ai` redirects to `www` in Vercel, so `www` is canonical; `SWARM_ORIGIN` in `lib/swarm.ts` follows that choice).
+
+The page is a static site in `public/swarm-site/`, like the tier list: `index.html` plus the Terms, Privacy and Refund policy pages, its CSS and Canvas and Three.js scripts, self-hosted fonts and Three.js, and two photos. It is built from the design lab copy in `design-lab/landing/a-core-glow/` by `node scripts/build-swarm-site.mjs`, which rewrites paths to `/swarm-site/...` and `/brand/swarm/...`, drops the preview-only Content Security Policy, adds the canonical URLs, the Vercel Analytics loader (`app/(swarm)/swarm-analytics.js`) and the production-only `swarm-site.js` and `swarm-site.css` from `design-lab/landing/swarm-site/`, hides the `[CONFIRM]` and `[Data needed]` notes and the legal pages' draft badge (they stay in the lab copy for Jesus), then checks that nothing points at the lab, a CDN or martinezaccess.com and lists the notes still open. Do not edit `public/swarm-site/` by hand; change the lab copy and rebuild. The launch video (https://youtu.be/n15W6X84IGg) plays in a youtube-nocookie player only after the visitor clicks, which is what the privacy policy says.
+
+`next.config.ts` routes by host. On joinswarm.ai, `/` rewrites to `/swarm-site/index.html`, `/terms`, `/privacy` and `/refunds` to the legal pages, and `robots.txt`, `sitemap.xml` and `favicon.ico` to Swarm's own versions (`app/(swarm)/swarm/robots.txt` and `sitemap.xml`); any other path that is not a Swarm asset or a Next or Vercel internal redirects to `/`, so site pages never render under the Swarm domain. On martinezaccess.com, `/swarm` and `/swarm-site/*` redirect to joinswarm.ai. Preview deployments show the page at `/swarm`, and `swarm-site.js` points its legal links at the files there. The site's share image is a route handler at `app/opengraph-image/route.tsx` and its icons live in `public/`, so their URLs stay `/opengraph-image`, `/icon.svg` and `/favicon.ico` and they are never attached to Swarm pages.
+
+Pricing is Jesus's pre-launch pricing: Founding Monthly $49 for the first 50 seats (kept while the member stays subscribed), Standard Monthly $99, Yearly $990 (two months free). There are no results, member counts or testimonials yet, so none appear. Checkout runs through Whop; until the plan IDs exist the pricing card shows a "checkout opens here soon" placeholder. The IDs go in the `PLANS` table in `design-lab/landing/a-core-glow/page.js` (one `whopPlanId` per plan), and then the page is rebuilt.
+
+To verify host routing locally, run `npm run build && npx next start` and request pages with `curl -H "Host: www.joinswarm.ai"`.
 
 ## Homepage
 

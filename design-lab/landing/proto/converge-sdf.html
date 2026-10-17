@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Swarm Signal Field</title>
+<style>
+  html,body{margin:0;height:100%;background:#0B0B0D;overflow:hidden}
+  #stage{position:relative;width:100vw;height:100vh}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #mark{position:absolute;opacity:0;pointer-events:none;transition:opacity 240ms cubic-bezier(.2,.7,.2,1)}
+  #mark.on{opacity:1}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+<div id="stage"><img id="mark" src="../brand/swarm/logo/swarm-mark.svg" alt=""></div>
+<script type="module">
+import * as THREE from 'three';
+// One full-screen quad. The fragment shader draws the honeycomb with an exact hex SDF,
+// fires cell-quantized "sensing" pings, and sends three hex-ring wavefronts inward to the core.
+const params = new URLSearchParams(location.search);
+const FIXED_T = params.has('t') ? +params.get('t') : null;
+const PERF = params.has('perf');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stage = document.getElementById('stage'), mark = document.getElementById('mark');
+const T = { scanEnd: 2400, waves: [2400, 2900, 3400], waveDur: 900, resolve: 4400 };
+
+const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'low-power' });
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene(), cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const U = {
+  uRes: { value: new THREE.Vector2() }, uDpr: { value: 1 }, uCore: { value: new THREE.Vector2() },
+  uR: { value: 34 }, uTime: { value: 0 }, uWaves: { value: new THREE.Vector3(...T.waves) },
+  uWaveDur: { value: T.waveDur }, uScanEnd: { value: T.scanEnd }, uResolve: { value: T.resolve },
+  uMaxD: { value: 1000 }
+};
+const mat = new THREE.ShaderMaterial({
+  uniforms: U,
+  vertexShader: `void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: `
+    precision highp float;
+    uniform vec2 uRes; uniform float uDpr; uniform vec2 uCore; uniform float uR; uniform float uTime;
+    uniform vec3 uWaves; uniform float uWaveDur; uniform float uScanEnd; uniform float uResolve; uniform float uMaxD;
+    const vec3 GROUND = vec3(0.043,0.043,0.051);   // #0B0B0D
+    const vec3 FAINT  = vec3(0.110,0.110,0.129);   // #1C1C21
+    const vec3 HIVE   = vec3(0.333,0.333,0.357);   // #55555B
+    const vec3 GOLD   = vec3(0.961,0.773,0.259);   // #F5C542
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
+    // Inigo Quilez exact hexagon SDF, rotated for pointy-top (swap axes). r = apothem.
+    float sdHex(vec2 p, float r){
+      const vec3 k = vec3(-0.866025404, 0.5, 0.577350269);
+      p = abs(p.yx);
+      p -= 2.0 * min(dot(k.xy, p), 0.0) * k.xy;
+      p -= vec2(clamp(p.x, -k.z * r, k.z * r), r);
+      return length(p) * sign(p.y);
+    }
+    // pixel -> axial (pointy-top), cube rounding (Red Blob Games)
+    vec2 axialRound(vec2 a){
+      vec3 c = vec3(a.x, -a.x - a.y, a.y); vec3 rc = floor(c + 0.5); vec3 d = abs(rc - c);
+      if (d.x > d.y && d.x > d.z) rc.x = -rc.y - rc.z; else if (d.y > d.z) rc.y = -rc.x - rc.z; else rc.z = -rc.x - rc.y;
+      return vec2(rc.x, rc.z);
+    }
+    float ss(float a, float b, float x){ return smoothstep(a, b, x); }
+    void main(){
+      vec2 px = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;   // CSS px, top-left origin
+      vec2 p = px - uCore;
+      float pitch = 1.95 * uR;                // same ratio as the Hive Core mark (39 / 20)
+      float s = pitch / sqrt(3.0);            // lattice size
+      vec2 ax = vec2((sqrt(3.0)/3.0 * p.x - 1.0/3.0 * p.y) / s, (2.0/3.0 * p.y) / s);
+      vec2 cell = axialRound(ax);
+      vec2 center = s * vec2(sqrt(3.0) * cell.x + sqrt(3.0)/2.0 * cell.y, 1.5 * cell.y);
+      float ring = (abs(cell.x) + abs(cell.x + cell.y) + abs(cell.y)) / 2.0;
+      float sd = sdHex(p - center, uR * 0.97 * 0.8660254);
+      float aa = 1.0 / uDpr;
+      float line = 1.0 - ss(0.0, aa * 1.2, abs(sd));
+      float h = hash(cell);
+      float t = uTime;
+      // reveal by ring, edge fade
+      float reveal = ss(ring * 45.0, ring * 45.0 + 300.0, t);
+      float fade = max(0.12, 1.0 - ss(0.25 * uMaxD, uMaxD, length(center)));
+      vec3 col = GROUND;
+      float base = reveal * fade;
+      // sensing pings: each cell fires on its own clock (independent agents), 0.8 s envelope
+      float period = 2600.0 + h * 2600.0;
+      float ph = mod(t + h * 9000.0, period);
+      float ping = ss(0.0, 120.0, ph) * (1.0 - ss(280.0, 800.0, ph)) * step(0.55, fract(h * 13.7));
+      float consensus = ss(uScanEnd, uScanEnd + 600.0, t);
+      ping *= (1.0 - consensus * (1.0 - ss(1.5, 3.5, ring)));   // no pings within 2 rings once consensus starts
+      ping *= ss(400.0, 900.0, t);
+      // inward wavefronts: a hex ring lights as the front passes it, cell-quantized
+      float wave = 0.0;
+      for (int i = 0; i < 3; i++){
+        float w0 = uWaves[i];
+        float k = clamp((t - w0) / uWaveDur, 0.0, 1.0);
+        float maxRing = uMaxD / pitch;
+        float front = mix(maxRing, 1.0, k * k * (3.0 - 2.0 * k));
+        float on = (t > w0 && t < w0 + uWaveDur + 200.0) ? 1.0 - ss(0.0, 1.2, abs(ring - front)) : 0.0;
+        wave = max(wave, on * (0.35 + 0.15 * float(i)));
+      }
+      float lit = max(ping * 0.85, wave);
+      vec3 outline = mix(FAINT, HIVE, lit);
+      float a = max(base, lit);
+      // six neighbours settle to hive grey
+      float nb = (ring == 1.0) ? ss(uWaves.z + 300.0, uResolve, t) : 0.0;
+      outline = mix(outline, HIVE, nb); a = max(a, nb);
+      // core: gold outline that charges with the waves; gradient and glow come only from the SVG
+      if (ring == 0.0){
+        float charge = ss(uWaves.x + uWaveDur * 0.8, uResolve, t);
+        float off = 1.0 - ss(uResolve, uResolve + 240.0, t);
+        float coreLine = 1.0 - ss(0.0, aa * 1.6, abs(sdHex(p, uR * 0.82 * 0.8660254)));
+        col = mix(col, GOLD, coreLine * charge * off);
+        gl_FragColor = vec4(col, 1.0); return;
+      }
+      col = mix(col, outline, line * a);
+      gl_FragColor = vec4(col, 1.0);
+    }`
+});
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
+
+function layout(){
+  const dpr = Math.min(devicePixelRatio || 1, 2), W = innerWidth, H = innerHeight, phone = W <= 640;
+  renderer.setPixelRatio(dpr); renderer.setSize(W, H, false);
+  const R = phone ? 22 : 34, S = R / 0.133333;
+  const core = phone ? { x: W * 0.5, y: H * 0.34 } : { x: W * 0.70, y: H * 0.50 };
+  U.uRes.value.set(W * dpr, H * dpr); U.uDpr.value = dpr; U.uCore.value.set(core.x, core.y); U.uR.value = R;
+  U.uMaxD.value = Math.hypot(Math.max(core.x, W - core.x), Math.max(core.y, H - core.y));
+  Object.assign(mark.style, { width: S + 'px', height: S + 'px', left: (core.x - S / 2) + 'px', top: (core.y - S / 2) + 'px' });
+}
+layout(); addEventListener('resize', layout);
+
+function render(t){ U.uTime.value = t; renderer.render(scene, cam); mark.classList.toggle('on', t >= T.resolve); }
+if (FIXED_T !== null || reduce) {
+  render(reduce ? T.resolve + 400 : FIXED_T);
+  if (reduce) mark.style.transition = 'none';
+  document.body.dataset.ready = '1';
+} else {
+  let start = null; const times = [];
+  const loop = (now) => { if (start === null) start = now; const a = performance.now(); render(now - start); renderer.getContext().finish(); const b = performance.now();
+    if (PERF) { times.push(b - a); if (times.length === 300) { times.sort((x, y) => x - y); document.body.dataset.perf = times[150].toFixed(2) + '/' + times[285].toFixed(2); } }
+    requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

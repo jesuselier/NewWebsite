@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { LINKS } from "@/lib/site";
-import "./globals.css";
+import "../globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -35,7 +35,14 @@ export const metadata: Metadata = {
     creator: "@JesusMartinez",
     images: ["/opengraph-image"],
   },
-  icons: { icon: "/icon.svg" },
+  // favicon.ico lives in public/ so it is not injected into the Swarm pages,
+  // which carry their own icons (see app/(swarm)/layout.tsx).
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "256x256", type: "image/x-icon" },
+      { url: "/icon.svg" },
+    ],
+  },
 };
 const person = {
   "@context": "https://schema.org",
