@@ -22,6 +22,6 @@
 - In Vercel, confirm both joinswarm.ai and www.joinswarm.ai show "Valid Configuration".
 - After the deploy, open https://www.joinswarm.ai on a phone, play the video, open each legal page, and paste the link into an X draft to check the share card.
 
-## Not part of Swarm, but worth fixing
+## Not part of Swarm
 
-- Two photos on martinezaccess.com (`public/media/jesus-martinez-portrait.jpg`, `public/media/jesus-martinez-studio.jpg`) still contain GPS location data. Stripping it is a two-minute change if you want it.
+- Done October 17 (pull request #3): the GPS location data is removed from the two martinezaccess.com photos. The originals are still in the public repository's history and in older Vercel deployments; removing those needs Jesus's go-ahead (make the repo private, delete old deployments, or rewrite history).
