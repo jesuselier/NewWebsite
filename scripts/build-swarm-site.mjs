@@ -117,6 +117,10 @@ function transformPage(name, html) {
     html = replaceOnce(html, "</head>", `<link rel="stylesheet" href="${BASE}/swarm-site.css">\n</head>`, "index head");
   }
   if (name === "privacy.html") html = fixPrivacy(html);
+  // The [CONFIRM ...] and [Data needed ...] notes and the legal pages' draft badge are for Jesus; they stay in the lab copy and never show on the live
+  // site (Jesus, October 17). The build still lists them below, read from the lab copy.
+  html = html.replace(/ ?<span class="(?:cf|dn)">\[(?:CONFIRM|DATA NEEDED)[^\]]*\]<\/span>/gi, "");
+  html = html.replace(/\s*<span class="lg-draft">[^<]*<\/span>/g, "");
   return replaceOnce(html, "</body>", `${ANALYTICS}\n</body>`, `${name} body`);
 }
 
@@ -170,7 +174,7 @@ for (const name of Object.keys(PAGES)) {
 }
 for (const file of used) cpSync(`${photos}${file}`, `${out}img/${file}`);
 
-// Checks: nothing points back at the lab, the old site or a CDN, and every local file exists.
+// Checks: nothing points back at the lab, the old site or a CDN, no internal note shows, and every local file exists.
 const problems = [];
 const blockers = [];
 for (const entry of readdirSync(out, { recursive: true })) {
@@ -185,12 +189,15 @@ for (const entry of readdirSync(out, { recursive: true })) {
     const file = `${root}public${decodeURIComponent(ref)}`;
     if (!existsSync(file)) problems.push(`${entry}: missing ${ref}`);
   }
-  if (entry.endsWith(".html")) {
-    for (const [chip] of text.matchAll(/\[(?:CONFIRM|DATA NEEDED)[^\]]*\]/gi)) blockers.push(`${entry}: ${chip}`);
+  if (!entry.endsWith(".css") && /\[(?:CONFIRM|DATA NEEDED)|review before launch/i.test(text)) problems.push(`${entry}: shows an internal [CONFIRM] or [Data needed] note`);
+}
+for (const name of Object.keys(PAGES)) {
+  for (const [chip] of readFileSync(`${src}${name}`, "utf8").matchAll(/\[(?:CONFIRM|DATA NEEDED)[^\]]*\]/gi)) {
+    if (!chip.includes("youtube-nocookie")) blockers.push(`${name}: ${chip}`); // resolved by swarm-site.js
   }
 }
 if (problems.length) fail(`\n  ${problems.join("\n  ")}`);
 console.log(`Built ${out}`);
 if (blockers.length) {
-  console.log(`\nOpen items to resolve before launch (${blockers.length}):\n  ${blockers.join("\n  ")}`);
+  console.log(`\nOpen items, hidden on the live site until resolved (${blockers.length}):\n  ${blockers.join("\n  ")}`);
 }
