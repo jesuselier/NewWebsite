@@ -1,7 +1,7 @@
 /* Swarm A, Core Glow: page controller.
    Nav state, the revolving light on the gold Join Swarm buttons, the four product mocks (each plays once and settles
    inside 5s), the Custom AI tools scout field (a 2D model rendered by tools3d.js in Three.js, or drawn flat as a
-   still), the why-now band, the pricing core, the final field, and the pricing switch with the Whop checkout stub.
+   still), the why-now band, the pricing lock moment, the final field, and the pricing switch with the Whop checkout stub.
    Every motion piece plays once when it comes into view and settles within 5 seconds; nothing loops, so there is no
    pause control. Everything pauses offscreen and while the tab is hidden.
    Every agent here uses the same language as the hero: hexagonal nodes hopping along the honeycomb's edges. */
@@ -21,6 +21,18 @@
   const visIO = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => seen.set(e.target, e.isIntersecting)), { threshold: 0 }) : null;
   const watchVis = el => { if (visIO && el) { seen.set(el, true); visIO.observe(el); } };
   const shown = el => !document.hidden && seen.get(el) !== false;
+  // a mock's own clock: it only runs while the mock is on screen and the tab is visible, so a quick scroll past never
+  // reaches the end unseen (each mock's steps are bounded under 5s of its own time)
+  function mockClock(el) {
+    watchVis(el);
+    let t = 0, last = 0, iv = 0, q = [];
+    const tick = () => {
+      const now = performance.now(); if (shown(el)) t += Math.min(250, now - last); last = now;
+      q = q.filter(([ms, f]) => { if (t >= ms) { f(); return false; } return true; });
+      if (!q.length) { clearInterval(iv); iv = 0; }
+    };
+    return { at(ms, f) { q.push([ms, f]); if (!iv) { last = performance.now(); iv = setInterval(tick, 40); } }, reset() { t = 0; q = []; if (iv) { clearInterval(iv); iv = 0; } } };
+  }
 
   /* ---------- nav ---------- */
   const nav = $('#nav');
@@ -28,32 +40,70 @@
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
   /* ---------- the revolving light on the gold Join Swarm buttons ----------
-     CSS draws it (core-glow.css). Each time a button comes into view it plays once (3.6s) and rests on a full ring;
-     it plays again on hover or keyboard focus once the last run has finished. The hero's light starts as the six
-     paths land on the core, so the eye goes from the lit cell to the button, and rests on its full ring by 6s. */
+     CSS draws it (core-glow.css): at rest a quiet 1px track in the kit's line colour; each time a button comes into
+     view a gold comet runs one lap (2.4s) and goes out. It plays again on hover or keyboard focus once the last run has
+     finished. The hero's own light waits for the swarm's signal (hero.js publishes window.SWARM.heroSignal: when and
+     where on the ring the pulse lands, about 2.75s on desktop; with no route, just after ignition at the point nearest
+     the core). There the button's fill lifts once (400ms, toward the kit's light gold and back) and the comet leaves
+     the contact point for one 1.4s lap (Web Animations, seekable for ?t=). If hero.js failed, the hero ring plays the
+     same 1.4s lap from the top at 2.2s, so everything still settles inside 5s. */
   const golds = $$('.btn-gold'), heroBtn = $('.btn-hero');
-  const RING_MS = 3600, HERO_RING_AT = 2250;               // hero clock: the trains land from about 1.6s, the core ignites at 2.4s
+  const RING_MS = 2400, HERO_RING_AT = 2200, SIG_EASE = 'cubic-bezier(.33,.7,.3,1)', SIG_LAP = 1400;
+  const GOLD = '#F5C542', GOLD_LIFT = 'color-mix(in srgb, #F5C542 62%, #FFF7CF)';
+  const heroSig = () => (window.SWARM && window.SWARM.heroSignal) || null;
   const ringPlay = b => { b.classList.remove('ring-run', 'ring-done'); void b.offsetWidth; b.classList.add('ring-run'); b.dataset.ring = 'run'; };
+  // the handoff: the comet leaves the contact point (pathLength units) for one lap; the fill lifts as it lands
+  function sigAnims(b, pos, lap) {
+    const head = b.querySelector('.r-head');
+    if (!head || !head.animate) return null;
+    const o = { duration: lap, easing: SIG_EASE, fill: 'forwards' };
+    const tails = Array.from(b.querySelectorAll('.r-t')).map((el, k) => {
+      const len = [15, 12, 9, 7, 5][k] || 5, al = [0.08, 0.12, 0.18, 0.24, 0.3][k] || 0.2;
+      return el.animate([{ strokeDashoffset: String(len - pos), opacity: 0 }, { opacity: al, offset: 0.08 }, { opacity: al, offset: 0.84 }, { strokeDashoffset: String(len - pos - 100), opacity: 0 }], o);
+    });
+    return [
+      head.animate([{ strokeDashoffset: String(4 - pos), opacity: 1 }, { opacity: 1, offset: 0.84 }, { strokeDashoffset: String(4 - pos - 100), opacity: 0 }], o),
+      ...tails,
+      b.animate([{ backgroundColor: GOLD }, { backgroundColor: GOLD_LIFT, offset: 0.35 }, { backgroundColor: GOLD }], { duration: 400, easing: 'ease-in-out', fill: 'none' })
+    ];
+  }
+  let sigRun = null;
+  const sigStop = () => { if (sigRun) { sigRun.forEach(a => a.cancel()); sigRun = null; } };
+  function playSig(b, pos, lap) {
+    b.classList.remove('ring-run', 'ring-done'); sigStop();
+    sigRun = sigAnims(b, pos, lap);
+    if (!sigRun) { ringPlay(b); return; }
+    b.dataset.ring = 'run';
+    sigRun[0].finished.then(() => { b.classList.add('ring-done'); b.dataset.ring = 'done'; sigStop(); }, () => {});
+  }
   if (S.reduce) {
-    // the still: a full ring (CSS)
+    // the still: the lit ring, no comet (CSS)
   } else if (S.freeze != null) {
     golds.forEach(b => { if (b !== heroBtn) b.classList.add('ring-done'); });
     // the hero's light follows the hero clock, so ?t= frames and frame renders show it travelling
+    let seekT = S.freeze, seekKey = '';
     const seekRing = t => {
+      seekT = t;
       if (!heroBtn) return;
-      if (t < HERO_RING_AT) { heroBtn.classList.remove('ring-run'); return; }
-      heroBtn.classList.add('ring-run');
-      if (heroBtn.getAnimations) heroBtn.getAnimations({ subtree: true }).forEach(a => { a.pause(); a.currentTime = Math.min(RING_MS, t - HERO_RING_AT); });
+      const sg = heroSig() || { land: HERO_RING_AT, pos: 0, lap: SIG_LAP };
+      // before the pulse lands: the track only; from the landing: the handoff lap, paused at the hero's time
+      if (t < sg.land) { sigStop(); seekKey = ''; heroBtn.classList.remove('ring-run', 'ring-done'); return; }
+      const key = sg.pos.toFixed(3) + '|' + sg.lap;
+      if (!sigRun || key !== seekKey) { sigStop(); sigRun = sigAnims(heroBtn, sg.pos, sg.lap); seekKey = key; }
+      if (sigRun) sigRun.forEach(a => { a.pause(); a.currentTime = Math.max(0, Math.min(sg.lap, t - sg.land)); });
+      heroBtn.classList.toggle('ring-done', t - sg.land >= sg.lap);
     };
     seekRing(S.freeze);
-    requestAnimationFrame(() => seekRing(S.freeze));
+    requestAnimationFrame(() => seekRing(seekT));
+    // the plan moves a little once the real fonts are in: follow it
+    document.addEventListener('swarm:hero-signal', () => seekRing(seekT));
     const heroSeek = window.__heroSeek;
     if (typeof heroSeek === 'function') window.__heroSeek = t => { const r = heroSeek(t); seekRing(t); return r; };
   } else {
-    let heroGate = false;
+    let heroGate = false, heroTimer = 0;
     const fullyIn = b => { const r = b.getBoundingClientRect(), vh = window.innerHeight || 800; return r.top >= -2 && r.bottom <= vh + 2 && r.width > 0; };
     golds.forEach(b => {
-      b.addEventListener('animationend', e => { if (e.animationName === 'ring-f') b.dataset.ring = 'done'; });
+      b.addEventListener('animationend', e => { if (e.animationName === 'ring-h') { b.dataset.ring = 'done'; b.classList.add('ring-done'); } });
       const again = () => { if (b.dataset.ring === 'done') ringPlay(b); };
       b.addEventListener('mouseenter', again);
       b.addEventListener('focus', () => { if (!b.matches || b.matches(':focus-visible')) again(); });
@@ -62,15 +112,32 @@
       const ringIO = new IntersectionObserver(es => {
         for (const e of es) {
           const b = e.target;
-          if (!e.isIntersecting) { b.classList.remove('ring-run', 'ring-done'); b.dataset.ring = ''; continue; }
+          if (!e.isIntersecting) { if (b === heroBtn) sigStop(); b.classList.remove('ring-run', 'ring-done'); b.dataset.ring = ''; continue; }
           if (e.intersectionRatio >= 0.6 && !b.dataset.ring && (b !== heroBtn || heroGate)) ringPlay(b);
         }
       }, { threshold: [0, 0.6] });
       golds.forEach(b => ringIO.observe(b));
-    } else golds.forEach(b => b.classList.add('ring-done'));
-    // the hero starts at first paint and says when (hero.js); its light follows as the trains land
-    const t0 = (window.SWARM && window.SWARM.heroT0) || performance.now();
-    later(Math.max(0, t0 + HERO_RING_AT - performance.now()), () => { heroGate = true; if (heroBtn && !heroBtn.dataset.ring && fullyIn(heroBtn)) ringPlay(heroBtn); });
+    }
+    // the hero says when (hero.js, on its own clock): the light starts when the swarm's signal lands on the button; if
+    // the button is not fully in view then, it plays the normal lap when it comes into view. A late fallback timer
+    // covers a hero that never runs (hero.js failed)
+    const landHero = () => {
+      if (!heroBtn || heroGate) return;
+      clearTimeout(heroTimer); heroGate = true;
+      const sg = heroSig() || { land: HERO_RING_AT, pos: 0, lap: SIG_LAP };
+      if (heroBtn.dataset.ring || !fullyIn(heroBtn)) return;
+      playSig(heroBtn, sg.pos, sg.lap);
+    };
+    const scheduleHero = () => {
+      if (!heroBtn || heroGate) return;
+      clearTimeout(heroTimer);
+      const sg = heroSig() || { land: HERO_RING_AT }, t0 = (window.SWARM && window.SWARM.heroT0) || performance.now();
+      heroTimer = later(Math.max(0, t0 + sg.land + (heroSig() ? 4000 : 0) - performance.now()), landHero);
+    };
+    scheduleHero();
+    document.addEventListener('swarm:hero-land', landHero);
+    document.addEventListener('swarm:hero-signal', scheduleHero);
+    document.addEventListener('swarm:hero-start', scheduleHero);
   }
 
   /* ---------- play-once helper ---------- */
@@ -103,20 +170,22 @@
   const conRows = $$('#console .crow'), conSegs = $$('#console .con-seg i'), conLog = $('#con-log'), toolsMockEl = $('#tools-mock');
   watchVis(toolsMockEl);
   // three states only: SCANNING, ANALYZING, REPORTING; the console ends with all three on screen
-  const conInit = [['SCANNING', 'Scanning', 'the market'], ['SCANNING', 'Scanning', 'the watch list'], ['ANALYZING', 'Analyzing', 'a setup'], ['SCANNING', 'Scanning', 'for what changed']];
+  const conInit = [['SCANNING', 'Scanning', 'the market'], ['SCANNING', 'Scanning', 'the watch list'], ['ANALYZING', 'Analyzing', 'where attention is moving'], ['SCANNING', 'Scanning', 'for what changed']];
   const conSteps = [
     [900, 0, 'ANALYZING', 'Analyzing', 'what changed this week'],
     [1900, 3, 'ANALYZING', 'Analyzing', 'where attention is moving'],
     [2900, 1, 'SCANNING', 'Scanning', 'the market'],
     [3900, 2, 'REPORTING', 'Reporting', 'to the watch list']
   ];
+  // the event log: two lines already there, four more as the scouts work (illustrative times, newest on top)
+  const logInit = [['09:12', 'S04', 'Scanning', 'for changes'], ['09:15', 'S02', 'Scanning', 'watch list']];
   const logSteps = [
-    [500, 'S02', 'Scanning', 'the watch list'],
-    [900, 'S01', 'Analyzing', 'what changed this week'],
-    [1900, 'S04', 'Analyzing', 'where attention is moving'],
-    [2900, 'S02', 'Scanning', 'the market'],
-    [3900, 'S03', 'Reporting', 'to the watch list']
+    [900, '09:19', 'S01', 'Analyzing', 'this week'],
+    [1900, '09:24', 'S04', 'Analyzing', 'attention'],
+    [2900, '09:27', 'S02', 'Scanning', 'the market'],
+    [3900, '09:31', 'S03', 'Reporting', 'to watch list']
   ];
+  const conClock = mockClock(toolsMockEl);
   const stateLabel = st => st.charAt(0) + st.slice(1).toLowerCase();
   function applyCon(st, fade) {
     const [, i, state, verb, obj] = st, r = conRows[i]; if (!r) return;
@@ -128,29 +197,32 @@
     };
     if (fade) { r.classList.add('swap'); later(200, set); } else set();
   }
-  function pushLog(id, st, tx, anim) {
+  function pushLog(tm, id, st, tx, anim) {
     if (!conLog) return;
     const li = document.createElement('li');
-    li.innerHTML = `<span class="lid"></span><span class="lbody"><span class="lst"></span> <span class="ltx"></span></span>`;
-    li.querySelector('.lid').textContent = id; li.querySelector('.lst').textContent = st; li.querySelector('.ltx').textContent = tx;
+    li.innerHTML = `<span class="ltm"></span><span class="lid"></span><span class="lbody"><span class="lst"></span> <span class="ltx"></span></span>`;
+    li.querySelector('.ltm').textContent = tm; li.querySelector('.lid').textContent = id; li.querySelector('.lst').textContent = st; li.querySelector('.ltx').textContent = tx;
     if (anim) li.classList.add('enter');
     conLog.prepend(li);
-    while (conLog.children.length > 3) conLog.lastElementChild.remove();
+    while (conLog.children.length > 6) conLog.lastElementChild.remove();
     if (anim) requestAnimationFrame(() => requestAnimationFrame(() => li.classList.remove('enter')));
   }
   function settleSpinners() { conRows.forEach(r => { const sp = r.querySelector('.spin'); setSpin(sp, -1); sp.classList.add('done'); }); }
   function setSeg(n) { conSegs.forEach((s, i) => s.classList.toggle('on', i < n)); }
+  function resetLog() { if (!conLog) return; conLog.textContent = ''; logInit.forEach(s => pushLog(s[0], s[1], s[2], s[3], false)); }
   function playConsole(final) {
-    if (final) { conSteps.forEach(s => applyCon(s, false)); logSteps.forEach(s => pushLog(s[1], s[2], s[3], false)); setSeg(3); settleSpinners(); conRows.forEach(r => r.classList.remove('hot')); return; }
+    if (final) { conSteps.forEach(s => applyCon(s, false)); resetLog(); logSteps.forEach(s => pushLog(s[1], s[2], s[3], s[4], false)); setSeg(3); settleSpinners(); conRows.forEach(r => r.classList.remove('hot')); return; }
     let k = 0;
+    resetLog(); conClock.reset();
     conRows.forEach(r => r.querySelector('.spin').classList.remove('done'));
     const iv = setInterval(() => { if (!shown(toolsMockEl)) return; k = (k + 1) % 6; conRows.forEach((r, j) => setSpin(r.querySelector('.spin'), (k + j * 2) % 6)); }, 80);
-    conSteps.forEach(s => later(s[0], () => applyCon(s, true)));
-    logSteps.forEach(s => later(s[0], () => pushLog(s[1], s[2], s[3], true)));
-    later(1200, () => setSeg(2)); later(3000, () => setSeg(3));
-    later(4900, () => { clearInterval(iv); settleSpinners(); conRows.forEach(r => r.classList.remove('hot')); });
+    conSteps.forEach(s => conClock.at(s[0], () => applyCon(s, true)));
+    logSteps.forEach(s => conClock.at(s[0], () => pushLog(s[1], s[2], s[3], s[4], true)));
+    conClock.at(1200, () => setSeg(2)); conClock.at(3000, () => setSeg(3));
+    conClock.at(4900, () => { clearInterval(iv); settleSpinners(); conRows.forEach(r => r.classList.remove('hot')); });
   }
   setSeg(1); settleSpinners();
+  if (!STATIC) resetLog();
 
   /* ---------- watch list: three state changes, then it rests ---------- */
   const wlRows = $$('#watch-mock .wl-row');
@@ -164,9 +236,10 @@
     [2500, () => wlSet(4, 'Removed', 'gone')],
     [3800, () => wlSet(2, 'New this week', 'new')]
   ];
+  const wlClock = mockClock($('#watch-mock'));
   function playWatch(final) {
     if (final) { wlSteps.forEach(s => s[1]()); return; }
-    wlSteps.forEach(([ms, f]) => later(ms, () => {
+    wlSteps.forEach(([ms, f]) => wlClock.at(ms, () => {
       const box = $('#watch-mock');
       box.querySelectorAll('.wchip').forEach(c => c.style.opacity = '0.25');
       later(200, () => { f(); box.querySelectorAll('.wchip').forEach(c => c.style.opacity = ''); });
@@ -179,26 +252,30 @@
   const restH = [30, 46, 62, 40, 74, 58, 36, 66, 82, 52, 38, 60, 44, 70, 50, 34, 56, 40, 64, 48, 32, 54];
   const restBars = () => bars.forEach((b, i) => b.style.height = restH[i % restH.length] + '%');
   const CS_LABEL = { REVIEWED: 'Reviewed', LIVE: 'Live', 'UP NEXT': 'Up next', 'IN QUEUE': 'In queue' };
-  const CS0 = ['LIVE', 'UP NEXT', 'IN QUEUE', 'IN QUEUE'], CS1 = ['REVIEWED', 'LIVE', 'UP NEXT', 'IN QUEUE'];
+  const CS0 = ['LIVE', 'UP NEXT', 'IN QUEUE', 'IN QUEUE', 'IN QUEUE'], CS1 = ['REVIEWED', 'LIVE', 'UP NEXT', 'IN QUEUE', 'IN QUEUE'];
   function csSet(st) {
     csRows.forEach((r, i) => { r.dataset.st = st[i]; r.querySelector('.cs-st').textContent = CS_LABEL[st[i]]; });
     const live = csRows[st.indexOf('LIVE')];
     if (live && csDetail) live.after(csDetail);
   }
+  const callClock = mockClock(callMock);
   function playCall(final) {
     if (final) { restBars(); csSet(CS1); return; }
     const r = SL.rng(11);
     const iv = setInterval(() => { if (!shown(callMock)) return; bars.forEach((b, i) => { const env = 0.35 + 0.65 * Math.abs(Math.sin(i * 0.7)); b.style.height = Math.round(18 + r() * 82 * env) + '%'; }); }, 110);
-    later(1700, () => { callMock.classList.add('cs-swap'); later(220, () => { csSet(CS1); callMock.classList.remove('cs-swap'); }); });
-    later(4300, () => { clearInterval(iv); restBars(); });
+    callMock.classList.add('talking');                               // the speaking seats' bars move for about 4s
+    callClock.at(1700, () => callMock.classList.add('cs-swap'));
+    callClock.at(1920, () => { csSet(CS1); callMock.classList.remove('cs-swap'); });
+    callClock.at(4300, () => { clearInterval(iv); restBars(); callMock.classList.remove('talking'); });
   }
   restBars(); csSet(STATIC ? CS1 : CS0);
 
   /* ---------- trader room ---------- */
   const roomMock = $('#room-mock'), msgs = $$('#room-mock .msg');
+  const roomClock = mockClock(roomMock);
   function playRoom(final) {
     if (final) { msgs.forEach(m => m.classList.remove('pending')); return; }
-    msgs.forEach((m, i) => later(250 + i * 650, () => m.classList.remove('pending')));
+    msgs.forEach((m, i) => roomClock.at(250 + i * 700, () => m.classList.remove('pending')));
   }
   if (!STATIC) msgs.forEach(m => m.classList.add('pending'));
 
@@ -221,7 +298,7 @@
       sim = SL.sim(L, 29, 650);
       walk = L.V.map(v => Math.abs(v.x) < W / 2 - 14 && Math.abs(v.y) < H / 2 - 14);
       for (const c of L.cells) c.ping = -1e9;
-      const n = phone ? 36 : 60;
+      const n = phone ? 32 : 44;                                    // four squads of 8 (phones) or 11
       const used = new Set();
       squadOf = L.V.map(v => { let best = -1, bd = 1e9; SQ.forEach((c, k) => { const d = Math.hypot(v.x - c.x, v.y - c.y); if (d < bd) { bd = d; best = k; } }); return bd < rad ? best : -1; });
       for (let k = 0; k < n; k++) {
@@ -245,7 +322,22 @@
       sim.hop(a, opts[(rnd() * opts.length) | 0], at + 60 + rnd() * 280, 190 + rnd() * 90);
     }
     reset();
-    const M = { W, H, R, P, L, T, maxD, phone, get sim() { return sim; }, reset, advance: t => sim.advance(t, policy),
+    // each squad reads as one team: its scouts joined by a minimum spanning tree of 1px links at 30%
+    function links() {
+      const out = [];
+      for (let q = 0; q < 4; q++) {
+        const pts = sim.agents.filter(a => a.sq === q && !a.dead);
+        if (pts.length < 2) continue;
+        const inT = [pts[0]], rest = pts.slice(1);
+        while (rest.length) {
+          let bi = -1, bj = -1, bd = 1e18;
+          for (let i = 0; i < inT.length; i++) for (let j = 0; j < rest.length; j++) { const dd = (inT[i].x - rest[j].x) ** 2 + (inT[i].y - rest[j].y) ** 2; if (dd < bd) { bd = dd; bi = i; bj = j; } }
+          out.push([inT[bi], rest[bj]]); inT.push(rest[bj]); rest.splice(bj, 1);
+        }
+      }
+      return out;
+    }
+    const M = { W, H, R, P, L, T, maxD, phone, get sim() { return sim; }, reset, links, advance: t => sim.advance(t, policy),
       fade: c => Math.max(0.18, 1 - SL.sm(0.45 * maxD, 1.02 * maxD, c.d)) };
     return M;
   }
@@ -263,12 +355,16 @@
   function drawToolsStill(M, fieldOnly) {
     const W = M.W, H = M.H, d = DPR();
     still.width = Math.round(W * d); still.height = Math.round(H * d); still.style.display = 'block';
-    const g = still.getContext('2d'); g.setTransform(d, 0, 0, d, W / 2 * d, H / 2 * d); g.clearRect(-W, -H, 2 * W, 2 * H);
+    const g = still.getContext('2d'); if (!g) return;                // no canvas: the mock keeps its console and labels
+    g.setTransform(d, 0, 0, d, W / 2 * d, H / 2 * d); g.clearRect(-W, -H, 2 * W, 2 * H);
     SL.drawField(g, M.L, c => M.fade(c), {});
     if (fieldOnly) return;
     M.reset(); for (let t = 0; t <= M.T.end; t += 1000 / 60) M.advance(t);
     const tracked = new Set(M.sim.agents.slice(0, 4).map(a => M.L.V[a.from].cells[0]));
     SL.drawField(g, M.L, c => tracked.has(c) ? 1 : 0, { color: SL.COL.line, lw: 1.5 });
+    g.globalAlpha = 0.3; g.strokeStyle = SL.COL.muted; g.lineWidth = 1; g.beginPath();
+    for (const [a, b] of M.links()) { g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); }
+    g.stroke(); g.globalAlpha = 1;
     SL.drawAgents(g, M.sim, M.T.end, { r: M.phone ? 3.6 : 4.4, glyph: true, base: [0.8, 1] });
     placeLabels(M.sim.agents.slice(0, 4).map(a => [a.x + W / 2, a.y + H / 2]));
   }
@@ -393,20 +489,22 @@
 
   /* ---------- why now: the crowd's attention moves from the games cluster to the AI cluster ----------
      Two equal clusters of the honeycomb (a centre cell and two rings), one under each label. The crowd starts as the
-     lit games cluster: one agent on every corner, its links drawn between the agents themselves. At 0.45s the whole
-     cluster slides along the honeycomb to the AI cluster in one smooth move (one sine ease over 1.9s), the front a
-     beat ahead of the back, so it stretches a little and gathers again, and its links travel with it: the shape never
-     breaks apart. Behind it the games cluster stays as a quiet outline, and the corners it passes along the middle row
-     keep seven dim agents, a trail from one cluster to the other. It lands whole: the AI centre cell lights and one
-     ring opens around it. Settled by 3.1s, on that clean end picture. The reduced-motion still and ?t= frames show it. */
+     lit games cluster: one agent on every corner, its links drawn between the agents. From 0.4s it flows to the AI
+     cluster in three streams, one along each of three channels of the honeycomb: each agent leaves its corner in turn
+     (the corners nearest the channel first), rides the channel at one steady speed a fixed beat behind the agent ahead
+     (so nobody ever closes the gap), and takes the deepest free corner of the AI cluster, which fills from the back.
+     Games links go dark as their agents leave; AI links light once both of their corners are filled, and the AI centre
+     cell lights as the last agent lands. The channels stay as worn traces; no agent is left between the clusters.
+     Settled by about 3.2s on desktop (2.2s on phones). Positions are a pure function of time, so the reduced-motion
+     still and ?t= frames show the same end picture. */
   (function attention() {
     const box = $('#attn'); if (!box || !SL) return;
     const cv = box.querySelector('canvas'), stage = box.querySelector('.attn-stage');
     const labA = box.querySelector('.attn-l.a1'), labB = box.querySelector('.attn-l.a2'), arrow = box.querySelector('.attn-arrow');
-    const SQ3 = SL.SQ3, T = { go: 450, spread: 90, travel: 1900, end: 3100 };
-    const easeS = x => { x = SL.clamp01(x); return 0.5 - 0.5 * Math.cos(Math.PI * x); };      // one gentle ease in and out
+    const SQ3 = SL.SQ3;
     const CS6 = [], SN6 = [];
     for (let k = 0; k < 6; k++) { const an = Math.PI / 180 * (60 * k - 90); CS6.push(Math.cos(an)); SN6.push(Math.sin(an)); }
+    // a cluster: a centre cell and its rings, as lattice corners and links (corners shared between cells once)
     function cluster(cx, cy, R, rings) {
       const P = 1.95 * R, Rc = P / SQ3, V = [], vm = new Map(), E = [], em = new Set(), cells = [];
       const key = (x, y) => Math.round(x * 2) + ':' + Math.round(y * 2);
@@ -424,36 +522,92 @@
       }
       return { V, E, cells, P, Rc };
     }
+    let END = 3200;
     const api = lattice2D(cv, {
-      seed: 5, end: T.end, threshold: 0.5,
-      height: W => W < 600 ? 250 : 330,
+      seed: 5, get end() { return END; }, threshold: 0.5,
+      height: W => W < 600 ? 250 : 350,
       setup(W, H) {
-        const phone = W < 600, R = phone ? 8.5 : 15, P = 1.95 * R, Rc = P / SQ3;
-        const k = Math.max(4, Math.round((W * (phone ? 0.56 : 0.6)) / P));     // the two clusters are k pitches apart
-        const cy = phone ? H * 0.58 : H * 0.57;
+        const phone = W < 600, R = phone ? 10 : 23, P = 1.95 * R, Rc = P / SQ3;
+        const k = Math.max(5, Math.round((W * (phone ? 0.56 : 0.6)) / P));      // the two clusters are k pitches apart
+        const cy = H * 0.58;
         const A = { x: W / 2 - k * P / 2, y: cy }, B = { x: W / 2 + k * P / 2, y: cy };
         const CA = cluster(A.x, A.y, R, 2), CB = cluster(B.x, B.y, R, 2);
         const L = SL.lattice({ R, ox: A.x, oy: A.y, x0: -P, x1: W + P, y0: -P, y1: H + P });
-        const dx = B.x - A.x;
-        // the front leaves a beat before the back, so the cluster stretches a little in flight and gathers again
-        const xs = CA.V.map(v => v.x), xmin = Math.min(...xs), xmax = Math.max(...xs);
-        const dep = CA.V.map(v => T.go + (1 - (v.x - xmin) / Math.max(1, xmax - xmin)) * T.spread);
-        const land = T.go + T.spread + T.travel;
-        // the trail: seven corners on the middle row, evenly spaced between the clusters
-        const trail = [], tx0 = A.x + 3 * P, tx1 = B.x - 3 * P;
-        for (let i = 0; i < 7; i++) { const m = Math.round((tx0 + (tx1 - tx0) * i / 6 - A.x) / P - 0.5); trail.push({ x: A.x + (m + 0.5) * P, y: A.y - Rc / 2 }); }
+        const V = L.V;
+        const near = (x, y) => { let best = -1, bd = 1e9; for (let i = 0; i < V.length; i++) { const dd = Math.abs(V[i].x - x) + Math.abs(V[i].y - y); if (dd < bd) { bd = dd; best = i; } } return best; };
+        const ga = CA.V.map(v => near(v.x, v.y)), gb = CB.V.map(v => near(v.x, v.y));
+        const inA = new Set(ga), inB = new Set(gb);
+        // the channel a corner sits on: the zigzag between cell rows k and k+1
+        const bnd = v => Math.floor((v.y - cy - 0.25 * Rc) / (1.5 * Rc));
+        const lanes = [-3, -1, 1];
+        const v0 = phone ? 0.3 : 0.5, gap = phone ? 42 : 50, go = 400;   // px per ms; the beat between agents in a stream
+        const lane = lanes.map((kb, s) => {
+          const onB = i => bnd(V[i]) === kb;
+          const E = ga.filter(onB).sort((x, y) => V[y].x - V[x].x)[0], X = gb.filter(onB).sort((x, y) => V[x].x - V[y].x)[0];
+          // the channel: along the zigzag only, from the games cluster's last corner to the AI cluster's first
+          const prev = new Map([[E, -1]]), qq = [E];
+          for (let h = 0; h < qq.length && !prev.has(X); h++) for (const j of V[qq[h]].nb) if (!prev.has(j) && onB(j) && V[j].x >= V[E].x - 1 && V[j].x <= V[X].x + 1) { prev.set(j, qq[h]); qq.push(j); }
+          const ch = []; for (let i = X; i !== -1 && i !== undefined; i = prev.get(i)) ch.push(i);
+          ch.reverse();
+          return { s, kb, E, X, ch, off: [60, 0, 120][s] };
+        });
+        // each cluster's corners split between the three channels: breadth-first from the channel ends, inside the cluster
+        // each corner goes to the channel nearest its height (so the three streams are about the same size), reached
+        // breadth-first inside its own band; any corner a band cannot reach joins a neighbouring one
+        const laneY = lane.map(l => l.ch.reduce((m, i) => m + V[i].y, 0) / l.ch.length);
+        const want = i => { let b2 = 0; for (let s2 = 1; s2 < laneY.length; s2++) if (Math.abs(V[i].y - laneY[s2]) < Math.abs(V[i].y - laneY[b2])) b2 = s2; return b2; };
+        function regions(set, starts) {
+          const reg = new Map(), dep = new Map(), par = new Map(), qq = [];
+          starts.forEach((st, s2) => { reg.set(st, s2); dep.set(st, 0); par.set(st, -1); qq.push(st); });
+          for (let pass = 0; pass < 2; pass++) {
+            for (let h = 0; h < qq.length; h++) {
+              const i = qq[h];
+              const nbs = V[i].nb.filter(j => set.has(j) && !reg.has(j) && (pass || want(j) === reg.get(i))).sort((x, y) => V[x].y - V[y].y);
+              for (const j of nbs) { reg.set(j, reg.get(i)); dep.set(j, dep.get(i) + 1); par.set(j, i); qq.push(j); }
+            }
+          }
+          return { reg, dep, par };
+        }
+        const RA = regions(inA, lane.map(l => l.E)), RB = regions(inB, lane.map(l => l.X));
+        const chainTo = (Rg, i) => { const out = []; for (let k2 = i; k2 !== -1 && k2 !== undefined; k2 = Rg.par.get(k2)) out.push(k2); return out; };   // corner -> channel end
+        const agents = [];
+        let land = 0;
+        for (const l of lane) {
+          const gc = ga.filter(i => RA.reg.get(i) === l.s).sort((x, y) => RA.dep.get(x) - RA.dep.get(y) || V[x].y - V[y].y);
+          const bc = gb.filter(i => RB.reg.get(i) === l.s).sort((x, y) => RB.dep.get(y) - RB.dep.get(x) || V[x].y - V[y].y);
+          const n = Math.min(gc.length, bc.length);
+          for (let j = 0; j < n; j++) {
+            const pre = chainTo(RA, gc[j]);                                // games corner ... channel start
+            const post = chainTo(RB, bc[j]).reverse();                     // channel end ... AI corner
+            const path = pre.concat(l.ch.slice(1, -1), post);
+            const cum = [0]; for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + Math.hypot(V[path[i]].x - V[path[i - 1]].x, V[path[i]].y - V[path[i - 1]].y));
+            const preLen = cum[pre.length - 1];
+            const tE = go + l.off + j * gap;                               // when it reaches the channel
+            const dep = tE - preLen / v0, arr = dep + cum[cum.length - 1] / v0;
+            agents.push({ path, cum, dep, arr, home: gc[j], dest: bc[j], s: l.s });
+            land = Math.max(land, arr);
+          }
+        }
+        END = Math.ceil(land + 520);
+        // when each corner empties (games) and fills (AI)
+        const leftAt = new Map(), filledAt = new Map();
+        for (const a of agents) { leftAt.set(a.home, a.dep); filledAt.set(a.dest, a.arr); }
+        // the channel edges, each with the time the first agent crosses it
+        const chFirst = new Map();
+        for (const a of agents) for (let i = 1; i < a.path.length; i++) { const k2 = a.path[i - 1] * 65536 + a.path[i], tt = a.dep + a.cum[i] / v0; if (!chFirst.has(k2) || tt < chFirst.get(k2)) chFirst.set(k2, tt); }
+        const chEdges = []; for (const l of lane) for (let i = 1; i < l.ch.length; i++) chEdges.push([l.ch[i - 1], l.ch[i], chFirst.get(l.ch[i - 1] * 65536 + l.ch[i])]);
         // the quiet field, fading out well before every edge of the frame; the two clusters draw themselves
-        const near = (c, o) => Math.hypot(c.x - o.x, c.y - o.y) < 2.6 * P;
-        const top = phone ? 46 : 64;
+        const nearC = (c, o) => Math.hypot(c.x - o.x, c.y - o.y) < 2.7 * P;
+        const top = phone ? 46 : 70;
         const fade = c => {
           const fx = Math.min(SL.sm(0, W * 0.1, c.x), 1 - SL.sm(W * 0.9, W, c.x));
-          const fy = Math.min(SL.sm(top, top + 3.2 * P, c.y), 1 - SL.sm(H - 2.4 * P, H - 6, c.y));
+          const fy = Math.min(SL.sm(top, top + 2.4 * P, c.y), 1 - SL.sm(H - 1.8 * P, H - 6, c.y));
           return Math.max(0, fx * fy);
         };
         const bg = document.createElement('canvas'), d = DPR();
         bg.width = Math.round(W * d); bg.height = Math.round(H * d);
-        const gb = bg.getContext('2d'); gb.setTransform(d, 0, 0, d, 0, 0);
-        SL.drawField(gb, L, c => (near(c, A) || near(c, B)) ? 0 : 0.95 * fade(c), {});
+        const gbx = bg.getContext('2d'); gbx.setTransform(d, 0, 0, d, 0, 0);
+        SL.drawField(gbx, L, c => (nearC(c, A) || nearC(c, B)) ? 0 : 0.95 * fade(c), {});
         // labels sit exactly over the two cluster centres
         if (labA && labB) {
           labA.style.left = A.x + 'px'; labB.style.left = B.x + 'px';
@@ -462,46 +616,60 @@
             arrow.style.left = (ra.right - sr.left + 14) + 'px'; arrow.style.right = (sr.right - rb.left + 18) + 'px';
           });
         }
-        return { L, A, B, CA, CB, dx, dep, land, trail, P, Rc, phone, bg };
+        return { L, V, A, B, CA, CB, ga, gb, agents, lane, chEdges, leftAt, filledAt, land, v0, P, Rc, phone, bg };
       },
       spawn() {},
       policy() {},
       draw(g, t, sim, X, W, H) {
-        const { CA, CB, dx, dep, land, trail, P, phone } = X;
+        const { V, CA, CB, ga, gb, agents, chEdges, leftAt, filledAt, land, v0, P, phone } = X;
         g.drawImage(X.bg, 0, 0, W, H);
-        const u = dep.map(d0 => easeS((t - d0) / T.travel));
-        const pos = CA.V.map((v, i) => [v.x + dx * u[i], v.y]);
-        const away = SL.sm(T.go, T.go + 500, t);                 // how far the crowd has left the games cluster
-        const lit = SL.sm(land - 80, land + 260, t);              // the AI cluster has landed
         const HIVE = SL.COL.hive, TXT = SL.COL.text;
         const lines = (col, al, lw, segs) => { if (al <= 0.01 || !segs.length) return; g.strokeStyle = col; g.globalAlpha = Math.min(1, al); g.lineWidth = lw; g.beginPath(); for (const [x0, y0, x1, y1] of segs) { g.moveTo(x0, y0); g.lineTo(x1, y1); } g.stroke(); };
         g.lineCap = 'round';
-        // the AI cluster waits as a faint outline; the games cluster stays behind as a quiet, legible outline
+        const lit = SL.sm(land - 80, land + 260, t);
+        // the clusters' outlines: the AI one waits faint; the games one stays behind as a quiet, legible outline
         lines(HIVE, 0.45, 1, CB.E.map(([a, b]) => [CB.V[a].x, CB.V[a].y, CB.V[b].x, CB.V[b].y]));
-        lines(TXT, 0.3 * away, 1, CA.E.map(([a, b]) => [CA.V[a].x, CA.V[a].y, CA.V[b].x, CA.V[b].y]));
-        // the travelling cluster: its links ride between its own agents, so the shape slides as one piece
-        const ring = [], core = [];
-        for (const [a, b, c] of CA.E) (c ? core : ring).push([pos[a][0], pos[a][1], pos[b][0], pos[b][1]]);
-        lines(TXT, 0.5, phone ? 1.1 : 1.3, ring);
-        lines(TXT, 0.62 + 0.38 * lit, phone ? 1.1 : 1.4, core);
+        lines(TXT, 0.3 * SL.sm(400, 1400, t), 1, CA.E.map(([a, b]) => [CA.V[a].x, CA.V[a].y, CA.V[b].x, CA.V[b].y]));
+        // the channels: each edge wears in as the stream crosses it, and stays as a quiet trace
+        const worn = [];
+        for (const [u, v, tt] of chEdges) if (tt !== undefined && t >= tt) worn.push([V[u].x, V[u].y, V[v].x, V[v].y]);
+        lines(HIVE, 0.9, phone ? 1 : 1.25, worn);
+        // links: a games link holds while both its agents are home; an AI link lights once both corners are filled
+        const linkA = [], linkB = [], coreB = [];
+        CA.E.forEach(([a, b]) => { if (t < leftAt.get(ga[a]) && t < leftAt.get(ga[b])) linkA.push([CA.V[a].x, CA.V[a].y, CA.V[b].x, CA.V[b].y]); });
+        CB.E.forEach(([a, b, c]) => { const fa = filledAt.get(gb[a]), fb = filledAt.get(gb[b]); if (fa !== undefined && fb !== undefined && t >= Math.max(fa, fb)) (c ? coreB : linkB).push([CB.V[a].x, CB.V[a].y, CB.V[b].x, CB.V[b].y]); });
+        lines(TXT, 0.5, phone ? 1.1 : 1.3, linkA);
+        lines(TXT, 0.55, phone ? 1.1 : 1.3, linkB);
+        lines(TXT, 0.6 + 0.4 * lit, phone ? 1.1 : 1.45, coreB);
         g.lineCap = 'butt'; g.globalAlpha = 1;
-        // the AI centre cell lights as the cluster lands, and one ring opens around it
+        // the AI centre cell lights as the last agent lands, and one ring opens around it
         if (lit > 0) {
           const cc = CB.cells.find(c => c.q === 0 && c.r === 0);
-          g.globalAlpha = 0.16 * lit; g.fillStyle = TXT; g.beginPath(); SL.hexPath(g, cc.x, cc.y, (P / 1.95) * 0.9); g.fill();
           const e = (t - land) / 620;
           if (e > 0 && e < 1) { g.globalAlpha = 0.34 * (1 - e); g.strokeStyle = HIVE; g.lineWidth = 1; g.beginPath(); SL.hexPath(g, cc.x, cc.y, (P / 1.95) * (3.2 + 2.2 * SL.outCubic(e))); g.stroke(); }
           g.globalAlpha = 1;
         }
-        // the trail: once the back of the cluster has passed a corner, a dim agent stays on it
-        const back = Math.min(...pos.map(p => p[0]));
-        const list = [];
-        for (const p of trail) { const a = 0.55 * SL.sm(p.x, p.x + P, back); if (a > 0.01) list.push({ x: p.x, y: p.y, a, k: 0 }); }
-        for (const p of pos) list.push({ x: p[0], y: p[1], a: 1, k: 1 });
-        SL.drawGlyphs(g, list, { r: phone ? 2.7 : 4.3, lw: phone ? 0.9 : 1.1, head: phone ? 1.05 : 1.5 });
+        // the agents, and a small ring as each one sets off and as each one lands
+        const list = [], pt = [0, 0], rr = phone ? 2.8 : 4.8;
+        g.lineWidth = 1; g.strokeStyle = SL.COL.muted;
+        for (const a of agents) {
+          const sAt = Math.max(0, Math.min(a.cum[a.cum.length - 1], (t - a.dep) * v0));
+          let i = 1; while (i < a.cum.length - 1 && a.cum[i] < sAt) i++;
+          const f = (sAt - a.cum[i - 1]) / Math.max(1e-6, a.cum[i] - a.cum[i - 1]), A0 = V[a.path[i - 1]], B0 = V[a.path[i]];
+          pt[0] = A0.x + (B0.x - A0.x) * f; pt[1] = A0.y + (B0.y - A0.y) * f;
+          const moving = t > a.dep && t < a.arr;
+          list.push({ x: pt[0], y: pt[1], a: moving || t >= a.arr ? 1 : 0.9, k: 1 });
+          for (const t0 of [a.dep, a.arr]) {
+            const e = (t - t0) / 260;
+            if (e > 0 && e < 1) { g.globalAlpha = 0.4 * (1 - e); g.beginPath(); SL.hexPath(g, pt[0], pt[1], rr + (phone ? 4 : 7) + (phone ? 5 : 9) * SL.outCubic(e)); g.stroke(); }
+          }
+        }
+        g.globalAlpha = 1;
+        SL.drawGlyphs(g, list, { r: rr, lw: phone ? 0.9 : 1.15, head: phone ? 1.1 : 1.7 });
       }
     });
     if (api) window.__attnAt = ms => { api.stop(); api.settleAt(ms); };                 // frame renders and tests: draw the band at any time
+    window.__attnInfo = () => ({ end: END });
   })();
 
   /* ---------- a small converge piece around an official mark: the pricing core and the final CTA ----------
@@ -564,12 +732,262 @@
     });
   }
 
-  /* pricing: a small field around the mark above "Early on purpose." */
-  (function joinField() {
-    const art = $('.join-art'), cv = $('#join-field'), mk = $('#join-mark'); if (!art || !cv || !SL) return;
-    converge({ cv, mark: mk, seed: 13, end: 2600, ignite: 1900, arrive: 1650, n: [34, 22],
-      height: W => W <= 640 ? 230 : 240,
-      core: (W, H, phone) => ({ x: W / 2, y: phone ? 115 : 120, R: (phone ? 112 : 128) / 7.5, maxD: phone ? 200 : 280 }) });
+  /* ---------- pricing: "Lock in your seat" ----------
+     The card sits on the honeycomb. When its price row comes into view, agents on the field around the card scan,
+     decide and route along the honeycomb's channels to three sockets on the card's edge (left, right and top on
+     desktop; three along the top on phones) and dock under the card, one by one. Each socket lights as agents dock.
+     Once most have docked the card locks: the founding $49 turns gold (the view's one gold number), one ring wave
+     runs out across the field, and the routes stay as quiet traces. Plays once, settles about 3.4s after it starts,
+     then stops; it pauses offscreen and while the tab is hidden. No lit cell here: the final CTA carries the core.
+     Under ?reduce=1, ?t, or without JS or canvas, the card shows its settled state. ?lock=<ms> freezes the moment at
+     that time and window.__lockSeek(ms) steps it, for frame-accurate captures. No text is drawn on canvas. */
+  (function lockMoment() {
+    const stage = $('#lock-stage'), fc = $('#join-field'), ac = $('#join-agents'), card = $('#pcard');
+    const row = $('.price-row'), joinBtnEl = $('#join-btn');
+    const q = new URLSearchParams(location.search);
+    const FREEZE = q.has('lock') && !S.reduce ? Math.max(0, parseFloat(q.get('lock')) || 0) : null;
+    const T = { born: 280, commit0: 360, commit1: 900, arrive: 1900, lockMin: 1850, lockMax: 2450, wave: 1100, tail: 1000 };
+    const DT = 1000 / 60;
+    const settleDom = () => { if (card) card.classList.remove('lock-pending'); };
+    if (!stage || !fc || !ac || !card || !SL || !fc.getContext) { settleDom(); return; }
+    const fx = fc.getContext('2d'), ax = ac.getContext('2d');
+    if (!fx || !ax) { settleDom(); return; }
+    const { COL, sm, drawField, drawAgents } = SL;
+
+    let W, Hf, d, phone, R, P, box, yP, Dm, L, V, walk, dist, ports, docks, dockOf, traces;
+    let Sx, rnd, simT, locked, lockT, END, absorbed, routed, hits, pinged;
+    let started = false, done = false, raf = 0, clock = 0, last = null, onScreen = true, lastW = 0;
+
+    /* ---------- geometry: the card and its sockets, in stage pixels ---------- */
+    function geometry() {
+      d = DPR(); W = stage.clientWidth;
+      const sr = stage.getBoundingClientRect(), cr = card.getBoundingClientRect(), rr = (row || card).getBoundingClientRect();
+      box = { x0: cr.left - sr.left, y0: cr.top - sr.top, x1: cr.right - sr.left, y1: cr.bottom - sr.top };
+      yP = (rr.top + rr.bottom) / 2 - sr.top;
+      phone = W <= 640;
+      R = parseFloat(getComputedStyle(stage).getPropertyValue('--lockR')) || (phone ? 16 : 20);
+      P = 1.95 * R;
+      Dm = phone ? 0 : Math.min(5.5 * P, box.x0 - 8);
+      Hf = Math.min(stage.clientHeight, Math.ceil(phone ? box.y0 + 4 : yP + 9 * P));
+      const cx = (box.x0 + box.x1) / 2, cw = box.x1 - box.x0;
+      ports = phone ? [[cx - 0.3 * cw, box.y0, 0, 1], [cx, box.y0, 0, 1], [cx + 0.3 * cw, box.y0, 0, 1]]
+                    : [[box.x0, yP, 1, 0], [cx, box.y0, 0, 1], [box.x1, yP, -1, 0]];     // x, y, inward normal
+    }
+    const dBox = (x, y) => { const dx = Math.max(box.x0 - x, 0, x - box.x1), dy = Math.max(box.y0 - y, 0, y - box.y1); return Math.hypot(dx, dy); };
+    const outside = (x, y, m) => x < box.x0 - m || x > box.x1 + m || y < box.y0 - m || y > box.y1 + m;
+    // the field: strongest beside the card's top half, fading with distance from the card and down the page
+    const outA = (x, y) => phone
+      ? sm(4, 36, y) * (1 - sm(box.y0 - 12, box.y0 + 2, y)) * Math.min(sm(0, 40, x), 1 - sm(W - 40, W, x))
+      : (1 - sm(0.3 * Dm, Dm, dBox(x, y))) * (1 - sm(yP + 3 * P, yP + 8.6 * P, y)) * sm(4, 64, y);
+
+    /* ---------- lattice, sockets and routes ---------- */
+    function setup() {
+      geometry();
+      L = SL.lattice({ R, ox: (box.x0 + box.x1) / 2, oy: box.y0, x0: -P, y0: -P, x1: W + P, y1: Hf + P });
+      V = L.V;
+      walk = V.map(v => v.y > 8 && v.y < Hf - 6 && v.x > 6 && v.x < W - 6 && outside(v.x, v.y, 5) && outA(v.x, v.y) > 0.16);
+      // each socket: the open corner nearest the socket point, then one last hop under the card's edge
+      docks = []; dockOf = new Map();
+      ports.forEach((pt, k) => {
+        let best = -1, bd = 1e9;
+        V.forEach((v, i) => { if (!walk[i]) return; const dd = Math.hypot(v.x - pt[0], v.y - pt[1]); if (dd < bd) { bd = dd; best = i; } });
+        if (best < 0 || bd > 2.2 * P) return;
+        // the socket sits square to the card's edge, straight across from that corner
+        if (pt[2]) pt[1] = V[best].y; else pt[0] = V[best].x;
+        const dv = { i: V.length, x: pt[0] + pt[2] * 14, y: pt[1] + pt[3] * 14, nb: [best], cells: [], dock: k };
+        V.push(dv); V[best].nb.push(dv.i); walk.push(false);
+        docks.push(dv); dockOf.set(dv.i, k);
+      });
+      dist = new Int32Array(V.length).fill(-1);
+      const qq = [];
+      for (const dv of docks) { dist[dv.i] = 0; qq.push(dv.i); }
+      for (let h = 0; h < qq.length; h++) for (const j of V[qq[h]].nb) if (dist[j] < 0 && walk[j]) { dist[j] = dist[qq[h]] + 1; qq.push(j); }
+    }
+
+    /* ---------- the swarm: 36 agents on desktop, 12 on phones ---------- */
+    const hopD = () => 170 + rnd() * 80;
+    const pick = arr => arr[(rnd() * arr.length) | 0];
+    function spawn() {
+      for (const c of L.cells) { c.ping = -1e9; }
+      rnd = SL.rng(29);
+      Sx = SL.sim(L, 31, 600);
+      const N = phone ? 12 : 36;
+      const pool = [];
+      V.forEach((v, i) => { if (walk[i] && dist[i] > 2) pool.push(i); });
+      const used = new Set();
+      let maxH = 1; for (const i of pool) maxH = Math.max(maxH, dist[i]);
+      for (let n = 0; n < N && pool.length; n++) {
+        let id = -1;
+        for (let tries = 0; tries < 60; tries++) { const c = pick(pool); if (used.has(c) || V[c].nb.some(j => used.has(j))) continue; if (rnd() < 0.25 + 0.75 * outA(V[c].x, V[c].y)) { id = c; break; } }
+        if (id < 0) continue;
+        used.add(id);
+        const far = dist[id] / maxH;
+        const a = Sx.add(id, { kind: 0, will: rnd() < 0.78, born: 30 + rnd() * T.born, ct: T.commit0 + rnd() * (T.commit1 - T.commit0) * (1 - 0.5 * far), jit: rnd() * 240 });
+        const nx = V[id].nb.filter(j => walk[j]);
+        if (nx.length) Sx.hop(a, pick(nx), a.born + 40 + rnd() * 200, hopD());
+      }
+      pinged = []; locked = false; lockT = Infinity; END = Infinity; absorbed = 0; routed = 0; hits = ports.map(() => -1e9); traces = new Map();
+      simT = 0;
+    }
+
+    function policy(a, at) {
+      const v = V[a.from];
+      if (v.dock !== undefined) { a.dead = true; absorbed++; hits[v.dock] = at; return; }
+      if (a.mode === 'scan') {
+        if (!locked && rnd() < 0.4) {
+          let live = 0; for (const c of pinged) if (at - c.ping < 800) live++;
+          if (live < (phone ? 3 : 7)) { const cs = v.cells; if (cs.length) { const c = pick(cs); if (at - c.ping > 800) { c.ping = at; pinged.push(c); if (pinged.length > 40) pinged.splice(0, pinged.length - 40); } } }
+        }
+        // the decision: a scout that commits turns bright and sets off for the nearest socket
+        if (a.will && !locked && at >= a.ct && dist[a.from] > 0) {
+          a.mode = 'route'; a.kind = 1; routed++;
+          a.hd = Math.min(200, Math.max(60, Math.max(200, T.arrive + a.jit - at) / dist[a.from]));
+          return policy(a, at);
+        }
+        if (locked) { if (a.fadeT < 0) { a.fadeT = at; a.fadeD = 300; } return; }
+        const opts = v.nb.filter(j => j !== a.prev && walk[j]);
+        if (!opts.length) return;
+        Sx.hop(a, pick(opts), at + 30 + rnd() * 160, hopD());
+        return;
+      }
+      if (locked && dist[a.from] > 1) { a.fadeT = at; a.fadeD = 200; return; }
+      const down = v.nb.filter(j => dist[j] >= 0 && dist[j] < dist[a.from]);
+      if (!down.length) { a.mode = 'scan'; a.kind = 0; return; }
+      const nx = pick(down);
+      const k = nx < a.from ? nx * 65536 + a.from : a.from * 65536 + nx;
+      if (V[nx].dock === undefined) traces.set(k, [a.from, nx]);
+      Sx.hop(a, nx, at, V[nx].dock !== undefined ? 150 : a.hd);
+    }
+
+    function step(t) {
+      Sx.advance(t, policy);
+      if (!locked && ((t >= T.lockMin && routed > 0 && absorbed >= 0.62 * routed) || t >= T.lockMax)) {
+        locked = true; lockT = t; END = t + T.tail;
+        for (const a of Sx.agents) {
+          if (a.dead || a.fadeT >= 0) continue;
+          if (a.mode === 'scan') { a.fadeT = t + 60 + rnd() * 380; a.fadeD = 300; }
+        }
+      }
+    }
+    const charge = () => Math.min(1, absorbed / Math.max(1, 0.62 * routed));
+
+    /* ---------- drawing ---------- */
+    function drawStatic() {
+      fc.width = Math.round(W * d); fc.height = Math.round(Hf * d); fc.style.width = W + 'px'; fc.style.height = Hf + 'px';
+      fx.setTransform(d, 0, 0, d, 0, 0); fx.clearRect(0, 0, W, Hf);
+      drawField(fx, L, c => outside(c.x, c.y, -2) ? outA(c.x, c.y) : 0, {});
+      ac.width = Math.round(W * d); ac.height = Math.round(Hf * d); ac.style.width = W + 'px'; ac.style.height = Hf + 'px';
+    }
+    // the sockets: where a route meets the card. Its last edge (into the card's edge) lights as agents dock, and once
+    // the card locks one agent stays on the corner outside each socket, as in the hero's rest frame
+    function drawSockets(g, t, rest) {
+      const list = [];
+      g.lineCap = 'round'; g.strokeStyle = COL.text; g.lineWidth = phone ? 1.25 : 1.5;
+      for (const dv of docks) {
+        const k = dv.dock, tv = V[dv.nb[0]], pt = ports[k];
+        const flash = Math.max(0, 1 - (t - hits[k]) / 300);
+        const al = rest ? 0.75 : (hits[k] > -1e8 ? 0.35 + 0.4 * charge() + 0.25 * flash : 0);
+        if (al > 0.01) { g.globalAlpha = Math.min(1, al); g.beginPath(); g.moveTo(tv.x, tv.y); g.lineTo(pt[0], pt[1]); g.stroke(); }
+        const stay = rest ? 0.9 : (locked ? 0.9 * sm(lockT + 200, lockT + 600, t) : 0);
+        if (stay > 0.01) list.push({ x: tv.x, y: tv.y, a: stay, k: 1 });
+      }
+      g.globalAlpha = 1; g.lineCap = 'butt';
+      if (list.length) SL.drawGlyphs(g, list, { r: phone ? 3.6 : 4.4, lw: 1.1 });
+    }
+    function drawTraces(g, al) {
+      if (!traces.size || al <= 0) return;
+      g.globalAlpha = al; g.strokeStyle = COL.hive; g.lineWidth = phone ? 1.1 : 1.25; g.lineCap = 'round'; g.beginPath();
+      for (const [a, b] of traces.values()) { g.moveTo(V[a].x, V[a].y); g.lineTo(V[b].x, V[b].y); }
+      g.stroke(); g.globalAlpha = 1; g.lineCap = 'butt';
+    }
+    function draw(t) {
+      const g = ax;
+      g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, Hf);
+      if (t < END) {
+        // the lock: one ring wave runs out from the card across the field
+        if (locked && t < lockT + T.wave + 120) {
+          drawField(g, L, c => {
+            if (!outside(c.x, c.y, -2)) return 0;
+            const e = t - (lockT + 40 + (dBox(c.x, c.y) / P) * 70);
+            if (e < 0) return 0;
+            const env = e < 90 ? e / 90 : Math.max(0, 1 - (e - 90) / 520);
+            return env * 0.6 * outA(c.x, c.y);
+          }, { color: COL.hive });
+        }
+        // sensing: a visited cell's outline brightens briefly
+        if (pinged.length) drawField(g, L, c => { const e = t - c.ping; if (e < 0 || e > 800) return 0; return (e < 120 ? e / 120 : e < 280 ? 1 : 1 - (e - 280) / 520) * 0.55; }, { color: COL.hive });
+        drawTraces(g, 0.5 * Math.min(1, t / 900));
+        SL.drawEdges(g, Sx, t, { base: [0.22, 0.75], lw: phone ? 1.25 : 1.5 });
+        drawAgents(g, Sx, t, { glyph: true, r: phone ? 3.6 : 4.4, lw: 1.1, base: [0.55, 1] });
+      }
+      drawSockets(g, t, false);
+      card.classList.toggle('lock-pending', !locked);
+    }
+    function drawRest() {
+      ax.setTransform(d, 0, 0, d, 0, 0); ax.clearRect(0, 0, W, Hf);
+      drawTraces(ax, 0.55); drawSockets(ax, 0, true);
+    }
+
+    /* ---------- time ---------- */
+    function advanceTo(t) { while (simT + DT <= t) { simT += DT; step(simT); } }
+    function render(t) {
+      advanceTo(Math.min(t, END));
+      draw(Math.min(t, END));
+      if (t >= END && !done) finish();
+    }
+    function finish() { done = true; if (raf) cancelAnimationFrame(raf); raf = 0; drawRest(); settleDom(); }
+    // the settled card: run the pass offscreen, so the rest frame keeps the same routes as a live run
+    function settle() { done = true; started = true; spawn(); advanceTo(T.lockMax + T.tail + 200); locked = true; drawRest(); settleDom(); }
+    function seek(t) {
+      if (t < simT || done) { done = false; spawn(); }
+      render(t);
+    }
+    function loop(now) {
+      raf = 0;
+      if (done || !onScreen || document.hidden) return;
+      if (last === null) last = now;
+      clock += Math.min(1000, Math.max(0, now - last)); last = now;
+      render(clock);
+      if (!done) raf = requestAnimationFrame(loop);
+    }
+    function start() {
+      if (started) return;
+      started = true; clock = 0; last = null;
+      raf = requestAnimationFrame(loop);
+    }
+    const resume = () => { if (started && !done && !raf && onScreen && !document.hidden) { last = null; raf = requestAnimationFrame(loop); } };
+
+    /* ---------- wiring ---------- */
+    const FROZEN = FREEZE !== null;
+    const STILL = !FROZEN && (STATIC || !('IntersectionObserver' in window));
+    setup(); spawn(); drawStatic(); lastW = W;
+    if (STILL) settle();
+    else if (FROZEN) { started = true; seek(FREEZE); }
+    else {
+      draw(0);
+      // plays once, when the price row is 75% in view
+      const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); start(); } }, { threshold: 0.75 });
+      io.observe(row || card);
+      new IntersectionObserver(es => { for (const e of es) { onScreen = e.isIntersecting; resume(); } }).observe(stage);
+      document.addEventListener('visibilitychange', () => { last = null; resume(); });
+    }
+    window.__lockDebug = () => ({ started, done, locked, lockT: Math.round(lockT), end: Math.round(END), clock: Math.round(clock), raf: !!raf, onScreen, n: Sx.agents.length, routed, absorbed, docks: docks.length, traces: traces.size, Dm, Hf });
+    window.__lockSeek = t => {
+      started = true;
+      seek(t);
+      if (joinBtnEl && joinBtnEl.getAnimations) joinBtnEl.getAnimations({ subtree: true }).forEach(a => { a.pause(); a.currentTime = Math.min(RING_MS, t); });
+      return { t, locked, lockT, absorbed, routed };
+    };
+    // a new width rebuilds the field and shows the settled card (rotation mid-play jumps to the end); a new height only
+    // redraws the field
+    if ('ResizeObserver' in window) new ResizeObserver(() => {
+      const w = stage.clientWidth;
+      if (w === lastW) { if (!started || done) { setup(); spawn(); drawStatic(); if (done) settle(); else draw(0); } return; }
+      lastW = w;
+      if (raf) cancelAnimationFrame(raf); raf = 0;
+      setup(); spawn(); drawStatic();
+      if (FROZEN && !done) seek(FREEZE); else if (started || STILL) settle(); else draw(0);
+    }).observe(stage);
   })();
 
   /* final CTA: the lit core returns above the last headline, as in the hero, with its warm light */
@@ -586,7 +1004,7 @@
       edge: (x, y, W, H) => SL.sm(0, 110, y) * (1 - SL.sm(H - 140, H - 10, y)),
       boxes: () => {
         const sr = sec.getBoundingClientRect(), out = [];
-        sec.querySelectorAll('.h2 span, .btn-gold, .cancel, .final-facts li').forEach(el => { const r = el.getBoundingClientRect(); out.push([r.left - sr.left - 22, r.top - sr.top - 16, r.right - sr.left + 22, r.bottom - sr.top + 16]); });
+        sec.querySelectorAll('.h2 span, .btn-gold, .cancel').forEach(el => { const r = el.getBoundingClientRect(); out.push([r.left - sr.left - 22, r.top - sr.top - 16, r.right - sr.left + 22, r.bottom - sr.top + 16]); });
         return out;
       } });
     // the copy's boxes are measured once the real fonts are in

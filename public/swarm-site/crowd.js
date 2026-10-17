@@ -30,7 +30,8 @@
   const T = { draw: 1300, fadeIn: 260, herd: 850, herdDur: 820, herdBack: 2350, ripple: 420,
               midFrom: 1150, midTo: 3000, decide: 2900, out: 3100, outDur: 520, end: 4400 };
   // YOU walks the curve: left slope, the middle, then the right slope
-  const YOU = [[0, 0.17], [500, 0.17], [1800, 0.5], [2350, 0.5], [3150, 0.73]];
+  // (each group is lit while it does its own thing: LEFT through the herd drift, MID through the checks, RIGHT as it decides)
+  const YOU = [[0, 0.17], [1250, 0.17], [1950, 0.5], [2450, 0.5], [3050, 0.73]];
   const bell = u => Math.exp(-0.5 * ((u - 0.5) / 0.2) ** 2);
 
   let W, H, DPR, phone, base, peak, x0, x1, Rc, P, r, nodes = [], field = null, appearAt = null;

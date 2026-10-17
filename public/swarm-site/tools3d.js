@@ -86,7 +86,7 @@ export function createTools(host, M, onLabels) {
   edges.frustumCulled = false; edges.renderOrder = 2;
   scene.add(edges, nodes);
 
-  const GROUND = new THREE.Color(0x0B0B0D), SURF = new THREE.Color(0x141418), LIFTC = new THREE.Color(0x24242A);
+  const GROUND = new THREE.Color(0x0B0B0D), SURF = new THREE.Color(0x111114), LIFTC = new THREE.Color(0x232328);
   const LINE = new THREE.Color(0x232328), FAINT = new THREE.Color(0x1C1C21), HIVE = new THREE.Color(0x55555B), MUTED = new THREE.Color(0x8E8A80), TEXT = new THREE.Color(0xEEEBE4);
   const m4 = new THREE.Matrix4(), col = new THREE.Color(), tmp = new THREE.Color(), bg = new THREE.Color(), v3 = new THREE.Vector3();
   const lift = new Float32Array(n);
@@ -134,6 +134,17 @@ export function createTools(host, M, onLabels) {
       put(A, B, B.x, B.y, (e.k ? 0.8 : 0.5) * (1 - age / sim.edgeFade), e.k);
     }
     for (const a of sim.agents) if (!a.dead && a.to >= 0 && t > a.t0) put(L.V[a.from], L.V[a.to], a.x, a.y, a.kind ? 0.8 : 0.5, a.kind);
+    // squad links: each squad's scouts joined by a minimum spanning tree, 1px at 30%, so the field reads as four teams
+    if (M.links) {
+      tmp.copy(bg).lerp(MUTED, 0.3 * sm(150, 700, t));
+      for (const [a, b] of M.links()) {
+        if (k >= MAXE || sim.vis(a, t) <= 0 || sim.vis(b, t) <= 0) continue;
+        const o = k * 6, za = vertTop(L.V[a.from]) + 1, zb = vertTop(L.V[b.from]) + 1;
+        ePos[o] = a.x; ePos[o + 1] = -a.y; ePos[o + 2] = za; ePos[o + 3] = b.x; ePos[o + 4] = -b.y; ePos[o + 5] = zb;
+        eCol[o] = eCol[o + 3] = tmp.r; eCol[o + 1] = eCol[o + 4] = tmp.g; eCol[o + 2] = eCol[o + 5] = tmp.b;
+        k++;
+      }
+    }
     for (let i = k * 6; i < MAXE * 6; i++) ePos[i] = 0;
     eGeo.setDrawRange(0, k * 2);
     eGeo.attributes.position.needsUpdate = eGeo.attributes.color.needsUpdate = true;
