@@ -5,7 +5,7 @@ What still stands between the page and https://www.joinswarm.ai going live. Noth
 ## Needed from Jesus
 
 1. **Whop plan IDs** for Founding Monthly, Standard Monthly and Yearly (each starts with `plan_`). Each one goes on one line in the `PLANS` table in `a-core-glow/page.js`; then the site is rebuilt. Until then the pricing card shows "Checkout opens here soon."
-2. **The support@joinswarm.ai inbox.** The page footer and all three legal pages use it. Free email forwarding to an inbox you already read is enough (Namecheap offers it while it runs the domain's DNS; if the DNS moved to Vercel, it takes two MX records there).
+2. **The support@joinswarm.ai inbox.** The page footer and all three legal pages use it. Free email forwarding to an inbox you already read is enough (Namecheap offers it while it runs the domain's DNS; if the DNS moved to Vercel, add a forwarding service's MX records there).
 3. **A launch date**, or say to drop the "[Data needed: launch date]" chip in the FAQ.
 4. **The ten legal questions** at the end of `OVERNIGHT.md` (legal entity, Florida law, adviser status, holding assets discussed, whether Standard and Yearly members keep their price, the Yearly refund window and usage limit, where calls run and whether they are recorded, what the AI tools store). Each one is a yellow [CONFIRM] chip on the Terms, Privacy or Refund page.
 5. **Sign-off on the wording**: the risk disclaimer and the copy written around your own lines.
