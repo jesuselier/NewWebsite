@@ -198,10 +198,10 @@ function inst(g, name, n, size) {
 const rgb = hex => new THREE.Vector3(((hex >> 16) & 255) / 255, ((hex >> 8) & 255) / 255, (hex & 255) / 255);
 
 /* ---------- the renderer ---------- */
-export function createRising(host, before) {
+export function createRising(host, before, opts) {
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance', stencil: false });
+    renderer = new THREE.WebGLRenderer({ antialias: !opts || opts.aa !== false, alpha: false, powerPreference: 'high-performance', stencil: false });
   } catch (e) { return null; }
   if (!renderer || !renderer.getContext()) return null;
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;

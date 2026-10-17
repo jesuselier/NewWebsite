@@ -112,7 +112,7 @@
     phi *= D2R; yaw *= D2R;
     const d = dk * F, cp = Math.cos(phi), sp = Math.sin(phi), sy = Math.sin(yaw), cy = Math.cos(yaw);
     const z = [-sy * cp, -cy * cp, sp], x = [cy, -sy, 0], y = [sp * sy, sp * cy, cp];
-    return { x, y, z, d, eye: [z[0] * d, z[1] * d, z[2] * d], py: core.y + C3.lift * Hc * (1 - c) };
+    return { x, y, z, d, eye: [z[0] * d, z[1] * d, z[2] * d], py: core.y + (phone ? 0.025 : C3.lift) * Hc * (1 - c) };
   }
   function viewOf(c) { const { x, y, z, d } = c; return [x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0, 0, 0, -d, 1]; }
   function projOf(c) {
@@ -283,7 +283,7 @@
     glShown = true; glGone = false;
     if (!G3) { B3 = null; return; }
     G3.canvas.style.opacity = '1'; G3.canvas.style.visibility = '';
-    B3 = G3.build({ W, H: Hc, dpr: DPR, n, na: Sx.agents.length, ns: 900, nodeR: phone ? 2.6 : 3.3, nodeH: phone ? 2.2 : 2.8 });
+    B3 = G3.build({ W, H: Hc, dpr: DPR, n, na: Sx.agents.length, ns: phone ? 700 : 1600, nodeR: phone ? 2.6 : 3.3, nodeH: phone ? 2.2 : 2.8 });
     for (let i = 0; i < n; i++) {
       const c = L.cells[i], o = i * 4;
       B3.cellP[o] = c.x - core.x; B3.cellP[o + 1] = core.y - c.y; B3.cellP[o + 2] = R * (c.ring === 0 ? 0.825 : 0.97); B3.cellP[o + 3] = 0;
@@ -491,7 +491,9 @@
   const C_GROUND = rgbOf('#0B0B0D'), C_FAINT = rgbOf(COL.faint), C_HIVE = rgbOf(COL.hive), C_MUTED = rgbOf(COL.muted), C_TEXT = rgbOf(COL.text), C_GOLD = rgbOf(COL.gold), C_ROOF = rgbOf('#0B0B0D');
   const mix3 = (a, b, k, out, o) => { out[o] = a[0] + (b[0] - a[0]) * k; out[o + 1] = a[1] + (b[1] - a[1]) * k; out[o + 2] = a[2] + (b[2] - a[2]) * k; };
   const tmpC = [0, 0, 0];
+  const perf = Q.has('debug') ? { n: 0, js: 0, gl: 0 } : null;
   function render3(t) {
+    const t0 = perf ? performance.now() : 0;
     const B = B3, cells = L.cells, n = cells.length;
     const sink = resolved ? 1 - inOut((t - resolveT - C3.sink0) / (C3.sink1 - C3.sink0)) : 1;
     const sinkC = resolved ? 1 - inOut((t - resolveT - C3.core0) / (C3.core1 - C3.core0)) : 1;
@@ -581,7 +583,9 @@
       nn++;
     }
     const cm = camAt(t);
+    const t1 = perf ? performance.now() : 0;
     G3.draw(viewOf(cm), projOf(cm), { bodies: nb, segs: ns, nodes: nn });
+    if (perf) { perf.n++; perf.js += t1 - t0; perf.gl += performance.now() - t1; perf.counts = { cells: n, bodies: nb, segs: ns, nodes: nn }; }
   }
 
   function updatePhase(t) {
@@ -686,7 +690,7 @@
     const fonts = document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, wait(live ? 900 : 4000)]) : Promise.resolve();
     const gl = import('./hero3d.js').then(m => {
       if (begun) return;
-      G3 = m.createRising(art, ac);
+      G3 = m.createRising(art, ac, { aa: (window.devicePixelRatio || 1) < 2 });   // 2x screens rely on the lines' own anti-aliasing
       if (G3) G3.canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); glGone = true; if (live && !done) finish(); }, false);
     }).catch(() => { G3 = null; });
     Promise.all([gl, fonts]).then(begin, begin);
@@ -704,7 +708,7 @@
   function seek(t) { if (t < simT) setup(); simulateTo(t); render(simT); return simT; }
 
   start();
-  if (Q.has('debug')) window.__h1 = () => ({ G3, B3, L, Sx, core, F, W, Hc, camAt, projector, viewOf, projOf, hd, traffic, resolveT, routed, absorbed });
+  if (Q.has('debug')) window.__h1 = () => ({ G3, B3, L, Sx, core, F, W, Hc, camAt, projector, viewOf, projOf, hd, traffic, resolveT, routed, absorbed, perf, END });
   // frame-accurate captures: with ?t=<ms>, window.__heroSeek(ms) steps the frozen hero to another time
   if (!live && !S.reduce) window.__heroSeek = t => { if (!begun) { pendingSeek = t; return t; } return seek(t); };
 

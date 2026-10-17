@@ -10,7 +10,14 @@
   - Scout states: "Flagged for review" makes no sense to him. Use SCANNING, ANALYZING and REPORTING (for example "Reporting to the watch list").
   - Every gold "Join Swarm" button gets a highlight revolving around it so people focus on it. This is Jesus's explicit request and the one exception to the kit's no-glow rule; under reduced motion it is a static ring.
   - The hero must not end in an empty band at the bottom of the first screen.
-  - No martinezaccess.com link in the footer.
+  - **No martinezaccess.com anywhere on the Swarm page or its legal pages** (Jesus, October 17): not in the footer, links, emails or meta. Contact address: support@joinswarm.ai (Jesus still needs to create this inbox).
+  - **Weekly live calls: no day or time.** People just need to know the calls are weekly.
+  - **Swarm lives on Discord.** After checkout through Whop, members get access to the Swarm Discord.
+  - **Founding price policy:** a founding member keeps $49 a month for as long as they stay subscribed. If they cancel and rejoin after prices have gone up, they pay the price at that time.
+  - **The intro video caption is "Why I built Swarm"** (his words at 3:14), not "Watch the intro".
+  - **FAQ:** Jesus approved the Q&A copy; keep it to at most six questions with no near-duplicates.
+  - **Terms, Privacy and Refund policy pages are generated drafts** (terms.html, privacy.html, refunds.html), linked from the footer, to be reviewed before launch.
+  - **Whop plan IDs are not finished yet;** the checkout placeholder stays.
   - **No "Pause motion" buttons anywhere** (Jesus: they are useless). To stay accessible without them, every motion piece plays once and settles within 5 seconds of coming into view, with no ambient loops (WCAG 2.2.2 only requires a pause control for motion that runs longer than 5 seconds). Under reduced motion, show the settled still. Reviewers should not flag the missing pause control when this holds.
 - **The page is 100% the Swarm offer.** It is the landing page for the agentic AI crypto trading community, not a personal site. Jesus appears as the founder (his story, his face, his voice) inside it. martinezaccess.com stays his personal site and links here.
 - **Because the whole page is a Swarm page, the Swarm brand kit applies to the whole page:** the `.swarm` wrapper goes on the page root, the Swarm og:image and Swarm icons go in its head. The three style directions differ in composition, motion language, narrative and texture, all inside the kit's colors and fonts.

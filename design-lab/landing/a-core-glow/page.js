@@ -349,7 +349,8 @@
     }
     function run(t) { sim.advance(t, (a, at) => opts.policy(a, at, sim, rnd, extra)); }
     function settleAt(T) { setup(); for (let t = 0; t <= T; t += 1000 / 60) run(t); draw(T); }
-    // plays once on its own clock, which only runs while the piece is on screen and the tab is visible
+    // plays once on its own wall clock, which only runs while the piece is on screen and the tab is visible; a slow
+    // device gets fewer frames, never a longer animation
     function play() {
       played = true;
       const T = opts.end, DT = 1000 / 60;
@@ -357,7 +358,7 @@
       const loop = now => {
         raf = 0;
         if (!onScreen || document.hidden) { parked = loop; return; }
-        const dt = last ? Math.min(100, now - last) : DT; last = now;
+        const dt = last ? Math.min(500, now - last) : DT; last = now;
         const target = Math.min(T, simT + dt);
         while (simT + DT <= target + 0.01) { simT += DT; run(simT); }
         draw(simT);
@@ -445,8 +446,16 @@
       draw(g, t, sim, X, W, H) {
         let there = 0; for (const a of sim.agents) if (a.mode === 'there') there++;
         const k = X.movers ? there / X.movers : 0;
-        const fade = c => Math.max(0, 1 - SL.sm(W * 0.4, W * 0.56, Math.abs(c.x - W / 2))) * (1 - SL.sm(H - 40, H, c.y)) * SL.sm(0, 30, c.y);
-        SL.drawField(g, X.L, c => c.inA || c.inB ? 0 : 0.9 * fade(c), {});
+        // the quiet field never changes: drawn once into its own layer
+        if (!X.bg) {
+          const d = g.getTransform().a || 1, c2 = document.createElement('canvas');
+          c2.width = Math.round(W * d); c2.height = Math.round(H * d);
+          const g2 = c2.getContext('2d'); g2.setTransform(d, 0, 0, d, 0, 0);
+          const fade = c => Math.max(0, 1 - SL.sm(W * 0.4, W * 0.56, Math.abs(c.x - W / 2))) * (1 - SL.sm(H - 40, H, c.y)) * SL.sm(0, 30, c.y);
+          SL.drawField(g2, X.L, c => c.inA || c.inB ? 0 : 0.9 * fade(c), {});
+          X.bg = c2;
+        }
+        g.drawImage(X.bg, 0, 0, W, H);
         SL.drawField(g, X.L, c => c.inA ? 1 - 0.45 * k : 0, { color: SL.COL.line });
         SL.drawField(g, X.L, c => c.inB ? 0.6 + 0.4 * k : 0, { color: SL.COL.line });
         // the worn path: each crossing so far wears its edge in a little
