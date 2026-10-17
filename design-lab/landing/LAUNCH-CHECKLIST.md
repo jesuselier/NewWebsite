@@ -12,7 +12,7 @@
 ## Done
 
 - The page is a static site in `public/swarm-site/`, built from `a-core-glow/` by `node scripts/build-swarm-site.mjs`. The build hides every [CONFIRM] and [Data needed] note on the live site and lists the ones still open.
-- joinswarm.ai serves the page at `/` and the legal pages at `/terms`, `/privacy` and `/refunds`, with its own robots.txt, sitemap and favicon. Every other path returns a 404: the Swarm 404 page, or Next's plain 404 for a few odd paths (unknown files under `/brand`, `/swarm-site` and `/swarm`, and capitalized ones such as `/TERMS`). martinezaccess.com keeps all its pages; its footer now has a Swarm link, its structured data names Swarm as the community Jesus founded, and its `/swarm` links redirect permanently (308) to joinswarm.ai.
+- joinswarm.ai serves the page at `/` and the legal pages at `/terms`, `/privacy` and `/refunds`, with its own robots.txt, sitemap and favicon. Every other path returns a 404: the Swarm 404 page, or Next's plain 404 for a few odd paths (unknown files under `/brand`, `/swarm-site` and `/swarm`, and capitalized ones such as `/TERMS`). martinezaccess.com is not used for Swarm: it keeps all its pages unchanged, and its old `/swarm` link still redirects to joinswarm.ai.
 - Fonts and the 3D library are served from the site itself. Nothing loads from YouTube until a visitor presses play, which matches the privacy policy. Visits are counted with Vercel Analytics, which sets no cookies.
 - Lint, tests and the production build pass. Host-header requests and a browser pass on desktop and phone were clean.
 

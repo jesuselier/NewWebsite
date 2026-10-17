@@ -1,14 +1,16 @@
 # Swarm (joinswarm.ai) SEO plan
 
+**Decision (Jesus, October 17, 2026): martinezaccess.com is not used for Swarm SEO at all.** Section 1.6 and the martinezaccess.com steps in Part 2 are dropped, and martinezaccess.com keeps its pages, structured data and redirects exactly as before.
+
 Written October 17, 2026 by the SEO lead, from four audits run the same day (technical, speed, keywords, off-page; full reports in the session scratchpad `seo/` folder). Every code change below was applied to a scratch copy of this repo and checked there before it was written down: the Swarm build ran (twice, to confirm the output is the same both times), `next build` (Next.js 16.2.4) passed, `next start` was tested with joinswarm.ai and martinezaccess.com host headers, and the old and new pages were rendered in headless Chrome and pixel-compared. Nothing in the real repo has been changed except this file. No commits.
 
 Rules this plan follows: real data only (no ratings, reviews, member counts, results, dates or prices beyond the brief); no martinezaccess.com anywhere on the Swarm pages or their metadata; Jesus's approved copy and design stay as they are unless a change is small and clearly needed for search (every visible change is listed in section 1.12); no em or en dashes.
 
 ## The short version
 
-- **The biggest problems are outside the code.** Google has not indexed joinswarm.ai yet. Nothing links to it: not the launch video (which looks unlisted and has no description), not his YouTube channels, not his X bio, not martinezaccess.com. Part 2 is Jesus's list, and step 1 (Search Console) matters more than everything in Part 1 put together.
+- **The biggest problems are outside the code.** Google has not indexed joinswarm.ai yet. Nothing links to it: not the launch video (which looks unlisted and has no description), not his YouTube channels, not his X bio. Part 2 is Jesus's list, and step 1 (Search Console) matters more than everything in Part 1 put together.
 - **"Swarm" on its own will never rank.** At least nine crypto and AI projects already use the name (Swarms, Swarm Network, Swarm Markets, Ethereum Swarm, joinswarm.io and others). The page has to win the searches his viewers will type: "swarm jm crypto", "jesus martinez swarm", "joinswarm", "swarm ai crypto trading community", "jm crypto discord". None of those has a real owner today, so a correctly titled page should take them soon after it is indexed.
-- **In code:** a title that says whose Swarm this is, a description that fits, structured data tying Swarm to Jesus and his real profiles, a real 404 instead of redirecting every unknown URL home, an LCP fix with no visible change, a smaller founder photo, sitemap dates that stay true, and one footer link from martinezaccess.com to joinswarm.ai.
+- **In code:** a title that says whose Swarm this is, a description that fits, structured data tying Swarm to Jesus and his real profiles, a real 404 instead of redirecting every unknown URL home, an LCP fix with no visible change, a smaller founder photo, and sitemap dates that stay true.
 
 ---
 
@@ -357,9 +359,14 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: { "/swarm/page-not-found": ["./public/swarm-site/404.html"] },
   async redirects() {
     return [
-      // Swarm has its own domain. Permanent: the move is final.
-      { source: "/swarm/:path*", has: SITE_HOST, destination: "https://www.joinswarm.ai/", permanent: true },
-      { source: "/swarm-site/:path*", has: SITE_HOST, destination: "https://www.joinswarm.ai/", permanent: true },
+      // Swarm has its own domain.
+      {
+        source: "/swarm",
+        has: SITE_HOST,
+        destination: "https://www.joinswarm.ai/",
+        permanent: false,
+      },
+      { source: "/swarm-site/:path*", has: SITE_HOST, destination: "https://www.joinswarm.ai/", permanent: false },
       // On joinswarm.ai the page lives at / and the legal pages at /terms, /privacy and /refunds.
       { source: "/swarm", has: SWARM_HOST, destination: "/", permanent: true },
       { source: "/index.html", has: SWARM_HOST, destination: "/", permanent: true },
@@ -412,7 +419,7 @@ What changed and why:
 - The joinswarm.ai catch-all **redirect** is gone. The new last `beforeFiles` **rewrite** sends the same paths to the 404 route. It must be `beforeFiles` so it beats martinezaccess.com pages and public files at the same paths. The exclusions list both the original paths and the destinations of the earlier rewrites, because `beforeFiles` rewrites keep matching after a hit (`node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/rewrites.md`).
 - The old exclusion `swarm` (any path starting with "swarm") is narrowed to `swarm-site/`, `swarm/` and `swarm-analytics.js`, so `/swarmfoo` now gets the Swarm 404 instead of Next's white one.
 - `/swarm`, `/index.html` and the duplicate `/swarm-site/*.html` URLs are now **permanent** (308) redirects to the clean URLs. Redirects run before rewrites and only see the incoming URL, so the internal `/` to `/swarm-site/index.html` rewrite does not loop (tested).
-- martinezaccess.com: `/swarm` became `/swarm/:path*` (it also catches `/swarm/robots.txt` and the new 404 route, so no Swarm file shows on his personal domain), and both martinezaccess.com redirects are now permanent, so any old `/swarm` links pass their value to joinswarm.ai. Preview deployments still show the Swarm page at `/swarm`.
+- martinezaccess.com: no change. Its `/swarm` and `/swarm-site/*` redirects to joinswarm.ai stay as they were (307). Preview deployments still show the Swarm page at `/swarm`.
 - Vercel Analytics is unaffected. Its script and beacons live at `/6834f4ff7adf1e4a/...`, which Vercel serves before Next routing (proof: the current catch-all redirect also matches that path, yet it returns 200 today).
 
 Tested with `next start` and host headers:
@@ -428,66 +435,11 @@ Tested with `next start` and host headers:
 | martinezaccess.com path | Result |
 |---|---|
 | `/`, `/about` | 200, unchanged |
-| `/swarm`, `/swarm/robots.txt`, `/swarm/page-not-found`, `/swarm-site/index.html` | 308 to `https://www.joinswarm.ai/` |
+| `/swarm`, `/swarm-site/index.html` | 307 to `https://www.joinswarm.ai/`, unchanged |
 
-## 1.6 Link from martinezaccess.com to joinswarm.ai, and entity markup there (MEDIUM)
+## 1.6 martinezaccess.com (dropped)
 
-**Why:** it is the only link we control. The brief already says "martinezaccess.com stays his personal site and links here", but no such link exists in the code. The rule only bans martinezaccess.com on the Swarm pages, so a link in this direction is allowed. Honest caveat from the off-page audit: martinezaccess.com is not in Google's index either (0 results for `site:martinezaccess.com`), so this link starts counting once Jesus verifies that site too (Part 2, step 10).
-
-**a) `components/Footer.tsx`:** one new footer link, styled like the others. `rel="noopener"` without `noreferrer`, so Swarm's analytics can see visits that came from his site.
-
-```diff
- import Link from "next/link";
- import { LINKS } from "@/lib/site";
-+import { SWARM_ORIGIN } from "@/lib/swarm";
- export default function Footer() {
-@@
-           <Link href="/press-kit">Media kit</Link>
-           <Link href="/#attention-cycle">The Attention Cycle</Link>
-+          <a href={`${SWARM_ORIGIN}/`} target="_blank" rel="noopener">
-+            Swarm
-+          </a>
-         </nav>
-```
-
-**b) `app/(site)/layout.tsx`:** turn the Person JSON-LD into a graph that adds his second channel and names Swarm as the organization he founded (invisible). Add `import { SWARM_ORIGIN } from "@/lib/swarm";` and replace the `const person = {...}` block with:
-
-```ts
-// Jesus as a Person, plus Swarm, the community he founded (joinswarm.ai). The link runs from this site to Swarm only:
-// the Swarm pages never mention martinezaccess.com.
-const PERSON_ID = "https://www.martinezaccess.com/#person";
-const structuredData = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Person",
-      "@id": PERSON_ID,
-      name: "Jesus Martinez",
-      url: "https://www.martinezaccess.com",
-      image: "https://www.martinezaccess.com/media/jesus-martinez-portrait.jpg",
-      jobTitle: "Creator of JM Crypto",
-      sameAs: [LINKS.crypto, "https://www.youtube.com/@JesusMartinezTrades", LINKS.x, LINKS.instagram],
-      knowsAbout: [
-        "Cryptocurrency",
-        "Bittensor",
-        "Artificial intelligence",
-        "Digital assets",
-      ],
-    },
-    {
-      "@type": "Organization",
-      "@id": `${SWARM_ORIGIN}/#organization`,
-      name: "Swarm",
-      url: `${SWARM_ORIGIN}/`,
-      founder: { "@id": PERSON_ID },
-    },
-  ],
-};
-```
-
-and change `JSON.stringify(person)` to `JSON.stringify(structuredData)` in the `<script type="application/ld+json">`.
-
-**c) Optional, only if Jesus says yes (not shipped now):** one sentence on `/about` in his own words from the video (3:02), in the "Today, I'm all in on JM Crypto" section, with "Swarm" linked to `https://www.joinswarm.ai/`: *"And that's why I built Swarm, an AI crypto trading community for the new era."* An in-text link is stronger than a footer link, but it changes his approved personal-site copy, so it is his call. A navbar link is also his design call.
+Dropped by Jesus on October 17: martinezaccess.com is not used for Swarm SEO. No footer link, no structured data change, no About page sentence and no redirect change there.
 
 ## 1.7 LCP fix: inline the hero mark at build time (MEDIUM, no visible change)
 
@@ -620,8 +572,7 @@ Measured in the render test (both images together): a 320 px phone loads about 1
 1. **Browser tab and Google title:** "Swarm: AI Crypto Trading Community" becomes "Swarm: AI Crypto Trading Community by JM Crypto". Nothing on the page.
 2. **Google snippet text:** the new meta description. Nothing on the page.
 3. **New 404 page**, seen only at bad URLs: "404", "Page not found", "This page does not exist.", with the existing legal-page header, footer links and footer sentence.
-4. **martinezaccess.com footer:** one new link, "Swarm", after "The Attention Cycle".
-5. **Link previews of the three legal pages** now show the Swarm OG image and the page title instead of a bare link.
+4. **Link previews of the three legal pages** now show the Swarm OG image and the page title instead of a bare link.
 
 Not visible (checked): the inlined hero mark, JSON-LD, meta tags, `data-nosnippet`, alt text, WebP photo, redirects and the sitemap. Jesus's approved page copy, layout and motion are untouched.
 
@@ -647,7 +598,6 @@ Not visible (checked): the inlined hero mark, JSON-LD, meta tags, `data-nosnippe
 | Capping hero canvas resolution at 1.5x, or showing the mark faintly from frame 0 (speed) | Rejected | Visible design changes. The inline SVG (1.7) fixes LCP with no visible change. |
 | Critical-CSS split, `content-visibility`, web manifest, llms.txt, hreflang | Rejected | Large change for little gain, risky with canvas measurement, or no effect on Google (the site is English only). |
 | Vercel Speed Insights | Not now | It adds a script to the page. The Search Console Core Web Vitals report will show field data once there is traffic. |
-| /about sentence and navbar link on martinezaccess.com (off-page) | Jesus's call (1.6 c) | Changes his approved personal-site copy and design. |
 
 ## 1.14 Launch-day and later code follow-ups (not now)
 
@@ -680,7 +630,7 @@ Not visible (checked): the inlined hero mark, JSON-LD, meta tags, `data-nosnippe
 3. Add `design-lab/landing/swarm-site/structured-data.json` (1.3) and the README line (1.4).
 4. Apply the build diff (1.4), then run `node scripts/build-swarm-site.mjs`. It creates `public/swarm-site/404.html`, `public/swarm-site/img/*.webp` and `lib/swarm-pages.json`. Run it twice: the second run must change nothing.
 5. Add `app/(swarm)/swarm/page-not-found/route.ts` (1.5 b), replace the sitemap route (1.8) and `next.config.ts` (1.5 c).
-6. martinezaccess.com: `components/Footer.tsx` and `app/(site)/layout.tsx` (1.6).
+6. (Dropped: no martinezaccess.com changes.)
 7. Run `npx tsc --noEmit`, `npm run lint`, `npm test` and `npx next build`. Then run `npx next start` and repeat the host-header curl table in 1.5 (`curl -sI -H "Host: www.joinswarm.ai" http://localhost:3000/doesnotexist` and so on).
 8. Update `LAUNCH-CHECKLIST.md`: "Every other path goes back to `/`" becomes "Every other path gets the Swarm 404 page", and the inbox advice says Cloudflare Email Routing (DNS is on Cloudflare, not Namecheap).
 9. Committing and deploying are a separate, approved step. This plan makes no commits.
@@ -692,7 +642,7 @@ Not visible (checked): the inlined hero mark, JSON-LD, meta tags, `data-nosnippe
     curl -s  https://www.joinswarm.ai/sitemap.xml                     # 4 URLs, no changefreq or priority
     curl -s  https://www.joinswarm.ai/ | grep -c 'application/ld+json'            # 1
     curl -sI https://www.joinswarm.ai/6834f4ff7adf1e4a/script.js | head -1        # 200 (Vercel Analytics)
-    curl -sI https://www.martinezaccess.com/swarm | grep -iE "^HTTP|location"     # 308 to https://www.joinswarm.ai/
+    curl -sI https://www.martinezaccess.com/swarm | grep -iE "^HTTP|location"     # 307 to https://www.joinswarm.ai/, unchanged
     ```
     If the 404 comes back as 200 on Vercel, delete `export const dynamic = "force-static"` from the 404 route (the tracing include already bundles the file) and redeploy. Next day, confirm that Vercel Analytics still records joinswarm.ai views. Run Google's Rich Results Test and the Schema Markup Validator on `https://www.joinswarm.ai/` (expect Organization detected and 0 errors), and run PageSpeed Insights on mobile: the LCP element should be the headline or `p.hero-sub`, not `#hero-mark`.
 
@@ -708,9 +658,7 @@ Plain steps. None of this needs code. Steps 1 to 4 matter most. Google cannot ra
 
 - The title Google shows is now "Swarm: AI Crypto Trading Community by JM Crypto", and the grey text under it is shorter and mentions JM Crypto and the $49 founding price.
 - A mistyped joinswarm.ai address now shows a small Swarm "Page not found" page instead of jumping to the home page.
-- martinezaccess.com has a new "Swarm" link in its footer.
 - The glowing hive logo in the hero is now written into the page's code instead of placed as an image. It looks exactly the same (we compared screenshots), and Google's main loading-speed measurement for the page improves by about 2 seconds. It is the official logo file, unchanged.
-- One question for you: do you want this sentence on your martinezaccess.com About page, with "Swarm" linked: "And that's why I built Swarm, an AI crypto trading community for the new era."? It is your line from the video. Yes or no is fine.
 
 ## 1. Tell Google the site exists: Google Search Console (15 minutes)
 
@@ -800,20 +748,7 @@ The address is printed on the page and all three legal pages, but right now mail
 3. Cloudflare sends a confirmation email to that inbox. Click the link in it. Then let Cloudflare **add the records** it suggests.
 4. Send a test email to support@joinswarm.ai from another account. When it arrives, tell us, and we add the address to the site's structured data.
 
-## 10. Get martinezaccess.com into Google too (15 minutes)
-
-We checked, and martinezaccess.com does not appear in Google at all. Until it does, its new Swarm link counts for little, and your personal site is invisible in search as well. Its DNS is at Namecheap.
-
-1. In Search Console, click **Add property**, choose **Domain**, type `martinezaccess.com` and copy the `google-site-verification=` code.
-2. In Namecheap, go to **Domain List**, click **Manage** next to martinezaccess.com, then **Advanced DNS**, then **Add New Record**, then **TXT Record**. Set Host to `@`, paste the code into Value, and click the green check. Leave the existing SPF TXT record alone.
-3. Click **Verify** in Search Console. Then submit `https://www.martinezaccess.com/sitemap.xml` and request indexing for `https://www.martinezaccess.com/` and `https://www.martinezaccess.com/about`.
-4. Back in Bing Webmaster Tools, import martinezaccess.com the same way as step 3.
-
-## 11. One Vercel setting (2 minutes, low priority)
-
-In Vercel, open the project, then **Settings**, then **Domains**. Next to `martinezaccess.com` (the one without www), click **Edit**, keep it redirecting to `www.martinezaccess.com`, and change the status to **308 Permanent**. joinswarm.ai already does this.
-
-## 12. Later, as things go live
+## 10. Later, as things go live
 
 - **Whop:** when checkout is connected, name the store product "Swarm", put "AI crypto trading community" in its headline and link it back to https://www.joinswarm.ai. Tell us, so we add the prices to the site's structured data.
 - **A Swarm X account**, if you want one: @joinswarm belongs to someone else; @joinswarmai was free when we checked. Set its website to https://www.joinswarm.ai and send us the handle.
@@ -841,15 +776,17 @@ In Vercel, open the project, then **Settings**, then **Domains**. Next to `marti
 
 October 17, 2026, in the working tree of this repo. Not committed or deployed.
 
-**Part 1, as written above:** title and meta description (1.1, 1.2), `swarm-site/structured-data.json` and the build changes that inject it, inline the hero mark and write the sitemap dates (1.3, 1.4, 1.7, 1.8), the 404 page, its route and the new routing in `next.config.ts` (1.5), the martinezaccess.com footer link and JSON-LD graph (1.6), social and robots tags (1.9), `data-nosnippet` and the founder alt text (1.10), the WebP founder photos (1.11), and the `LAUNCH-CHECKLIST.md` updates (1.15, step 8).
+**Part 1, as written above:** title and meta description (1.1, 1.2), `swarm-site/structured-data.json` and the build changes that inject it, inline the hero mark and write the sitemap dates (1.3, 1.4, 1.7, 1.8), the 404 page, its route and the new routing in `next.config.ts` (1.5), social and robots tags (1.9), `data-nosnippet` and the founder alt text (1.10), the WebP founder photos (1.11), and the `LAUNCH-CHECKLIST.md` updates (1.15, step 8).
 
 **Changed after review (where the code now differs from the snippets above):**
 - `structured-data.json`: no `primaryImageOfPage`. It pointed to the social card, which never shows on the page. Organization `image` and og:image still use the card.
 - Founder photo `sizes`: the last value is `455px`, not `650px`. Measured at 1024 to 1920 px, the photo renders 345 to 454 px wide, so a 1x desktop now loads the 640w WebP (74 KB) instead of the 800w (102 KB).
 - `next.config.ts`: one more `beforeFiles` rewrite, `/swarm-site/404.html` to `/swarm/page-not-found`, so the built 404 file's own URL returns a real 404 with `X-Robots-Tag: noindex` instead of a 200 copy of the page.
-- `LAUNCH-CHECKLIST.md`: the "Done" line now says which paths get Next's plain 404 and what changed on martinezaccess.com (footer link, structured data, 308 redirects). Item 2 now says to keep the Vercel DNS records at Cloudflare as DNS only, so no second cache honors the one-year `s-maxage` on the sitemap, robots.txt and 404 responses.
+- `LAUNCH-CHECKLIST.md`: the "Done" line now says which paths get Next's plain 404. Item 2 now says to keep the Vercel DNS records at Cloudflare as DNS only, so no second cache honors the one-year `s-maxage` on the sitemap, robots.txt and 404 responses.
 - Part 2, "What changed": the hero logo line no longer suggests a file download was removed. `#final-mark` still loads `swarm-mark.svg`, so the request count is the same.
 
-**Visible changes:** only the five in 1.12. The review fixes add none.
+**Visible changes:** only the four in 1.12. The review fixes add none.
 
-**Checks:** `node scripts/build-swarm-site.mjs` (run twice, second run identical), `npx tsc --noEmit`, `npm run lint`, `npm test` (23 of 23) and `npm run build` pass. On `next start` with host headers, every row of the 1.5 tables matches, plus `/swarm-site/404.html` returns 404 with noindex on joinswarm.ai and 308 to joinswarm.ai on martinezaccess.com. In headless Chrome the home page has one JSON-LD block that parses, no martinezaccess.com text, and no errors except Vercel Analytics' script, which exists only on Vercel.
+**Checks:** `node scripts/build-swarm-site.mjs` (run twice, second run identical), `npx tsc --noEmit`, `npm run lint`, `npm test` (23 of 23) and `npm run build` pass. On `next start` with host headers, every row of the 1.5 tables matches, plus `/swarm-site/404.html` returns 404 with noindex on joinswarm.ai (on martinezaccess.com it now redirects with a 307 to joinswarm.ai, as before). In headless Chrome the home page has one JSON-LD block that parses, no martinezaccess.com text, and no errors except Vercel Analytics' script, which exists only on Vercel.
+
+**Removed on Jesus's decision (October 17):** the martinezaccess.com footer link, its structured data change and its permanent `/swarm` redirects were reverted, so `components/Footer.tsx`, `app/(site)/layout.tsx` and the martinezaccess.com redirects match `main`. Part 2 no longer has the martinezaccess.com Search Console, Vercel and About page steps.

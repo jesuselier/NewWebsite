@@ -10,9 +10,14 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: { "/swarm/page-not-found": ["./public/swarm-site/404.html"] },
   async redirects() {
     return [
-      // Swarm has its own domain. Permanent: the move is final.
-      { source: "/swarm/:path*", has: SITE_HOST, destination: "https://www.joinswarm.ai/", permanent: true },
-      { source: "/swarm-site/:path*", has: SITE_HOST, destination: "https://www.joinswarm.ai/", permanent: true },
+      // Swarm has its own domain.
+      {
+        source: "/swarm",
+        has: SITE_HOST,
+        destination: "https://www.joinswarm.ai/",
+        permanent: false,
+      },
+      { source: "/swarm-site/:path*", has: SITE_HOST, destination: "https://www.joinswarm.ai/", permanent: false },
       // On joinswarm.ai the page lives at / and the legal pages at /terms, /privacy and /refunds.
       { source: "/swarm", has: SWARM_HOST, destination: "/", permanent: true },
       { source: "/index.html", has: SWARM_HOST, destination: "/", permanent: true },
