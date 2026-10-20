@@ -126,6 +126,13 @@ function transformPage(name, html) {
   if (name === "privacy.html") html = fixPrivacy(html);
   // The [CONFIRM ...] and [Data needed ...] notes and the legal pages' draft badge are for Jesus; they stay in the lab copy and never show on the live
   // site (Jesus, October 17). The build still lists them below, read from the lab copy.
+  // A note may only follow wording that is complete without it, never stand in for a missing value: once stripped,
+  // "no more than [CONFIRM: usage limit] of Swarm" went live as "no more than of Swarm".
+  for (const [, before] of html.matchAll(/\b(\w+)\s*<span class="(?:cf|dn)">\[(?:CONFIRM|DATA NEEDED)/gi)) {
+    if (/^(?:than|of|within|the|a|an|to|by|for|is|are|at|about|under|over|least|most|up|and|or)$/i.test(before)) {
+      fail(`${name}: a [CONFIRM] or [Data needed] note stands in for a missing value after "${before}"`);
+    }
+  }
   html = html.replace(/ ?<span class="(?:cf|dn)">\[(?:CONFIRM|DATA NEEDED)[^\]]*\]<\/span>/gi, "");
   html = html.replace(/\s*<span class="lg-draft">[^<]*<\/span>/g, "");
   return replaceOnce(html, "</body>", `${ANALYTICS}\n</body>`, `${name} body`);
