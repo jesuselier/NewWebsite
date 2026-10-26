@@ -5,7 +5,7 @@
 ## Needed from Jesus
 
 1. **Whop plan IDs** for Founding Monthly, Standard Monthly and Yearly (each starts with `plan_`). Each one goes on one line in the `PLANS` table in `a-core-glow/page.js`; then the site is rebuilt. Until then the pricing card shows "Checkout opens here soon."
-2. **The support@joinswarm.ai inbox.** The page footer and all three legal pages use it. Free email forwarding to an inbox you already read is enough. The domain's DNS is on Cloudflare, not Namecheap, so use Cloudflare Email Routing (steps in `SEO-PLAN.md`, Part 2, step 9). While you are in Cloudflare DNS, leave the records that point to Vercel set to **DNS only** (grey cloud, as they are now). Switching them to Proxied would put Cloudflare's cache in front of Vercel, and it could keep serving an old sitemap or 404 page after an update.
+2. **Contact address: done.** Jesus chose JMCrypto@wealthgardenent.com on October 26; the page footer and all three legal pages use it. (Keep the Vercel records at Cloudflare on **DNS only**, grey cloud, so Cloudflare's cache never serves an old sitemap or 404 page.)
 3. **The thirteen legal questions** at the end of `OVERNIGHT.md` (legal entity, Florida law, adviser status, holding assets discussed, whether Standard and Yearly members keep their price, the Yearly refund window and usage limit, whether calls are recorded, what the AI tools store, minimum age 18, the 30-day reply time, the liability cap). Each one is a yellow [CONFIRM] note in the lab copy of the Terms, Privacy or Refund page (`design-lab/landing/a-core-glow/`); the live pages show the drafted wording without the notes.
 4. **Sign-off on the wording**: the risk disclaimer and the copy written around your own lines.
 

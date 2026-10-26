@@ -17,7 +17,7 @@ Your calls (each is a one-line change either way):
 3. The $49 lights gold as the agents dock into the pricing card; the "how the price moves" line is my wording.
 4. The nav and footer use the plain wordmark so only one gold core shows at a time.
 
-Still needed from you before launch (also in `LAUNCH-CHECKLIST.md`): the three Whop plan IDs, the support@joinswarm.ai inbox, the 13 legal questions below, sign-off on the disclaimer and copy, and your go. Nothing is merged to `main`.
+Still needed from you before launch (also in `LAUNCH-CHECKLIST.md`): the three Whop plan IDs, the 13 legal questions below, sign-off on the disclaimer and copy, and your go. Nothing is merged to `main`.
 
 # Overnight plan (October 16 to 17, 2026)
 
@@ -42,7 +42,7 @@ Jesus picked Core Glow, applied his notes, and asked for work to continue until 
 ## Legal [CONFIRM] questions for Jesus (from the legal pages; 11 to 13 were added by the round 7 audit)
 
 1. Legal entity name, if any.
-2. Create the support@joinswarm.ai inbox.
+2. Contact address: done (Jesus chose JMCrypto@wealthgardenent.com on October 26).
 3. Florida law and Miami-Dade courts.
 4. Not a registered investment adviser or broker-dealer.
 5. He may hold the assets discussed.

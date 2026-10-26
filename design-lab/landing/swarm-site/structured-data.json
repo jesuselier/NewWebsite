@@ -6,9 +6,13 @@
       "@id": "https://www.joinswarm.ai/#website",
       "url": "https://www.joinswarm.ai/",
       "name": "Swarm",
-      "alternateName": ["joinswarm.ai"],
+      "alternateName": [
+        "joinswarm.ai"
+      ],
       "inLanguage": "en",
-      "publisher": { "@id": "https://www.joinswarm.ai/#organization" }
+      "publisher": {
+        "@id": "https://www.joinswarm.ai/#organization"
+      }
     },
     {
       "@type": "Organization",
@@ -23,7 +27,10 @@
       },
       "image": "https://www.joinswarm.ai/brand/swarm/social/swarm-og-1200x630.png",
       "description": "Swarm is an AI crypto trading community on Discord, founded by Jesus Martinez of JM Crypto. Education and research, not financial advice.",
-      "founder": { "@id": "https://www.joinswarm.ai/#founder" }
+      "founder": {
+        "@id": "https://www.joinswarm.ai/#founder"
+      },
+      "email": "JMCrypto@wealthgardenent.com"
     },
     {
       "@type": "WebPage",
@@ -32,9 +39,15 @@
       "name": "Swarm: AI Crypto Trading Community by JM Crypto",
       "description": "Swarm is an AI crypto trading community on Discord by Jesus Martinez of JM Crypto: custom AI tools, his watch list, weekly live calls. Founding seats $49/mo.",
       "inLanguage": "en",
-      "isPartOf": { "@id": "https://www.joinswarm.ai/#website" },
-      "about": { "@id": "https://www.joinswarm.ai/#organization" },
-      "video": { "@id": "https://www.joinswarm.ai/#launch-video" }
+      "isPartOf": {
+        "@id": "https://www.joinswarm.ai/#website"
+      },
+      "about": {
+        "@id": "https://www.joinswarm.ai/#organization"
+      },
+      "video": {
+        "@id": "https://www.joinswarm.ai/#launch-video"
+      }
     },
     {
       "@type": "Person",
@@ -64,7 +77,9 @@
       "embedUrl": "https://www.youtube-nocookie.com/embed/n15W6X84IGg",
       "url": "https://www.youtube.com/watch?v=n15W6X84IGg",
       "inLanguage": "en",
-      "author": { "@id": "https://www.joinswarm.ai/#founder" }
+      "author": {
+        "@id": "https://www.joinswarm.ai/#founder"
+      }
     }
   ]
 }

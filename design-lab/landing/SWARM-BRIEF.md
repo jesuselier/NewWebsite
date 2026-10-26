@@ -10,7 +10,7 @@
   - Scout states: "Flagged for review" makes no sense to him. Use SCANNING, ANALYZING and REPORTING (for example "Reporting to the watch list").
   - Every gold "Join Swarm" button gets a highlight revolving around it so people focus on it. This is Jesus's explicit request and the one exception to the kit's no-glow rule; under reduced motion it is a static ring.
   - The hero must not end in an empty band at the bottom of the first screen.
-  - **No martinezaccess.com anywhere on the Swarm page or its legal pages** (Jesus, October 17): not in the footer, links, emails or meta. Contact address: support@joinswarm.ai (Jesus still needs to create this inbox).
+  - **No martinezaccess.com anywhere on the Swarm page or its legal pages** (Jesus, October 17): not in the footer, links, emails or meta. Contact address: JMCrypto@wealthgardenent.com (Jesus, October 26; it replaced the planned support@joinswarm.ai) (Jesus still needs to create this inbox).
   - **Weekly live calls: no day or time.** People just need to know the calls are weekly.
   - **Swarm lives on Discord.** After checkout through Whop, members get access to the Swarm Discord.
   - **Founding price policy:** a founding member keeps $49 a month for as long as they stay subscribed. If they cancel and rejoin after prices have gone up, they pay the price at that time.

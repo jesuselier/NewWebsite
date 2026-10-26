@@ -618,7 +618,7 @@ Not visible (checked): the inlined hero mark, JSON-LD, meta tags, `data-nosnippe
   }
   ```
 - **At launch:** og:description "...Pre-launch, 50 founding seats." becomes "...50 founding seats." (with Jesus's OK).
-- **When support@joinswarm.ai receives mail:** add `"email": "support@joinswarm.ai"` to the Organization node.
+- **Contact email:** done October 26: `"email": "JMCrypto@wealthgardenent.com"` is on the Organization node.
 - **If the 50 founding seats fill:** update the meta description and the WebPage description together (the build enforces the match), and drop the Founding offer. Never show a seats-left count.
 - **When a Swarm X account, the Whop store page or a confirmed public LinkedIn exists:** add them to `sameAs` (Swarm's own accounts on the Organization, LinkedIn on the Person), and add `twitter:site` for a Swarm X account.
 - **New pages later** (one per AI tool once it is live with real screenshots and no dates; a crypto curve explainer built on his verbatim lines from 0:00 to 0:34): add each to `PAGES` in the build (the sitemap follows automatically), add a `beforeFiles` rewrite before the 404 catch-all, and add its path to the catch-all exclusions.
@@ -739,7 +739,11 @@ In YouTube Studio, click **Customization**, then the **Profile** tab (some accou
 
 **Edit profile**, then **Links**, then **Add external link**. URL `https://www.joinswarm.ai`, title `Join Swarm`.
 
-## 9. Make support@joinswarm.ai actually receive mail (10 minutes)
+## 9. Contact address (done)
+
+Jesus chose JMCrypto@wealthgardenent.com on October 26. It is on the page, the three legal pages and in the structured data, so the steps below are no longer needed.
+
+### Old steps (for reference only)
 
 The address is printed on the page and all three legal pages, but right now mail to it bounces (the domain has no mail records). Because your DNS is at Cloudflare, Namecheap forwarding will not work. Use Cloudflare instead:
 
