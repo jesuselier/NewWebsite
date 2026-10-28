@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Swarm: Page not found</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B0B0D">
+<link rel="icon" type="image/png" sizes="32x32" href="/brand/swarm/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/brand/swarm/icons/apple-touch-icon-180.png">
+<link rel="stylesheet" href="/swarm-site/fonts.css">
+<link rel="stylesheet" href="/swarm-site/swarm-tokens.css">
+<link rel="stylesheet" href="/swarm-site/legal.css">
+</head>
+<body class="swarm">
+<a class="skip" href="#main">Skip to content</a>
+<header class="lg-bar">
+  <div class="lg-bar-in">
+    <a class="lg-logo" href="/"><img src="/brand/swarm/logo/swarm-wordmark-for-dark-bg.svg" alt="Swarm home" width="136" height="37"></a>
+    <a class="lg-back" href="/">Back to Swarm</a>
+  </div>
+</header>
+<main id="main" class="lg-main">
+  <div class="lg-col">
+    <header class="lg-head">
+      <p class="lg-eyebrow">404</p>
+      <h1>Page not found</h1>
+      <p class="lg-intro">This page does not exist.</p>
+    </header>
+  </div>
+</main>
+
+<footer class="lg-foot">
+  <div class="lg-col">
+    <ul class="lg-foot-links">
+      <li><a href="/terms">Terms</a></li>
+      <li><a href="/privacy">Privacy</a></li>
+      <li><a href="/refunds">Refund policy</a></li>
+      <li><a href="/">Back to Swarm</a></li>
+    </ul>
+    <p>Swarm is an educational community. Nothing in Swarm is financial, investment, tax or legal advice. Payments are processed by Whop.</p>
+  </div>
+</footer>
+<!-- This standalone page bypasses the Next.js layout and needs its own tracker. -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  window.va("beforeSend", function (event) {
+    const url = new URL(event.url);
+    url.hash = "";
+    url.search = "";
+    return { ...event, url: url.href };
+  });
+</script>
+<script defer src="/swarm-analytics.js"></script>
+<script defer src="/swarm-site/swarm-site.js"></script>
+</body>
+</html>
