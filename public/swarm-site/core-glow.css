@@ -1182,6 +1182,17 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
   .hero .cta { margin-top: calc(32px + var(--vs) * .07); }
   /* the cards still line up with the headline's first line (no chip row above it now) */
   .q1, .q2 { top: calc(var(--core-y) + 2.69 * var(--R) + 18px + 40px + var(--vs, 0px) * .05); }
+  /* the 760px floor was sized for the chip row and the note: with them gone the rail closes the first screen on short
+     laptops too (1280x720, 1366x768), and it always keeps 24px from the price line */
+  .hero { min-height: 660px; min-height: max(660px, calc(100svh - var(--bf-bar-h, 0px))); }
+  .hero-rail { padding-top: max(24px, calc(34px + min(0px, var(--vs) * .3))); }
+}
+/* the handoff (hero.js) reaches the hero button along the honeycomb only where the band beside the button is clear of
+   the copy. With the one-line sub that band closed at 1440x900, 1600x900 and 1920x1080 and the pulse fell back to the
+   ring. 32px more above the button on screens 780px and taller reopens it at every desktop size checked (22 sizes,
+   all three sale states); shorter screens keep the old gap so the rail still closes the first screen */
+@media (min-width: 1240px) and (min-height: 780px) {
+  .hero .cta { margin-top: calc(64px + var(--vs) * .07); }
 }
 .qcard.qvid { width: auto; padding: 0; background: none; border: 0; }
 .qvid .watch { margin-top: 0; gap: 14px; padding: 7px 20px 7px 7px; background: var(--swarm-surface); border-radius: 18px; }
@@ -1193,6 +1204,8 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 .hr-n { grid-row: auto; padding-top: 0; }
 .hr-t { font-size: 17px; }
 @media (min-width: 641px) and (max-width: 1239px) { .hr-it { min-height: 68px; align-content: center; } .hr-t { font-size: 15.5px; } .qcards { width: 100%; } }
+/* short desktop screens: a slightly shorter rail, so it fits whole under the price line */
+@media (min-width: 1240px) and (max-height: 760px) { .hr-it { min-height: 62px; } }
 @media (max-width: 640px) {
   .hero h1 { margin-top: 26px; }
   .hero .cta { margin-top: 26px; }
@@ -1207,7 +1220,7 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 .crowd { margin-top: 56px; }
 .zones { margin-top: 8px; }
 .zone { padding-top: 24px; }
-.zone p { margin-top: 10px; font-size: 18px; }
+.zone p { margin-top: 10px; font-size: 18px; text-wrap: pretty; }
 .fig-foot { justify-content: center; }
 @media (max-width: 640px) {
   .crowd { margin-top: 44px; }
@@ -1219,6 +1232,10 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 .tr-body { padding: 40px 34px 8px; }
 .tr-one { grid-template-columns: 64px 1fr; align-items: start; padding-bottom: 28px; }
 .tr-one p { font: 600 clamp(22px, 2vw, 28px)/1.32 var(--swarm-font-body); letter-spacing: -.01em; color: var(--swarm-text); text-wrap: balance; }
+/* from 641px the quote breaks between its two phrases ("bear market" stays whole); phones keep the balanced flow */
+@media (min-width: 641px) { .tr-one .tq { display: inline-block; } }
+/* where the card is taller than its content (1024px and up), the quote sits in the middle of the open space */
+.founder-grid .tr-body { margin-top: auto; }
 .founder .cycles { margin-top: auto; margin-left: 34px; margin-right: 34px; }
 .founder .tr-foot { margin-top: 0; padding: 18px 34px 20px; }
 .tr-foot .proof { max-width: none; margin: 0; text-align: left; font: 400 15px/1.55 var(--swarm-font-body); color: var(--swarm-text-muted); text-wrap: pretty; }
@@ -1239,7 +1256,7 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 .mtext { padding: 28px 32px 32px; }
 .mtext > h3:first-child { margin-top: 0; }
 .mtext h3 { margin-top: 18px; font-size: 26px; }
-.mtext > p { margin-top: 10px; max-width: 48ch; color: var(--swarm-text-muted); }
+.mtext > p { margin-top: 10px; max-width: 48ch; color: var(--swarm-text-muted); text-wrap: pretty; }
 /* agent console: the event log steps out and the four scouts share the console's height (page.js still writes it) */
 .con-loghead, .con-log { display: none; }
 .console .con-rows { flex: 1; display: flex; flex-direction: column; }
@@ -1249,8 +1266,13 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 .mock-watch .wl-head, .mock-watch .wl-row { grid-template-columns: minmax(0, 1fr) 132px; }
 /* live call: only the live portfolio keeps its focus line */
 .cs-row:not([data-st="LIVE"]) .cs-sub { display: none; }
-.cs-row { height: 42px; }
-.cs-row[data-st="LIVE"] { height: 50px; }
+/* (1240 to 1400 keeps its own 40px / 48px rows from the rule above, which fit that narrower panel) */
+@media (max-width: 1239px), (min-width: 1401px) {
+  .cs-row { height: 42px; }
+  .cs-row[data-st="LIVE"] { height: 50px; }
+}
+/* under 1300px the word "Portfolio" steps out of the rows (the head says Portfolio review), so the numbers are never cut */
+@media (min-width: 1240px) and (max-width: 1299px) { .cs-pw { display: none; } }
 /* the Discord channel holds the pinned note only: where the card has its own row, the mock is shorter */
 @media (min-width: 641px) and (max-width: 1239px) { .c-traders .mock { height: 340px; } }
 @media (max-width: 640px) {
@@ -1269,7 +1291,7 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 .who-card { margin-top: 64px; }
 .who { padding: 36px 40px 40px; }
 .mini { margin-bottom: 28px; }
-.who h3 { margin-top: 14px; font-size: clamp(26px, 2.3vw, 32px); }
+.who h3 { margin-top: 14px; font-size: clamp(24px, 2vw, 28px); text-wrap: balance; }   /* one line each from 1024px */
 @media (max-width: 640px) { .who-card { margin-top: 44px; } .who { padding: 26px 22px 30px; } .who h3 { font-size: 24px; } }
 
 /* ---------- 7. before you join: one quote, a little larger ---------- */
@@ -1278,9 +1300,11 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 /* ---------- 8. pricing: no lede (the card says it); short checklist in two columns; three short steps ---------- */
 .checks { grid-template-columns: 1fr 1fr; gap: 9px 16px; }
 .how { margin-top: 28px; }
-.risk { margin-top: 28px; }
+.risk { margin-top: 28px; text-wrap: pretty; }
 @media (min-width: 1024px) { .how { grid-template-columns: auto minmax(0, 1fr); gap: 32px; } }
 @media (max-width: 640px) { .checks { gap: 7px 12px; } }
 
 /* ---------- 9. FAQ: every question starts closed ---------- */
-.faq summary { min-height: 66px; }
+.faq summary { min-height: 66px; text-wrap: pretty; }
+/* the list fills its column whether or not a question is open (a closed list would shrink to its widest question) */
+@media (min-width: 1024px) { .faq-wrap .faq { margin-left: 0; margin-right: 0; } }

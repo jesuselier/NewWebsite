@@ -595,3 +595,13 @@ Both plan tabs pass at every size. Hero gold button in the first screen in every
 
 - Jesus's answers to section 13 (dates and weekdays, the old $49 promise, the struck $99, Yearly during the sale, the TEASER labels, Whop archiving, the countdown bar, the share image, the legal questions) and the three Whop plans.
 - `ANTI-SLOP.md` allowed numbers (row X6) and `SEO-PLAN.md` 1.14 (row X8) still describe the founding offer; the YouTube description and pinned comment texts are drafted in `a-core-glow/NOTES.md`.
+
+### Condensed (November 20)
+
+`CONDENSE-PLAN.md` cut the page's copy; the Black Friday parts it touched (details in `a-core-glow/NOTES.md`, "Condensed"):
+- **Hero (C1 to C4).** The chip row is gone, with its ENDED variants. **C6** ENDED now reads "$99/mo or $990/yr. Cancel anytime."; SALE and TEASER are unchanged (the SALE line is still a build-guard string).
+- **M1, M2.** The curve's gold button is gone; the founder and members buttons stay. The line under each of the three ("Cancel anytime." / TEASER "Checkout opens November 24.") is gone.
+- **M4.** The Discord mock's label reads "...a pinned note from Jesus, and open places for multi-cycle traders and members. Not live data." (his two messages are gone). **M5.** The tools card says it in one line: "I build and maintain them myself. Join early and you get each one as it's finished. Prices for new members go up as the tools are completed." (review fix: was "Built and maintained by me. ... as they're completed.")
+- **P4.** The pricing lede is gone in every state (the card carries each fact). **W1** step 2 reads "Check out through Whop" (TEASER "Check out through Whop from November 24"); card or ACH is on the card's line. **W2** (the joining note) is gone. **W3** and the card are unchanged.
+- **FAQ.** Five questions, all closed; "What does "locked in" mean?" and its ENDED swap are unchanged.
+- **Dec 2.** `black-friday/ship-ended.mjs` now swaps 16 words (was 19) and still removes exactly 3 sale-only elements; checked with `--early` on a throwaway copy, and the ENDED guard passes there with the clock after the end.
