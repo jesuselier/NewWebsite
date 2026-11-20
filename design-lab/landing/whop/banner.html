@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Swarm Whop banner (1920x1080 source)</title>
+<!-- Source for swarm-whop-banner-1920x1080.png, the banner on Swarm's Whop product page (November 20, 2026).
+     Whop shows the banner in a 16:9 frame, so the stage is exactly 1920x1080 and render.mjs shoots it at device scale 1.
+     Everything is big enough to read when a phone shrinks the banner to about 375px wide (about a fifth of this size).
+     Kit only: the official Hive Core mark and SWARM wordmark files, untouched, centred and stacked; the tagline set in
+     JetBrains Mono 500 caps at +0.32em (the kit's label style), widened to the wordmark's width so it reads on a phone;
+     the honeycomb field in #1C1C21 on the mark's own grid. No image model drew anything. -->
+<style>
+  @font-face { font-family: "JetBrains Mono"; font-weight: 500; src: url("../../../public/swarm-site/fonts/jetbrains-mono-latin.woff2") format("woff2"); }
+  html, body { margin: 0; background: #0B0B0D; }
+  .stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #0B0B0D; }
+  #field { position: absolute; inset: 0; }
+  /* Layout numbers (px): mark ink 380 tall, 70 gap, SWARM ink 1270 wide x 190 tall, 56 gap, tagline caps; centred as one block. */
+  .mark { position: absolute; width: var(--mark-box); height: var(--mark-box); left: calc(960px - var(--mark-box) / 2); top: calc(var(--mark-cy) - var(--mark-box) / 2); }
+  .wm { position: absolute; width: var(--wm-w); height: auto; left: calc(960px - var(--wm-w) / 2); top: var(--wm-top); }
+  .tag {
+    position: absolute; left: 0; width: 1920px; top: var(--tag-top); margin: 0; text-align: center; white-space: nowrap;
+    font: 500 var(--tag-size)/1 "JetBrains Mono", monospace; letter-spacing: var(--tag-track); text-transform: uppercase;
+    color: #EEEBE4; text-indent: var(--tag-track); transform: translateX(var(--tag-dx)); /* centred tracked text drifts left by half the trailing gap; the indent cancels it */
+  }
+  body.only-mark .wm, body.only-mark .tag, body.only-mark #field,
+  body.only-wm .mark, body.only-wm .tag, body.only-wm #field,
+  body.only-tag .mark, body.only-tag .wm, body.only-tag #field { visibility: hidden; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <svg id="field" width="1920" height="1080" aria-hidden="true"></svg>
+  <img class="mark" src="../brand/swarm/logo/swarm-mark.svg" alt="">
+  <img class="wm" src="../brand/swarm/logo/swarm-wordmark-for-dark-bg.svg" alt="Swarm">
+  <p class="tag">AI crypto trading</p>
+</div>
+<script>
+(() => {
+  // Layout, in px. The mark file draws its cluster 107.55 units tall in a 2048px box at 13.65333 px per unit; the box size
+  // below follows from the cluster height we want. LAYOUT (set by render.mjs) can override any number for measuring.
+  const L = window.LAYOUT || {};
+  const markInk = L.markInk ?? 380;                  // hive cluster height
+  const u = markInk / 107.55;                          // px per mark unit
+  const markBox = 2048 * u / 13.65333;                 // the mark file's box at that scale
+  const wmInkW = L.wmInkW ?? 1270, wmW = wmInkW * 356.592 / 306.592, wmH = wmW * 95.877 / 356.592;
+  const wmInkTopInImg = wmH * 25 / 95.877, wmInkH = wmH * 45.877 / 95.877;
+  const gap1 = L.gap1 ?? 70, gap2 = L.gap2 ?? 56, tagCap = L.tagCap ?? 64;  // tagCap: measured cap height at the size below
+  const block = markInk + gap1 + wmInkH + gap2 + tagCap, top = (1080 - block) / 2 + (L.dy ?? 3);  // dy: the mark's stroke sits 5px above its geometry; measured, this centres the inked block
+  const markCy = top + markInk / 2, wmInkTop = top + markInk + gap1, tagCapTop = wmInkTop + wmInkH + gap2;
+  const st = document.getElementById('stage').style;
+  st.setProperty('--mark-box', markBox + 'px'); st.setProperty('--mark-cy', markCy + 'px');
+  st.setProperty('--wm-w', wmW + 'px'); st.setProperty('--wm-top', (wmInkTop - wmInkTopInImg) + 'px');
+  // 83.7px (measured) makes the tagline as wide as SWARM (1272px); +0.32em is the kit's label tracking.
+  st.setProperty('--tag-size', (L.tagSize ?? 83.7) + 'px'); st.setProperty('--tag-track', (L.tagTrack ?? 0.32) + 'em');
+  st.setProperty('--tag-top', (tagCapTop + (L.tagNudge ?? -9.4)) + 'px');  // the line box starts 9.4px above the caps
+  st.setProperty('--tag-dx', (L.tagDx ?? 1.5) + 'px');  // side bearings of A and G leave the inked line 1.5px left of centre
+  window.__layout = { markInk, u, markBox, wmW, wmInkH, top, block, markCy, wmInkTop, tagCapTop };
+
+  // The kit's honeycomb on the mark's grid: cell radius 20u, columns 39u apart, rows 33.775u apart, odd rows offset by half
+  // a column. The mark draws its own lit cell and six #55555B neighbours, so those seven are skipped. Cells fade with
+  // distance from the mark and drop away behind the wordmark and tagline so the type stays clean.
+  const svg = document.getElementById('field'), cx = 960, cy = markCy;
+  const r = 20 * u, dx = 39 * u, dy = 33.775 * u;
+  const hex = (x, y) => [0, 1, 2, 3, 4, 5].map(k => { const a = Math.PI / 180 * (60 * k - 90); return `${(x + r * Math.cos(a)).toFixed(2)},${(y + r * Math.sin(a)).toFixed(2)}`; }).join(' ');
+  const sm = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
+  let out = '';
+  for (let j = -8; j <= 10; j++) for (let i = -10; i <= 10; i++) {
+    const x = cx + (i + (Math.abs(j) % 2 ? 0.5 : 0)) * dx, y = cy + j * dy;
+    if ((j === 0 && Math.abs(i) <= 1) || (Math.abs(j) === 1 && (i === -1 || i === 0))) continue;
+    const d = Math.hypot((x - cx) / 1.6, y - cy);
+    const edge = 1 - sm(300, 900, d);
+    const type = 1 - 0.85 * sm(-40, 40, y - (wmInkTop - 60)) * (1 - sm(-40, 40, y - (tagCapTop + tagCap + 60)));
+    const a = edge * type;
+    if (a < 0.04) continue;
+    out += `<polygon points="${hex(x, y)}" fill="none" stroke="#1C1C21" stroke-width="2.5" stroke-linejoin="round" opacity="${a.toFixed(3)}"/>`;
+  }
+  svg.innerHTML = out;
+})();
+</script>
+</body>
+</html>
