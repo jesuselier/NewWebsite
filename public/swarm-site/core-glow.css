@@ -1158,3 +1158,129 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 @media (max-width: 374px) {
   .cs-pw { display: none; }
 }
+
+/* ==========================================================================================================
+   CONDENSE (design-lab/landing/CONDENSE-PLAN.md, November 2026). Every section stays; each card is a title and one
+   line, and the space the cuts free goes back to the page as air. Overrides only, appended after every rule above.
+   ========================================================================================================== */
+
+/* ---------- rhythm: more air between sections ---------- */
+:root { --sec: 112px; }                                   /* was 80px */
+@media (max-width: 1023px) { :root { --sec: 96px; } }
+@media (max-width: 640px) { :root { --sec: 64px; } }      /* was 48px */
+.cta { margin-top: 56px; }
+.lede { margin-top: 28px; }
+@media (max-width: 640px) { .cta { margin-top: 40px; } }
+
+/* ---------- 1. hero: no chip row, a one-line sub, the left card is the intro video, the rail is titles only ---------- */
+.hero h1 { margin-top: 40px; }
+.hero .cta { margin-top: 32px; }
+.hero-sub { margin-top: 22px; }
+@media (min-width: 1240px) {
+  .hero h1 { margin-top: calc(40px + var(--vs) * .05); }
+  .hero-sub { margin-top: calc(22px + var(--vs) * .04); }
+  .hero .cta { margin-top: calc(32px + var(--vs) * .07); }
+  /* the cards still line up with the headline's first line (no chip row above it now) */
+  .q1, .q2 { top: calc(var(--core-y) + 2.69 * var(--R) + 18px + 40px + var(--vs, 0px) * .05); }
+}
+.qcard.qvid { width: auto; padding: 0; background: none; border: 0; }
+.qvid .watch { margin-top: 0; gap: 14px; padding: 7px 20px 7px 7px; background: var(--swarm-surface); border-radius: 18px; }
+.qvid .w-thumb { width: 56px; height: 56px; }
+.qvid .w-t { font-size: 16px; }
+.scard .sc-steps { margin-top: 16px; }
+.scard figcaption { margin-top: 14px; }
+.hr-it { min-height: 76px; align-content: center; row-gap: 0; }
+.hr-n { grid-row: auto; padding-top: 0; }
+.hr-t { font-size: 17px; }
+@media (min-width: 641px) and (max-width: 1239px) { .hr-it { min-height: 68px; align-content: center; } .hr-t { font-size: 15.5px; } .qcards { width: 100%; } }
+@media (max-width: 640px) {
+  .hero h1 { margin-top: 26px; }
+  .hero .cta { margin-top: 26px; }
+  /* phones: the two floating cards step out (the founder card is the video, the tools mock has the scouts) */
+  .qcards { display: none; }
+  .hero { padding-bottom: 8px; }
+  .hero-rail { margin-top: 28px; }
+  .hr-it, .hr-it:first-of-type { min-height: 60px; padding: 14px 12px; align-content: center; align-items: baseline; }
+}
+
+/* ---------- 2. the curve: one short line per zone; the figure closes the section (no CTA) ---------- */
+.crowd { margin-top: 56px; }
+.zones { margin-top: 8px; }
+.zone { padding-top: 24px; }
+.zone p { margin-top: 10px; font-size: 18px; }
+.fig-foot { justify-content: center; }
+@media (max-width: 640px) {
+  .crowd { margin-top: 44px; }
+  .zone p { font-size: 17px; }
+}
+
+/* ---------- 3. founder: one line from the transcript as a pull quote, the cycles, the audience line as the footer ---------- */
+.founder-grid .transcript { min-height: 452px; }          /* was 560px; the photo beside it follows the card */
+.tr-body { padding: 40px 34px 8px; }
+.tr-one { grid-template-columns: 64px 1fr; align-items: start; padding-bottom: 28px; }
+.tr-one p { font: 600 clamp(22px, 2vw, 28px)/1.32 var(--swarm-font-body); letter-spacing: -.01em; color: var(--swarm-text); text-wrap: balance; }
+.founder .cycles { margin-top: auto; margin-left: 34px; margin-right: 34px; }
+.founder .tr-foot { margin-top: 0; padding: 18px 34px 20px; }
+.tr-foot .proof { max-width: none; margin: 0; text-align: left; font: 400 15px/1.55 var(--swarm-font-body); color: var(--swarm-text-muted); text-wrap: pretty; }
+@media (max-width: 1023px) { .founder-grid .transcript { min-height: 0; } }
+@media (max-width: 640px) {
+  .tr-body { padding: 26px 18px 4px; }
+  .tr-one p { font-size: 21px; }
+  .founder .cycles { margin-left: 18px; margin-right: 18px; }
+  .founder .tr-foot { padding: 14px 18px 18px; }
+  .tr-foot .proof { font-size: 14.5px; }
+}
+
+/* ---------- 4. why this cycle ---------- */
+.attn-fig { margin-top: 48px; }
+
+/* ---------- 5. members: a title and one line per card; the mocks drop the labels that repeat their card ---------- */
+.mg { gap: 24px; margin-top: 64px; }
+.mtext { padding: 28px 32px 32px; }
+.mtext > h3:first-child { margin-top: 0; }
+.mtext h3 { margin-top: 18px; font-size: 26px; }
+.mtext > p { margin-top: 10px; max-width: 48ch; color: var(--swarm-text-muted); }
+/* agent console: the event log steps out and the four scouts share the console's height (page.js still writes it) */
+.con-loghead, .con-log { display: none; }
+.console .con-rows { flex: 1; display: flex; flex-direction: column; }
+.console .crow { flex: 1; align-content: center; padding: 10px 16px; }
+/* watch list: the public "why" column steps out; the locked "Jesus's note" row says the reasons are for members */
+.mock-watch .wl-why { display: none !important; }
+.mock-watch .wl-head, .mock-watch .wl-row { grid-template-columns: minmax(0, 1fr) 132px; }
+/* live call: only the live portfolio keeps its focus line */
+.cs-row:not([data-st="LIVE"]) .cs-sub { display: none; }
+.cs-row { height: 42px; }
+.cs-row[data-st="LIVE"] { height: 50px; }
+/* the Discord channel holds the pinned note only: where the card has its own row, the mock is shorter */
+@media (min-width: 641px) and (max-width: 1239px) { .c-traders .mock { height: 340px; } }
+@media (max-width: 640px) {
+  .mg { margin-top: 44px; }
+  .mtext { padding: 22px 20px 26px; }
+  .mtext h3 { font-size: 22px; }
+  .console .crow { padding: 5px 16px 6px; }
+  .mock-watch { height: 454px; }                          /* was 484px */
+  .mock-watch .wl-row { height: 46px; }
+  .mock-watch .wl-head, .mock-watch .wl-row { grid-template-columns: minmax(0, 1fr) 104px; }
+  .cs-row, .cs-row[data-st="LIVE"] { height: 38px; }
+  .c-traders .mock { height: 256px; }                     /* was 480px: the channel holds the pinned note only */
+}
+
+/* ---------- 6. who it's for: the video's two on-screen lines, bigger, with room ---------- */
+.who-card { margin-top: 64px; }
+.who { padding: 36px 40px 40px; }
+.mini { margin-bottom: 28px; }
+.who h3 { margin-top: 14px; font-size: clamp(26px, 2.3vw, 32px); }
+@media (max-width: 640px) { .who-card { margin-top: 44px; } .who { padding: 26px 22px 30px; } .who h3 { font-size: 24px; } }
+
+/* ---------- 7. before you join: one quote, a little larger ---------- */
+.honest-fig blockquote p { font-size: clamp(22px, 2.3vw, 32px); }
+
+/* ---------- 8. pricing: no lede (the card says it); short checklist in two columns; three short steps ---------- */
+.checks { grid-template-columns: 1fr 1fr; gap: 9px 16px; }
+.how { margin-top: 28px; }
+.risk { margin-top: 28px; }
+@media (min-width: 1024px) { .how { grid-template-columns: auto minmax(0, 1fr); gap: 32px; } }
+@media (max-width: 640px) { .checks { gap: 7px 12px; } }
+
+/* ---------- 9. FAQ: every question starts closed ---------- */
+.faq summary { min-height: 66px; }
