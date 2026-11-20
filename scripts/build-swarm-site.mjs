@@ -149,6 +149,7 @@ function fixPrivacy(html) {
     "<p>The site serves its fonts and its 3D graphics library from its own host, so no font or code service learns about your visit.</p>",
     "privacy fonts paragraph",
   );
+  html = replaceOnce(html, "\n        <li><strong>jsDelivr</strong> for a code library the website loads.</li>", "", "privacy jsDelivr list item");
   return replaceOnce(
     html,
     "<li><strong>Google</strong> for fonts, and YouTube for the intro video after you press play.</li>",
@@ -255,6 +256,52 @@ for (const entry of readdirSync(out, { recursive: true })) {
     if (!existsSync(file)) problems.push(`${entry}: missing ${ref}`);
   }
   if (!entry.endsWith(".css") && /\[(?:CONFIRM|DATA NEEDED)|review before launch/i.test(text)) problems.push(`${entry}: shows an internal [CONFIRM] or [Data needed] note`);
+  // The founding offer (50 seats at $49) is gone (later the Black Friday launch, dropped too): no page or script may
+  // still carry it, and no page shows an em or en dash.
+  if (!entry.endsWith(".css") && /\b50 (?:founding )?seats\b|founding (?:seats?|members?|price|monthly)|\$49(?!\.99)\b/i.test(text)) {
+    problems.push(`${entry}: still mentions the old founding offer (50 seats, founding members or $49 without .99)`);
+  }
+  if (entry.endsWith(".html") && /[\u2013\u2014]/.test(text)) problems.push(`${entry}: has an em or en dash`);
+  if (entry.endsWith(".html") && /href="[^"]*[?&]bf(?:now)?=/.test(text)) problems.push(`${entry}: links a ?bf= or ?bfnow= preview URL`);
+  // Share images on this site's origin must exist (the img copy step above serves /swarm-site/img/ from assets/).
+  for (const [, ref] of text.matchAll(/<meta (?:property|name)="(?:og:image|twitter:image)" content="https:\/\/www\.joinswarm\.ai(\/[^"#?]+)"/g)) {
+    if (!existsSync(`${root}public${decodeURIComponent(ref)}`)) problems.push(`${entry}: share image ${ref} is missing`);
+  }
+}
+// No pricing yet (Jesus, November 20, 2026: "Pricing is to be decided"): Swarm isn't open and the page sends people to
+// the Swarm updates sign-up on Keychain. No built page may show a dollar price, the dropped Black Friday sale, a
+// "locked in" price or a "Coming soon" checkout, and every gold button and the nav button on the home page link to
+// the Keychain page in a new tab.
+const UPDATES_URL = "https://keychain.club/jesusmartinez/GETSWARMUPDATES";
+const NO_PRICE = [
+  ["a dollar price", /\$\s?\d/],
+  ['"Black Friday"', /black\s+friday/i],
+  ['"locked in"', /locked\s+in/i],
+  ['"Coming soon"', /coming\s+soon/i],
+];
+// The scripts and styles count too, since page.js once wrote the prices into the card. Their comments may still
+// mention the dropped sale, so they are stripped first.
+const stripComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+const noPriceFiles = [...Object.keys(PAGES), NOT_FOUND, ...readdirSync(out).filter((f) => /\.(js|css)$/.test(f))];
+for (const name of noPriceFiles) {
+  const raw = readFileSync(`${out}${name}`, "utf8");
+  const text = name.endsWith(".html") ? raw : stripComments(raw);
+  for (const [label, re] of NO_PRICE) {
+    const hit = text.match(re);
+    if (hit) problems.push(`${name}: shows ${label} ("${text.slice(Math.max(0, hit.index - 40), hit.index + 40).replace(/\s+/g, " ")}"); Swarm has no pricing yet`);
+  }
+}
+{
+  const home = readFileSync(`${out}index.html`, "utf8");
+  if (!home.includes(`href="${UPDATES_URL}"`)) problems.push(`index.html: no link to the Swarm updates page ${UPDATES_URL}`);
+  const buttons = [...home.matchAll(/<a\b[^>]*\bclass="[^"]*\bbtn-(?:gold|line)\b[^"]*"[^>]*>/g)].map((m) => m[0]);
+  if (!buttons.length) problems.push("index.html: no gold or nav button found");
+  for (const tag of buttons) {
+    if (!tag.includes(`href="${UPDATES_URL}"`) || !tag.includes('target="_blank"') || !tag.includes('rel="noopener"')) {
+      problems.push(`index.html: a gold or nav button does not open ${UPDATES_URL} in a new tab: ${tag.slice(0, 120)}`);
+    }
+  }
+  if (existsSync(`${out}img/swarm-og-black-friday-1200x630.png`)) problems.push("img/swarm-og-black-friday-1200x630.png is still published");
 }
 for (const name of Object.keys(PAGES)) {
   for (const [chip] of readFileSync(`${src}${name}`, "utf8").matchAll(/\[(?:CONFIRM|DATA NEEDED)[^\]]*\]/gi)) {

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Swarm Black Friday share image (1200x630 source)</title>
+<!-- Source for swarm-og-black-friday-1200x630.png. Rendered in Chrome by render.mjs at exactly 1200x630, device scale 1.
+     Kit only: ink ground, the official Hive Core mark as the one lit cell (its own glow is the only gradient), one gold
+     number ($49.99), Unbounded 600 / JetBrains Mono 500 / Hanken Grotesk, honeycomb outlines in #1C1C21. All text is
+     real HTML text set in the kit fonts; no image model drew anything. -->
+<link rel="stylesheet" href="../brand/swarm/swarm-tokens.css">
+<style>
+  @font-face { font-family: "Unbounded"; font-weight: 600; src: url("../../../public/swarm-site/fonts/unbounded-latin.woff2") format("woff2"); }
+  @font-face { font-family: "JetBrains Mono"; font-weight: 500; src: url("../../../public/swarm-site/fonts/jetbrains-mono-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Hanken Grotesk"; font-weight: 400 600; src: url("../../../public/swarm-site/fonts/hanken-grotesk-latin.woff2") format("woff2"); }
+  html, body { margin: 0; background: #0B0B0D; }
+  .card { position: relative; width: 1200px; height: 630px; overflow: hidden; background: var(--swarm-ground); }
+  #field { position: absolute; inset: 0; }
+  .mark { position: absolute; width: 300px; height: 300px; left: calc(var(--cx) - 150px); top: calc(var(--cy) - 150px); }
+  .copy { position: absolute; left: 72px; top: 0; bottom: 0; width: 600px; }
+  .wm { position: absolute; left: -12px; top: 50px; width: 186px; height: auto; }
+  .pill {
+    position: absolute; left: 0; top: 150px; display: inline-flex; align-items: center; gap: 12px;
+    font: 500 15px/1 var(--swarm-font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--swarm-text);
+    border: 1px solid var(--swarm-line); border-radius: 10px; padding: 11px 12px 11px 14px; background: var(--swarm-ground);
+  }
+  .pill::before { content: ""; width: 11px; height: 12px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20'%3E%3Cpath d='M9 1.2 16.4 5.5v9L9 18.8 1.6 14.5v-9Z' fill='none' stroke='%2355555B' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .price { position: absolute; left: -6px; top: 222px; display: flex; align-items: baseline; gap: 14px; margin: 0; }
+  .amt { font: 500 128px/1 var(--swarm-font-mono); letter-spacing: -.035em; color: var(--swarm-gold); font-variant-numeric: tabular-nums; }
+  .unit { font: 500 36px/1 var(--swarm-font-mono); color: var(--swarm-text-muted); }
+  .h { position: absolute; left: 0; top: 376px; margin: 0; width: 600px; font: 600 36px/1.16 var(--swarm-font-display); letter-spacing: -.025em; color: var(--swarm-text); }
+  .h .m { color: var(--swarm-text-muted); }
+  .meta { position: absolute; left: 0; top: 488px; margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; font: 500 15px/1.2 var(--swarm-font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--swarm-text-muted); }
+  .meta b { font-weight: 500; color: var(--swarm-text); }
+  .url { position: absolute; right: 56px; bottom: 44px; font: 500 15px/1 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); }
+</style>
+</head>
+<body class="swarm">
+<div class="card" id="card" style="--cx: 918px; --cy: 300px;">
+  <svg id="field" width="1200" height="630" aria-hidden="true"></svg>
+  <img class="mark" src="../brand/swarm/logo/swarm-mark.svg" alt="">
+  <div class="copy">
+    <img class="wm" src="../brand/swarm/logo/swarm-wordmark-for-dark-bg.svg" alt="Swarm">
+    <p class="pill">Black Friday launch</p>
+    <p class="price"><span class="amt">$49.99</span><span class="unit">/mo</span></p>
+    <p class="h"><span class="m">Locked in for as long</span><br>as you stay subscribed.</p>
+    <ul class="meta">
+      <li><b>Nov 24 to Dec 1</b> · ends 11:59 PM ET</li>
+      <li>After Dec 1: $99/mo or $990/yr</li>
+    </ul>
+  </div>
+  <p class="url">joinswarm.ai</p>
+</div>
+<script>
+  // The kit's honeycomb: pointy-top hex outlines in #1C1C21 on the mark's own grid (cell radius 20u, columns 39u apart,
+  // rows 33.775u apart, odd rows offset by half a column; the mark draws its lit cell and six #55555B neighbours).
+  // The mark is 300px wide over a 150u viewBox span, so 1u = 2px. Cells fade toward the edges and away from the copy.
+  const card = document.getElementById('card'), svg = document.getElementById('field');
+  const cs = getComputedStyle(card), cx = parseFloat(cs.getPropertyValue('--cx')), cy = parseFloat(cs.getPropertyValue('--cy'));
+  const u = 2, r = 20 * u, dx = 39 * u, dy = 33.775 * u;
+  const hex = (x, y) => [0, 1, 2, 3, 4, 5].map(k => { const a = Math.PI / 180 * (60 * k - 90); return `${(x + r * Math.cos(a)).toFixed(2)},${(y + r * Math.sin(a)).toFixed(2)}`; }).join(' ');
+  const sm = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
+  let out = '';
+  for (let j = -6; j <= 6; j++) {
+    for (let i = -14; i <= 6; i++) {
+      const x = cx + (i + (Math.abs(j) % 2 ? 0.5 : 0)) * dx, y = cy + j * dy;
+      const isMark = (j === 0 && Math.abs(i) <= 1) || (Math.abs(j) === 1 && (i === -1 || i === 0));
+      if (isMark) continue; // the mark draws these seven
+      const d = Math.hypot((x - cx) / 1.25, y - cy);
+      const edge = 1 - sm(260, 640, d);                // fade with distance from the core
+      const copy = sm(470, 760, x);                     // stay off the copy column
+      const a = edge * (0.25 + 0.75 * copy);
+      if (a < 0.04) continue;
+      out += `<polygon points="${hex(x, y)}" fill="none" stroke="#1C1C21" stroke-width="1.5" stroke-linejoin="round" opacity="${a.toFixed(3)}"/>`;
+    }
+  }
+  svg.innerHTML = out;
+</script>
+</body>
+</html>

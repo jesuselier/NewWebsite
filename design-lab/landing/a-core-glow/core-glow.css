@@ -28,6 +28,8 @@ h1, h2, h3 { margin: 0; font-weight: 600; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .skip { position: absolute; left: 16px; top: -60px; z-index: 100; padding: 10px 14px; border-radius: 10px; background: var(--swarm-ground); border: 1px solid var(--swarm-line); color: var(--swarm-text); text-decoration: none; font: 600 15px/1 var(--swarm-font-body); }
 .skip:focus { top: 12px; }
+/* the hidden attribute always wins over a component's own display (the card's button and status row use it) */
+.swarm [hidden] { display: none !important; }
 
 html.reduce *, html.reduce *::before, html.reduce *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) {
@@ -91,7 +93,7 @@ html.reduce *, html.reduce *::before, html.reduce *::after { animation: none !im
 .btn-gold:hover { background: var(--swarm-gold-deep); }
 .btn-gold:focus-visible { outline-color: var(--swarm-text); outline-offset: 9px; }
 .btn-gold .bl { position: relative; }
-/* Every gold Join Swarm button has a light that revolves around it (Jesus asked for it so the eye lands on the
+/* Every gold button has a light that revolves around it (Jesus asked for it so the eye lands on the
    button; it is the one exception to the kit's no-glow rule, kept crisp: no blur, no halo). At rest the ring is a quiet
    1px track in the kit's line colour, 6px outside the button, so gold stays inside the button. When the button comes
    into view, a gold comet (a bright head and a short fading tail) runs one lap, 2.4s, nothing loops (WCAG 2.2.2),
@@ -135,10 +137,14 @@ html.reduce .r-t, html.reduce .r-head { display: none; }
 .cta { display: flex; flex-direction: column; align-items: center; margin-top: 40px; }
 .cancel { margin-top: 10px; font: 400 14px/1.4 var(--swarm-font-body); color: var(--swarm-text-muted); }
 .btn-gold + .cancel, .hero .btn-gold + .cancel { margin-top: 15px; }
+/* the short lines under the gold buttons break into even lines, never a one-word last line on phones */
+.cancel { text-wrap: balance; }
 
-/* ---------- nav: the wordmark (no gold) is always there, so the hero's core stays the one lit cell ---------- */
-.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; height: 68px; border-bottom: 1px solid transparent; transition: background-color .2s ease, border-color .2s ease; }
-.nav.scrolled { background: var(--swarm-ground); border-bottom-color: var(--swarm-line); }
+/* ---------- nav: the wordmark (no gold) is always there, so the hero's core stays the one lit cell ----------
+   Sticky at the top and over the hero (the negative margin keeps the hero where it was). body's overflow-x: clip is
+   not a scroll container, so sticky still works. */
+.nav { position: sticky; top: 0; z-index: 50; height: 68px; margin-bottom: -68px; border-bottom: 1px solid transparent; transition: background-color .2s ease, border-color .2s ease; }
+.nav.scrolled, html:not(.js) .nav { background: var(--swarm-ground); border-bottom-color: var(--swarm-line); }
 .nav-in { height: 100%; display: flex; align-items: center; justify-content: space-between; }
 .nav-logo { display: block; margin-left: -9px; border-radius: 10px; }
 .nav-logo img { width: 136px; height: auto; }
@@ -182,7 +188,7 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 .hero h1 .b { margin-top: 8px; text-wrap: balance; }
 .hero-sub { max-width: 720px; margin: 20px auto 0; font-size: 18px; line-height: 1.6; color: var(--swarm-text); text-wrap: balance; }
 .hero .cta { margin-top: 24px; }
-.hero .cancel { margin-top: 10px; }
+.hero .cancel { margin-top: 10px; color: var(--swarm-text); }
 /* the intro video, with his face on the play button */
 .watch { display: flex; align-items: center; gap: 12px; min-height: 48px; margin-top: 12px; padding: 5px 14px 5px 5px; color: var(--swarm-text); text-decoration: none; text-align: left; border: 1px solid var(--swarm-line); border-radius: 18px; background: var(--swarm-ground); transition: border-color .16s ease; }
 .watch:hover { border-color: var(--swarm-hive); }
@@ -303,8 +309,12 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 }
 /* tablets: the cards stack under the CTA and the rail closes the screen under them, in a tighter type size */
 @media (min-width: 641px) and (max-width: 1239px) {
+  .facts .f-pay { display: none; }
   .hero { padding-bottom: 0; }
   .hero-rail { padding-top: 44px; }
+  /* the spare height is split above and below the cards (both margins auto), not left in one band over the rail;
+     with no spare height the gaps stay 64px and 44px */
+  .qcards { margin-top: auto; padding-top: 64px; }
   .hr-it { min-height: 84px; padding: 18px 14px 18px; column-gap: 10px; align-content: start; }
   .hr-s { text-wrap: balance; }
   .hr-t { font-size: 15px; }
@@ -536,7 +546,7 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 .cs-id { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .cs-sub { font: 400 13px/1.2 var(--swarm-font-body); color: var(--swarm-text-muted); }
 .cs-row[data-st="LIVE"] .cs-sub { color: var(--swarm-text); }
-.cs-name { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--swarm-text); white-space: nowrap; }
+.cs-name { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--swarm-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cs-st { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--swarm-text-muted); border: 1px solid var(--swarm-line); border-radius: 10px; padding: 5px 7px; white-space: nowrap; transition: color .2s ease, border-color .2s ease; }
 .cs-row[data-st="REVIEWED"] .cs-name { color: var(--swarm-text-muted); }
 .cs-row[data-st="LIVE"] { background: var(--swarm-surface-raised); border-bottom-color: transparent; border-radius: 10px 10px 0 0; }
@@ -567,6 +577,8 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 @keyframes spk { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
 .spk i { transform-origin: 50% 100%; }
 .tile { position: relative; display: grid; place-items: center; min-height: 0; overflow: hidden; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 18px; }
+/* the seat tiles keep their avatar at the top (the .t-seat rule above loses to .tile on order), clear of the label */
+.tile.t-seat { place-items: start center; }
 
 .t-host { border-color: var(--swarm-hive); }
 .t-host img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; filter: saturate(.45) brightness(.92); }
@@ -670,86 +682,29 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 .honest-2 blockquote { margin-top: 0; }
 .honest-2 blockquote p { font-size: clamp(18px, 1.6vw, 22px); line-height: 1.45; color: var(--swarm-text); }
 
-/* ---------- 8. pricing: one compact card, the plan switch on top (each tab carries its price) ---------- */
-.pricing { padding-top: 40px; padding-bottom: 48px; }
-.pricing > .wrap { position: relative; z-index: 1; }                       /* the copy sits above the lock stage's canvases */
-.join-line { color: var(--swarm-text); }
-.join { max-width: 480px; margin: 0 auto; }
-.pcard { position: relative; padding: 26px 28px 24px; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 28px; text-align: left; }
-
-.seg-switch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 0; padding: 4px; min-width: 0; border: 1px solid var(--swarm-line); border-radius: 18px; background: var(--swarm-ground); }
-.seg-switch label { position: relative; display: block; cursor: pointer; }
-.seg-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
-.seg-switch span { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 62px; border: 1px solid transparent; border-radius: 10px; color: var(--swarm-text-muted); transition: background-color .16s ease, color .16s ease, border-color .16s ease; }
-.seg-switch b { font: 600 15px/1 var(--swarm-font-body); }
-.seg-switch i { font: 500 12px/1 var(--swarm-font-mono); font-style: normal; letter-spacing: .04em; }
-/* the yearly saving sits on the tab's top edge, so it reads without a tap */
-.seg-switch em { position: absolute; left: 50%; top: -11px; transform: translateX(-50%); font: 500 12px/1 var(--swarm-font-mono); font-style: normal; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; color: var(--swarm-text); background: var(--swarm-surface); border: 1px solid var(--swarm-hive); border-radius: 10px; padding: 4px 7px; }
-.seg-switch input:checked + span { background: var(--swarm-surface-raised); border-color: var(--swarm-hive); color: var(--swarm-text); }
-.seg-switch input:focus-visible + span { outline: 2px solid var(--swarm-text); outline-offset: 2px; }
-.seg-switch label:hover span { color: var(--swarm-text); }
-.pc-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; font: 500 12px/1.3 var(--swarm-font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--swarm-text); }
-.pc-chip { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .16em; color: var(--swarm-text-muted); border: 1px solid var(--swarm-line); border-radius: 10px; padding: 6px 7px 6px 9px; white-space: nowrap; }
-.pc-chip:empty { display: none; }
-.price-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
-.price { display: flex; align-items: baseline; gap: 8px; margin: 0; }
-.amt { font: 500 76px/1 var(--swarm-font-mono); letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--swarm-text); }
-.pcard.is-gold .amt { color: var(--swarm-gold); }
-/* before the swarm docks the founding price is plain text; it turns gold as the card locks */
-.pcard.lock-pending.is-gold .amt { color: var(--swarm-text); }
-/* only turning gold is eased (the lock, or Founding picked again); $99 and $990 are white at once */
-.pcard.is-gold:not(.lock-pending) .amt { transition: color .36s ease; }
-.unit { font: 500 20px/1 var(--swarm-font-mono); color: var(--swarm-text-muted); }
-.pc-note { margin-top: 12px; font-size: 16px; color: var(--swarm-text); text-wrap: balance; }
-.pc-sub { margin-top: 6px; font-size: 14.5px; line-height: 1.5; color: var(--swarm-text-muted); text-wrap: balance; }
-.pc-sub:empty { display: none; }
-/* how the price moves, in one line of three steps (the tabs carry the numbers) */
-.pc-steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 18px 0 0; padding: 0; position: relative; }
-.pc-steps::before { content: ""; position: absolute; left: 6px; right: 6px; top: 6px; border-top: 1px solid var(--swarm-line); }
-.pc-steps li { position: relative; display: flex; flex-direction: column; gap: 5px; padding: 20px 10px 0 0; }
-.pc-steps li::before { content: ""; position: absolute; left: 0; top: 0; width: 11px; height: 12px; background: var(--swarm-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20'%3E%3Cpath d='M9 1.2 16.4 5.5v9L9 18.8 1.6 14.5v-9Z' fill='%23111114' stroke='%2355555B' stroke-width='1.8'/%3E%3C/svg%3E") center / contain no-repeat; }
-.pc-steps li.on::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20'%3E%3Cpath d='M9 1.2 16.4 5.5v9L9 18.8 1.6 14.5v-9Z' fill='%23EEEBE4'/%3E%3C/svg%3E"); }
-.pc-steps li.later::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20'%3E%3Cpath d='M9 1.2 16.4 5.5v9L9 18.8 1.6 14.5v-9Z' fill='%23111114' stroke='%2355555B' stroke-width='1.8' stroke-dasharray='2.6 2.2'/%3E%3C/svg%3E"); }
-.ps-k { font: 500 12px/1.2 var(--swarm-font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--swarm-text-muted); }
-.ps-t { font-size: 14px; line-height: 1.35; color: var(--swarm-text-muted); text-wrap: balance; }
-.ps-t .nw { white-space: nowrap; }
-.pc-steps li.on .ps-k, .pc-steps li.on .ps-t { color: var(--swarm-text); }
-.pc-hr { border: 0; border-top: 1px solid var(--swarm-line); margin: 20px 0 16px; }
-.pc-label { font: 500 12px/1.3 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); }
-.checks { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
-.checks li { display: flex; align-items: flex-start; gap: 12px; font-size: 16px; line-height: 1.45; }
-.pcard .btn-gold { width: 100%; margin-top: 24px; }
-.pcard .cancel { text-align: center; }
-/* the Whop checkout mounts here; until the plan IDs exist it is one compact, clearly marked row. Once a plan ID is in
-   (data-state="mounted"), the slot reserves the embed's height so the page does not jump */
-.whop {
-  position: relative; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 4px 12px;
-  margin-top: 16px; padding: 13px 14px 13px 16px; text-align: left;
-  border: 1px dashed var(--swarm-hive); border-radius: 18px; background: var(--swarm-ground);
+/* ---------- 8. get Swarm updates (November 20) ----------
+   Swarm isn't open and its pricing is not decided, so the pricing card is now one short card that links out to Jesus's
+   Keychain sign-up page. The section is still #pricing and the card #join, so old links land on the card (scroll-padding
+   76px plus the card's scroll margin). The card sits on the quiet honeycomb (.field-bg, static): the line, the gold
+   button and "Opens keychain.club." on the left; what's inside on the right from 1024px, under a rule on phones. The
+   button is the view's one gold. The right column hugs its four short items and the card is 760px, so the card's
+   right inset matches its left (at 880px with a 1fr column it left a 172px empty strip on the right). */
+.pricing { padding-top: 40px; }
+.ucard { position: relative; max-width: 480px; margin: 56px auto 0; padding: 26px 22px 22px; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 28px; text-align: left; scroll-margin-top: 16px; }
+.uc-a { display: flex; flex-direction: column; min-width: 0; }
+.uc-lede { font-size: 18px; line-height: 1.55; color: var(--swarm-text); text-wrap: pretty; }
+.ucard .btn-gold { width: 100%; min-width: 0; margin-top: 24px; }
+.ucard .cancel { margin-top: 12px; text-align: center; }
+.uc-b { min-width: 0; margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--swarm-line); }
+.uc-label { font: 500 12px/1.3 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); }
+.checks { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 9px 16px; }
+.checks li { display: flex; align-items: flex-start; gap: 10px; font-size: 15.5px; line-height: 1.4; }
+.risk { max-width: 640px; margin: 28px auto 0; font: 400 13.5px/1.55 var(--swarm-font-body); color: var(--swarm-text-muted); text-align: center; text-wrap: pretty; }
+@media (min-width: 1024px) {
+  .ucard { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 44px; max-width: 760px; padding: 36px 40px; }
+  .uc-b { margin-top: 0; padding: 6px 0 6px 44px; border-top: 0; border-left: 1px solid var(--swarm-line); }
+  .checks { grid-template-columns: 1fr; gap: 12px; }
 }
-.whop[data-state="mounted"] { min-height: 560px; }
-.whop:focus-visible { outline: 2px solid var(--swarm-text); outline-offset: 3px; }
-.whop-label { grid-column: 1; font: 500 12px/1.4 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); }
-.whop-title { grid-column: 1; font: 600 15px/1.3 var(--swarm-font-body); }
-.whop .dn { justify-self: start; margin-top: 6px; font-size: 12px; }
-.whop-status { grid-column: 1 / -1; font-size: 13.5px; line-height: 1.5; color: var(--swarm-text-muted); }
-.whop-status:empty { display: none; }
-.whop-status:not(:empty) { margin-top: 6px; }
-/* how joining works: three short steps inside the card, under the checkout */
-.how { margin-top: 18px; }
-.how-lab { font: 500 12px/1.3 var(--swarm-font-mono); letter-spacing: .28em; text-transform: uppercase; color: var(--swarm-text-muted); }
-.steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 12px 0 0; padding: 0; }
-.steps li { display: flex; flex-direction: column; gap: 6px; }
-.st-n { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .16em; color: var(--swarm-text-muted); }
-.st-t { font: 400 14px/1.4 var(--swarm-font-body); color: var(--swarm-text); text-wrap: balance; }
-.how-note { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--swarm-line); font: 400 14px/1.5 var(--swarm-font-body); color: var(--swarm-text-muted); text-wrap: pretty; }
-.risk { max-width: 480px; margin: 20px auto 0; font: 400 13.5px/1.55 var(--swarm-font-body); color: var(--swarm-text-muted); text-align: center; }
-
-/* the lock stage: the card sits on the honeycomb; two canvases lie under it (the field, drawn once, and the agents) */
-.lock-stage { position: relative; isolation: isolate; --lockR: 20px; --band: 64px; margin-top: 4px; }
-.lock-stage > canvas { position: absolute; left: 0; top: 0; z-index: 0; display: block; pointer-events: none; }
-.lock-stage > .wrap { position: relative; z-index: 1; }
-.lock-band { height: var(--band); }
 
 /* ---------- 9. FAQ ---------- */
 .faq { max-width: 840px; margin: 32px auto 0; border-top: 1px solid var(--swarm-line); text-align: left; }
@@ -767,7 +722,7 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 .pm::after { transform: rotate(90deg); }
 details[open] .pm::after { transform: rotate(0deg); }
 .ans { padding: 0 48px 24px 4px; }
-.ans p { max-width: 64ch; font-size: 17px; line-height: 1.6; color: var(--swarm-text-muted); }
+.ans p { max-width: 64ch; font-size: 17px; line-height: 1.6; color: var(--swarm-text-muted); text-wrap: pretty; }
 .ans a { color: var(--swarm-text); text-decoration: underline; text-decoration-color: var(--swarm-line); text-underline-offset: 3px; }
 .ans a:hover { text-decoration-color: var(--swarm-text-muted); }
 
@@ -812,7 +767,7 @@ html.reduce #final-mark, html.frozen #final-mark { opacity: 1; }
 
 @media (max-width: 640px) {
   body { font-size: 16px; }
-  .nav { height: 60px; }
+  .nav { height: 60px; margin-bottom: -60px; }
   .nav-logo { margin-left: -7px; }
   .nav-logo img { width: 118px; }
   .btn-line { height: 44px; padding: 0 16px; font-size: 14px; }
@@ -959,19 +914,11 @@ html.reduce #final-mark, html.frozen #final-mark { opacity: 1; }
 
   .honest { padding-top: 8px; }
   .pricing { padding-top: 24px; }
-  .lock-stage { --lockR: 16px; --band: 72px; }
-  .steps { grid-template-columns: 1fr; gap: 8px; }
-  .steps li { flex-direction: row; align-items: baseline; gap: 12px; }
-  .st-t { font-size: 14.5px; }
-  .seg-switch span { height: 58px; gap: 5px; }
-  .seg-switch b { font-size: 14px; }
-  .seg-switch i { font-size: 11.5px; }
-  .seg-switch em { font-size: 11px; letter-spacing: .02em; padding: 4px 5px; }
-  .pcard { padding: 22px 18px 20px; }
-  .amt { font-size: 64px; }
-  .pc-steps li { padding-right: 6px; }
-  .ps-t { font-size: 13px; }
-  .whop { padding: 12px 14px; }
+  .ucard { margin-top: 40px; padding: 22px 18px 18px; scroll-margin-top: 8px; }
+  .uc-lede { font-size: 16.5px; }
+  .ucard .btn-gold { margin-top: 20px; }
+  .checks { gap: 7px 12px; }
+  .checks li { font-size: 14.5px; gap: 8px; }
 
   .faq { margin-top: 38px; }
   .faq summary { font-size: 16.5px; min-height: 60px; padding: 16px 2px; gap: 16px; }
@@ -986,14 +933,17 @@ html.reduce #final-mark, html.frozen #final-mark { opacity: 1; }
   .legal { flex-direction: column; align-items: flex-start; gap: 0; }
 }
 
+/* the narrowest phones: what's inside goes to one column, so "Multi-cycle traders" never wraps */
+@media (max-width: 389px) { .checks { grid-template-columns: 1fr; } }
+
 /* short phones: keep the first gold button in the first screen */
 @media (max-width: 640px) and (max-height: 720px) {
   .hero { --R: 19px; }
   .hero h1 { font-size: 29px; margin-top: 14px; }
   .hero-sub { font-size: 15px; margin-top: 12px; }
   .hero .cta { margin-top: 18px; }
+  .hero .btn-gold + .cancel { margin-top: 10px; }        /* the line under the button stays in the first screen */
 }
-
 /* every Unbounded heading falls back to a face with matching width, so a late font never moves the layout */
 .swarm .hero h1, .swarm .h2, .swarm .mtext h3, .swarm .who h3 { font-family: "Unbounded", "Unbounded Fallback", system-ui, sans-serif; }
 .cs-swap .cs-st, .cs-swap .cs-detail { opacity: .25; }
@@ -1028,3 +978,151 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 @media (max-width: 380px) {
   .wl-tools .lock { display: none; }
 }
+/* under 375px the word "Portfolio" steps out of the call's rows (the head says Portfolio review), so the number never
+   runs under the status chip */
+@media (max-width: 374px) {
+  .cs-pw { display: none; }
+}
+
+/* ==========================================================================================================
+   CONDENSE (design-lab/landing/CONDENSE-PLAN.md, November 2026). Every section stays; each card is a title and one
+   line, and the space the cuts free goes back to the page as air. Overrides only, appended after every rule above.
+   ========================================================================================================== */
+
+/* ---------- rhythm: more air between sections ---------- */
+:root { --sec: 112px; }                                   /* was 80px */
+@media (max-width: 1023px) { :root { --sec: 96px; } }
+@media (max-width: 640px) { :root { --sec: 64px; } }      /* was 48px */
+.cta { margin-top: 56px; }
+.lede { margin-top: 28px; }
+@media (max-width: 640px) { .cta { margin-top: 40px; } }
+
+/* ---------- 1. hero: no chip row, a one-line sub, the left card is the intro video, the rail is titles only ---------- */
+.hero h1 { margin-top: 40px; }
+.hero .cta { margin-top: 32px; }
+.hero-sub { margin-top: 22px; }
+@media (min-width: 1240px) {
+  .hero h1 { margin-top: calc(40px + var(--vs) * .05); }
+  .hero-sub { margin-top: calc(22px + var(--vs) * .04); }
+  .hero .cta { margin-top: calc(32px + var(--vs) * .07); }
+  /* the cards still line up with the headline's first line (no chip row above it now) */
+  .q1, .q2 { top: calc(var(--core-y) + 2.69 * var(--R) + 18px + 40px + var(--vs, 0px) * .05); }
+  /* the 760px floor was sized for the chip row and the note: with them gone the rail closes the first screen on short
+     laptops too (1280x720, 1366x768), and it always keeps 24px from the line under the button */
+  .hero { min-height: 660px; min-height: max(660px, 100svh); }
+  .hero-rail { padding-top: max(24px, calc(34px + min(0px, var(--vs) * .3))); }
+}
+/* the handoff (hero.js) reaches the hero button along the honeycomb only where the band beside the button is clear of
+   the copy. With the one-line sub that band closed at 1440x900, 1600x900 and 1920x1080 and the pulse fell back to the
+   ring. 32px more above the button on screens 780px and taller reopens it at every desktop size checked (22 sizes,
+   all three sale states); shorter screens keep the old gap so the rail still closes the first screen */
+@media (min-width: 1240px) and (min-height: 780px) {
+  .hero .cta { margin-top: calc(64px + var(--vs) * .07); }
+}
+.qcard.qvid { width: auto; padding: 0; background: none; border: 0; }
+.qvid .watch { margin-top: 0; gap: 14px; padding: 7px 20px 7px 7px; background: var(--swarm-surface); border-radius: 18px; }
+.qvid .w-thumb { width: 56px; height: 56px; }
+.qvid .w-t { font-size: 16px; }
+.scard .sc-steps { margin-top: 16px; }
+.scard figcaption { margin-top: 14px; }
+.hr-it { min-height: 76px; align-content: center; row-gap: 0; }
+.hr-n { grid-row: auto; padding-top: 0; }
+.hr-t { font-size: 17px; }
+@media (min-width: 641px) and (max-width: 1239px) { .hr-it { min-height: 68px; align-content: center; } .hr-t { font-size: 15.5px; } .qcards { width: 100%; } }
+/* short desktop screens: a slightly shorter rail, so it fits whole under the line under the button */
+@media (min-width: 1240px) and (max-height: 760px) { .hr-it { min-height: 62px; } }
+@media (max-width: 640px) {
+  .hero h1 { margin-top: 26px; }
+  .hero .cta { margin-top: 26px; }
+  /* phones: the two floating cards step out (the founder card is the video, the tools mock has the scouts) */
+  .qcards { display: none; }
+  .hero { padding-bottom: 8px; }
+  .hero-rail { margin-top: 28px; }
+  .hr-it, .hr-it:first-of-type { min-height: 60px; padding: 14px 12px; align-content: center; align-items: baseline; }
+}
+
+/* ---------- 2. the curve: one short line per zone; the figure closes the section (no CTA) ---------- */
+.crowd { margin-top: 56px; }
+.zones { margin-top: 8px; }
+.zone { padding-top: 24px; }
+.zone p { margin-top: 10px; font-size: 18px; text-wrap: pretty; }
+.fig-foot { justify-content: center; }
+@media (max-width: 640px) {
+  .crowd { margin-top: 44px; }
+  .zone p { font-size: 17px; }
+}
+
+/* ---------- 3. founder: one line from the transcript as a pull quote, the cycles, the audience line as the footer ---------- */
+.founder-grid .transcript { min-height: 452px; }          /* was 560px; the photo beside it follows the card */
+.tr-body { padding: 40px 34px 8px; }
+.tr-one { grid-template-columns: 64px 1fr; align-items: start; padding-bottom: 28px; }
+.tr-one p { font: 600 clamp(22px, 2vw, 28px)/1.32 var(--swarm-font-body); letter-spacing: -.01em; color: var(--swarm-text); text-wrap: balance; }
+/* from 641px the quote breaks between its two phrases ("bear market" stays whole); phones keep the balanced flow */
+@media (min-width: 641px) { .tr-one .tq { display: inline-block; } }
+/* where the card is taller than its content (1024px and up), the quote sits in the middle of the open space */
+.founder-grid .tr-body { margin-top: auto; }
+.founder .cycles { margin-top: auto; margin-left: 34px; margin-right: 34px; }
+.founder .tr-foot { margin-top: 0; padding: 18px 34px 20px; }
+.tr-foot .proof { max-width: none; margin: 0; text-align: left; font: 400 15px/1.55 var(--swarm-font-body); color: var(--swarm-text-muted); text-wrap: pretty; }
+@media (max-width: 1023px) { .founder-grid .transcript { min-height: 0; } }
+@media (max-width: 640px) {
+  .tr-body { padding: 26px 18px 4px; }
+  .tr-one p { font-size: 21px; }
+  .founder .cycles { margin-left: 18px; margin-right: 18px; }
+  .founder .tr-foot { padding: 14px 18px 18px; }
+  .tr-foot .proof { font-size: 14.5px; }
+}
+
+/* ---------- 4. why this cycle ---------- */
+.attn-fig { margin-top: 48px; }
+
+/* ---------- 5. members: a title and one line per card; the mocks drop the labels that repeat their card ---------- */
+.mg { gap: 24px; margin-top: 64px; }
+.mtext { padding: 28px 32px 32px; }
+.mtext > h3:first-child { margin-top: 0; }
+.mtext h3 { margin-top: 18px; font-size: 26px; }
+.mtext > p { margin-top: 10px; max-width: 48ch; color: var(--swarm-text-muted); text-wrap: pretty; }
+/* agent console: the event log steps out and the four scouts share the console's height (page.js still writes it) */
+.con-loghead, .con-log { display: none; }
+.console .con-rows { flex: 1; display: flex; flex-direction: column; }
+.console .crow { flex: 1; align-content: center; padding: 10px 16px; }
+/* watch list: the public "why" column steps out; the locked "Jesus's note" row says the reasons are for members */
+.mock-watch .wl-why { display: none !important; }
+.mock-watch .wl-head, .mock-watch .wl-row { grid-template-columns: minmax(0, 1fr) 132px; }
+/* live call: only the live portfolio keeps its focus line */
+.cs-row:not([data-st="LIVE"]) .cs-sub { display: none; }
+/* (1240 to 1400 keeps its own 40px / 48px rows from the rule above, which fit that narrower panel) */
+@media (max-width: 1239px), (min-width: 1401px) {
+  .cs-row { height: 42px; }
+  .cs-row[data-st="LIVE"] { height: 50px; }
+}
+/* under 1300px the word "Portfolio" steps out of the rows (the head says Portfolio review), so the numbers are never cut */
+@media (min-width: 1240px) and (max-width: 1299px) { .cs-pw { display: none; } }
+/* the Discord channel holds the pinned note only: where the card has its own row, the mock is shorter */
+@media (min-width: 641px) and (max-width: 1239px) { .c-traders .mock { height: 340px; } }
+@media (max-width: 640px) {
+  .mg { margin-top: 44px; }
+  .mtext { padding: 22px 20px 26px; }
+  .mtext h3 { font-size: 22px; }
+  .console .crow { padding: 5px 16px 6px; }
+  .mock-watch { height: 454px; }                          /* was 484px */
+  .mock-watch .wl-row { height: 46px; }
+  .mock-watch .wl-head, .mock-watch .wl-row { grid-template-columns: minmax(0, 1fr) 104px; }
+  .cs-row, .cs-row[data-st="LIVE"] { height: 38px; }
+  .c-traders .mock { height: 256px; }                     /* was 480px: the channel holds the pinned note only */
+}
+
+/* ---------- 6. who it's for: the video's two on-screen lines, bigger, with room ---------- */
+.who-card { margin-top: 64px; }
+.who { padding: 36px 40px 40px; }
+.mini { margin-bottom: 28px; }
+.who h3 { margin-top: 14px; font-size: clamp(24px, 2vw, 28px); text-wrap: balance; }   /* one line each from 1024px */
+@media (max-width: 640px) { .who-card { margin-top: 44px; } .who { padding: 26px 22px 30px; } .who h3 { font-size: 24px; } }
+
+/* ---------- 7. before you join: one quote, a little larger ---------- */
+.honest-fig blockquote p { font-size: clamp(22px, 2.3vw, 32px); }
+
+/* ---------- 9. FAQ: every question starts closed ---------- */
+.faq summary { min-height: 66px; text-wrap: pretty; }
+/* the list fills its column whether or not a question is open (a closed list would shrink to its widest question) */
+@media (min-width: 1024px) { .faq-wrap .faq { margin-left: 0; margin-right: 0; } }

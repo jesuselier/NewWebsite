@@ -1,7 +1,8 @@
 /* Swarm A, Core Glow: page controller.
-   Nav state, the revolving light on the gold Join Swarm buttons, the four product mocks (each plays once and settles
-   inside 5s), the Custom AI tools scout field (a 2D model rendered by tools3d.js in Three.js, or drawn flat as a
-   still), the why-now band, the pricing lock moment, the final field, and the pricing switch with the Whop checkout stub.
+   Nav state, the revolving light on the gold buttons, the four product mocks (each plays once and settles inside 5s),
+   the Custom AI tools scout field (a 2D model rendered by tools3d.js in Three.js, or drawn flat as a still), the why-now
+   band and the final field. The Black Friday clock, the pricing card and its lock moment were removed on November 20
+   (no pricing yet: the gold buttons link to the Swarm updates sign-up on Keychain).
    Every motion piece plays once when it comes into view and settles within 5 seconds; nothing loops, so there is no
    pause control. Everything pauses offscreen and while the tab is hidden.
    Every agent here uses the same language as the hero: hexagonal nodes hopping along the honeycomb's edges. */
@@ -9,7 +10,6 @@
   'use strict';
   const S = window.SWARM || { reduce: false, freeze: null };
   const SL = window.SwarmLattice;
-  const root = document.documentElement;
   const STATIC = S.reduce || S.freeze != null;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -39,7 +39,7 @@
   const onScroll = () => { if (nav) nav.classList.toggle('scrolled', window.scrollY > 8); };
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
-  /* ---------- the revolving light on the gold Join Swarm buttons ----------
+  /* ---------- the revolving light on the gold buttons ----------
      CSS draws it (core-glow.css): at rest a quiet 1px track in the kit's line colour; each time a button comes into
      view a gold comet runs one lap (2.4s) and goes out. It plays again on hover or keyboard focus once the last run has
      finished. The hero's own light waits for the swarm's signal (hero.js publishes window.SWARM.heroSignal: when and
@@ -48,7 +48,7 @@
      the contact point for one 1.4s lap (Web Animations, seekable for ?t=). If hero.js failed, the hero ring plays the
      same 1.4s lap from the top at 2.2s, so everything still settles inside 5s. */
   const golds = $$('.btn-gold'), heroBtn = $('.btn-hero');
-  const RING_MS = 2400, HERO_RING_AT = 2200, SIG_EASE = 'cubic-bezier(.33,.7,.3,1)', SIG_LAP = 1400;
+  const HERO_RING_AT = 2200, SIG_EASE = 'cubic-bezier(.33,.7,.3,1)', SIG_LAP = 1400;
   const GOLD = '#F5C542', GOLD_LIFT = 'color-mix(in srgb, #F5C542 62%, #FFF7CF)';
   const heroSig = () => (window.SWARM && window.SWARM.heroSignal) || null;
   const ringPlay = b => { b.classList.remove('ring-run', 'ring-done'); void b.offsetWidth; b.classList.add('ring-run'); b.dataset.ring = 'run'; };
@@ -672,7 +672,7 @@
     window.__attnInfo = () => ({ end: END });
   })();
 
-  /* ---------- a small converge piece around an official mark: the pricing core and the final CTA ----------
+  /* ---------- a small converge piece around an official mark: the final CTA ----------
      The agents route in along the honeycomb's channels, each neighbour lights as its first agent reaches it, the
      core's gold outline charges, and the official mark lands with its warm light. Plays once, settled under 3.2s. */
   function converge(cfg) {
@@ -732,264 +732,6 @@
     });
   }
 
-  /* ---------- pricing: "Lock in your seat" ----------
-     The card sits on the honeycomb. When its price row comes into view, agents on the field around the card scan,
-     decide and route along the honeycomb's channels to three sockets on the card's edge (left, right and top on
-     desktop; three along the top on phones) and dock under the card, one by one. Each socket lights as agents dock.
-     Once most have docked the card locks: the founding $49 turns gold (the view's one gold number), one ring wave
-     runs out across the field, and the routes stay as quiet traces. Plays once, settles about 3.4s after it starts,
-     then stops; it pauses offscreen and while the tab is hidden. No lit cell here: the final CTA carries the core.
-     Under ?reduce=1, ?t, or without JS or canvas, the card shows its settled state. ?lock=<ms> freezes the moment at
-     that time and window.__lockSeek(ms) steps it, for frame-accurate captures. No text is drawn on canvas. */
-  (function lockMoment() {
-    const stage = $('#lock-stage'), fc = $('#join-field'), ac = $('#join-agents'), card = $('#pcard');
-    const row = $('.price-row'), joinBtnEl = $('#join-btn');
-    const q = new URLSearchParams(location.search);
-    const FREEZE = q.has('lock') && !S.reduce ? Math.max(0, parseFloat(q.get('lock')) || 0) : null;
-    const T = { born: 280, commit0: 360, commit1: 900, arrive: 1900, lockMin: 1850, lockMax: 2450, wave: 1100, tail: 1000 };
-    const DT = 1000 / 60;
-    const settleDom = () => { if (card) card.classList.remove('lock-pending'); };
-    if (!stage || !fc || !ac || !card || !SL || !fc.getContext) { settleDom(); return; }
-    const fx = fc.getContext('2d'), ax = ac.getContext('2d');
-    if (!fx || !ax) { settleDom(); return; }
-    const { COL, sm, drawField, drawAgents } = SL;
-
-    let W, Hf, d, phone, R, P, box, yP, Dm, L, V, walk, dist, ports, docks, dockOf, traces;
-    let Sx, rnd, simT, locked, lockT, END, absorbed, routed, hits, pinged;
-    let started = false, done = false, raf = 0, clock = 0, last = null, onScreen = true, lastW = 0;
-
-    /* ---------- geometry: the card and its sockets, in stage pixels ---------- */
-    function geometry() {
-      d = DPR(); W = stage.clientWidth;
-      const sr = stage.getBoundingClientRect(), cr = card.getBoundingClientRect(), rr = (row || card).getBoundingClientRect();
-      box = { x0: cr.left - sr.left, y0: cr.top - sr.top, x1: cr.right - sr.left, y1: cr.bottom - sr.top };
-      yP = (rr.top + rr.bottom) / 2 - sr.top;
-      phone = W <= 640;
-      R = parseFloat(getComputedStyle(stage).getPropertyValue('--lockR')) || (phone ? 16 : 20);
-      P = 1.95 * R;
-      Dm = phone ? 0 : Math.min(5.5 * P, box.x0 - 8);
-      Hf = Math.min(stage.clientHeight, Math.ceil(phone ? box.y0 + 4 : yP + 9 * P));
-      const cx = (box.x0 + box.x1) / 2, cw = box.x1 - box.x0;
-      ports = phone ? [[cx - 0.3 * cw, box.y0, 0, 1], [cx, box.y0, 0, 1], [cx + 0.3 * cw, box.y0, 0, 1]]
-                    : [[box.x0, yP, 1, 0], [cx, box.y0, 0, 1], [box.x1, yP, -1, 0]];     // x, y, inward normal
-    }
-    const dBox = (x, y) => { const dx = Math.max(box.x0 - x, 0, x - box.x1), dy = Math.max(box.y0 - y, 0, y - box.y1); return Math.hypot(dx, dy); };
-    const outside = (x, y, m) => x < box.x0 - m || x > box.x1 + m || y < box.y0 - m || y > box.y1 + m;
-    // the field: strongest beside the card's top half, fading with distance from the card and down the page
-    const outA = (x, y) => phone
-      ? sm(4, 36, y) * (1 - sm(box.y0 - 12, box.y0 + 2, y)) * Math.min(sm(0, 40, x), 1 - sm(W - 40, W, x))
-      : (1 - sm(0.3 * Dm, Dm, dBox(x, y))) * (1 - sm(yP + 3 * P, yP + 8.6 * P, y)) * sm(4, 64, y);
-
-    /* ---------- lattice, sockets and routes ---------- */
-    function setup() {
-      geometry();
-      L = SL.lattice({ R, ox: (box.x0 + box.x1) / 2, oy: box.y0, x0: -P, y0: -P, x1: W + P, y1: Hf + P });
-      V = L.V;
-      walk = V.map(v => v.y > 8 && v.y < Hf - 6 && v.x > 6 && v.x < W - 6 && outside(v.x, v.y, 5) && outA(v.x, v.y) > 0.16);
-      // each socket: the open corner nearest the socket point, then one last hop under the card's edge
-      docks = []; dockOf = new Map();
-      ports.forEach((pt, k) => {
-        let best = -1, bd = 1e9;
-        V.forEach((v, i) => { if (!walk[i]) return; const dd = Math.hypot(v.x - pt[0], v.y - pt[1]); if (dd < bd) { bd = dd; best = i; } });
-        if (best < 0 || bd > 2.2 * P) return;
-        // the socket sits square to the card's edge, straight across from that corner
-        if (pt[2]) pt[1] = V[best].y; else pt[0] = V[best].x;
-        const dv = { i: V.length, x: pt[0] + pt[2] * 14, y: pt[1] + pt[3] * 14, nb: [best], cells: [], dock: k };
-        V.push(dv); V[best].nb.push(dv.i); walk.push(false);
-        docks.push(dv); dockOf.set(dv.i, k);
-      });
-      dist = new Int32Array(V.length).fill(-1);
-      const qq = [];
-      for (const dv of docks) { dist[dv.i] = 0; qq.push(dv.i); }
-      for (let h = 0; h < qq.length; h++) for (const j of V[qq[h]].nb) if (dist[j] < 0 && walk[j]) { dist[j] = dist[qq[h]] + 1; qq.push(j); }
-    }
-
-    /* ---------- the swarm: 36 agents on desktop, 12 on phones ---------- */
-    const hopD = () => 170 + rnd() * 80;
-    const pick = arr => arr[(rnd() * arr.length) | 0];
-    function spawn() {
-      for (const c of L.cells) { c.ping = -1e9; }
-      rnd = SL.rng(29);
-      Sx = SL.sim(L, 31, 600);
-      const N = phone ? 12 : 36;
-      const pool = [];
-      V.forEach((v, i) => { if (walk[i] && dist[i] > 2) pool.push(i); });
-      const used = new Set();
-      let maxH = 1; for (const i of pool) maxH = Math.max(maxH, dist[i]);
-      for (let n = 0; n < N && pool.length; n++) {
-        let id = -1;
-        for (let tries = 0; tries < 60; tries++) { const c = pick(pool); if (used.has(c) || V[c].nb.some(j => used.has(j))) continue; if (rnd() < 0.25 + 0.75 * outA(V[c].x, V[c].y)) { id = c; break; } }
-        if (id < 0) continue;
-        used.add(id);
-        const far = dist[id] / maxH;
-        const a = Sx.add(id, { kind: 0, will: rnd() < 0.78, born: 30 + rnd() * T.born, ct: T.commit0 + rnd() * (T.commit1 - T.commit0) * (1 - 0.5 * far), jit: rnd() * 240 });
-        const nx = V[id].nb.filter(j => walk[j]);
-        if (nx.length) Sx.hop(a, pick(nx), a.born + 40 + rnd() * 200, hopD());
-      }
-      pinged = []; locked = false; lockT = Infinity; END = Infinity; absorbed = 0; routed = 0; hits = ports.map(() => -1e9); traces = new Map();
-      simT = 0;
-    }
-
-    function policy(a, at) {
-      const v = V[a.from];
-      if (v.dock !== undefined) { a.dead = true; absorbed++; hits[v.dock] = at; return; }
-      if (a.mode === 'scan') {
-        if (!locked && rnd() < 0.4) {
-          let live = 0; for (const c of pinged) if (at - c.ping < 800) live++;
-          if (live < (phone ? 3 : 7)) { const cs = v.cells; if (cs.length) { const c = pick(cs); if (at - c.ping > 800) { c.ping = at; pinged.push(c); if (pinged.length > 40) pinged.splice(0, pinged.length - 40); } } }
-        }
-        // the decision: a scout that commits turns bright and sets off for the nearest socket
-        if (a.will && !locked && at >= a.ct && dist[a.from] > 0) {
-          a.mode = 'route'; a.kind = 1; routed++;
-          a.hd = Math.min(200, Math.max(60, Math.max(200, T.arrive + a.jit - at) / dist[a.from]));
-          return policy(a, at);
-        }
-        if (locked) { if (a.fadeT < 0) { a.fadeT = at; a.fadeD = 300; } return; }
-        const opts = v.nb.filter(j => j !== a.prev && walk[j]);
-        if (!opts.length) return;
-        Sx.hop(a, pick(opts), at + 30 + rnd() * 160, hopD());
-        return;
-      }
-      if (locked && dist[a.from] > 1) { a.fadeT = at; a.fadeD = 200; return; }
-      const down = v.nb.filter(j => dist[j] >= 0 && dist[j] < dist[a.from]);
-      if (!down.length) { a.mode = 'scan'; a.kind = 0; return; }
-      const nx = pick(down);
-      const k = nx < a.from ? nx * 65536 + a.from : a.from * 65536 + nx;
-      if (V[nx].dock === undefined) traces.set(k, [a.from, nx]);
-      Sx.hop(a, nx, at, V[nx].dock !== undefined ? 150 : a.hd);
-    }
-
-    function step(t) {
-      Sx.advance(t, policy);
-      if (!locked && ((t >= T.lockMin && routed > 0 && absorbed >= 0.62 * routed) || t >= T.lockMax)) {
-        locked = true; lockT = t; END = t + T.tail;
-        for (const a of Sx.agents) {
-          if (a.dead || a.fadeT >= 0) continue;
-          if (a.mode === 'scan') { a.fadeT = t + 60 + rnd() * 380; a.fadeD = 300; }
-        }
-      }
-    }
-    const charge = () => Math.min(1, absorbed / Math.max(1, 0.62 * routed));
-
-    /* ---------- drawing ---------- */
-    function drawStatic() {
-      fc.width = Math.round(W * d); fc.height = Math.round(Hf * d); fc.style.width = W + 'px'; fc.style.height = Hf + 'px';
-      fx.setTransform(d, 0, 0, d, 0, 0); fx.clearRect(0, 0, W, Hf);
-      drawField(fx, L, c => outside(c.x, c.y, -2) ? outA(c.x, c.y) : 0, {});
-      ac.width = Math.round(W * d); ac.height = Math.round(Hf * d); ac.style.width = W + 'px'; ac.style.height = Hf + 'px';
-    }
-    // the sockets: where a route meets the card. Its last edge (into the card's edge) lights as agents dock, and once
-    // the card locks one agent stays on the corner outside each socket, as in the hero's rest frame
-    function drawSockets(g, t, rest) {
-      const list = [];
-      g.lineCap = 'round'; g.strokeStyle = COL.text; g.lineWidth = phone ? 1.25 : 1.5;
-      for (const dv of docks) {
-        const k = dv.dock, tv = V[dv.nb[0]], pt = ports[k];
-        const flash = Math.max(0, 1 - (t - hits[k]) / 300);
-        const al = rest ? 0.75 : (hits[k] > -1e8 ? 0.35 + 0.4 * charge() + 0.25 * flash : 0);
-        if (al > 0.01) { g.globalAlpha = Math.min(1, al); g.beginPath(); g.moveTo(tv.x, tv.y); g.lineTo(pt[0], pt[1]); g.stroke(); }
-        const stay = rest ? 0.9 : (locked ? 0.9 * sm(lockT + 200, lockT + 600, t) : 0);
-        if (stay > 0.01) list.push({ x: tv.x, y: tv.y, a: stay, k: 1 });
-      }
-      g.globalAlpha = 1; g.lineCap = 'butt';
-      if (list.length) SL.drawGlyphs(g, list, { r: phone ? 3.6 : 4.4, lw: 1.1 });
-    }
-    function drawTraces(g, al) {
-      if (!traces.size || al <= 0) return;
-      g.globalAlpha = al; g.strokeStyle = COL.hive; g.lineWidth = phone ? 1.1 : 1.25; g.lineCap = 'round'; g.beginPath();
-      for (const [a, b] of traces.values()) { g.moveTo(V[a].x, V[a].y); g.lineTo(V[b].x, V[b].y); }
-      g.stroke(); g.globalAlpha = 1; g.lineCap = 'butt';
-    }
-    function draw(t) {
-      const g = ax;
-      g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, Hf);
-      if (t < END) {
-        // the lock: one ring wave runs out from the card across the field
-        if (locked && t < lockT + T.wave + 120) {
-          drawField(g, L, c => {
-            if (!outside(c.x, c.y, -2)) return 0;
-            const e = t - (lockT + 40 + (dBox(c.x, c.y) / P) * 70);
-            if (e < 0) return 0;
-            const env = e < 90 ? e / 90 : Math.max(0, 1 - (e - 90) / 520);
-            return env * 0.6 * outA(c.x, c.y);
-          }, { color: COL.hive });
-        }
-        // sensing: a visited cell's outline brightens briefly
-        if (pinged.length) drawField(g, L, c => { const e = t - c.ping; if (e < 0 || e > 800) return 0; return (e < 120 ? e / 120 : e < 280 ? 1 : 1 - (e - 280) / 520) * 0.55; }, { color: COL.hive });
-        drawTraces(g, 0.5 * Math.min(1, t / 900));
-        SL.drawEdges(g, Sx, t, { base: [0.22, 0.75], lw: phone ? 1.25 : 1.5 });
-        drawAgents(g, Sx, t, { glyph: true, r: phone ? 3.6 : 4.4, lw: 1.1, base: [0.55, 1] });
-      }
-      drawSockets(g, t, false);
-      card.classList.toggle('lock-pending', !locked);
-    }
-    function drawRest() {
-      ax.setTransform(d, 0, 0, d, 0, 0); ax.clearRect(0, 0, W, Hf);
-      drawTraces(ax, 0.55); drawSockets(ax, 0, true);
-    }
-
-    /* ---------- time ---------- */
-    function advanceTo(t) { while (simT + DT <= t) { simT += DT; step(simT); } }
-    function render(t) {
-      advanceTo(Math.min(t, END));
-      draw(Math.min(t, END));
-      if (t >= END && !done) finish();
-    }
-    function finish() { done = true; if (raf) cancelAnimationFrame(raf); raf = 0; drawRest(); settleDom(); }
-    // the settled card: run the pass offscreen, so the rest frame keeps the same routes as a live run
-    function settle() { done = true; started = true; spawn(); advanceTo(T.lockMax + T.tail + 200); locked = true; drawRest(); settleDom(); }
-    function seek(t) {
-      if (t < simT || done) { done = false; spawn(); }
-      render(t);
-    }
-    function loop(now) {
-      raf = 0;
-      if (done || !onScreen || document.hidden) return;
-      if (last === null) last = now;
-      clock += Math.min(1000, Math.max(0, now - last)); last = now;
-      render(clock);
-      if (!done) raf = requestAnimationFrame(loop);
-    }
-    function start() {
-      if (started) return;
-      started = true; clock = 0; last = null;
-      raf = requestAnimationFrame(loop);
-    }
-    const resume = () => { if (started && !done && !raf && onScreen && !document.hidden) { last = null; raf = requestAnimationFrame(loop); } };
-
-    /* ---------- wiring ---------- */
-    const FROZEN = FREEZE !== null;
-    const STILL = !FROZEN && (STATIC || !('IntersectionObserver' in window));
-    setup(); spawn(); drawStatic(); lastW = W;
-    if (STILL) settle();
-    else if (FROZEN) { started = true; seek(FREEZE); }
-    else {
-      draw(0);
-      // plays once, when the price row is 75% in view
-      const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); start(); } }, { threshold: 0.75 });
-      io.observe(row || card);
-      new IntersectionObserver(es => { for (const e of es) { onScreen = e.isIntersecting; resume(); } }).observe(stage);
-      document.addEventListener('visibilitychange', () => { last = null; resume(); });
-    }
-    window.__lockDebug = () => ({ started, done, locked, lockT: Math.round(lockT), end: Math.round(END), clock: Math.round(clock), raf: !!raf, onScreen, n: Sx.agents.length, routed, absorbed, docks: docks.length, traces: traces.size, Dm, Hf });
-    window.__lockSeek = t => {
-      started = true;
-      seek(t);
-      if (joinBtnEl && joinBtnEl.getAnimations) joinBtnEl.getAnimations({ subtree: true }).forEach(a => { a.pause(); a.currentTime = Math.min(RING_MS, t); });
-      return { t, locked, lockT, absorbed, routed };
-    };
-    // a new width rebuilds the field and shows the settled card (rotation mid-play jumps to the end); a new height only
-    // redraws the field
-    if ('ResizeObserver' in window) new ResizeObserver(() => {
-      const w = stage.clientWidth;
-      if (w === lastW) { if (!started || done) { setup(); spawn(); drawStatic(); if (done) settle(); else draw(0); } return; }
-      lastW = w;
-      if (raf) cancelAnimationFrame(raf); raf = 0;
-      setup(); spawn(); drawStatic();
-      if (FROZEN && !done) seek(FREEZE); else if (started || STILL) settle(); else draw(0);
-    }).observe(stage);
-  })();
-
   /* final CTA: the lit core returns above the last headline, as in the hero, with its warm light */
   (function finalField() {
     const sec = $('#final'), cv = $('#final-field'), mk = $('#final-mark'), spot = $('#final-core'); if (!sec || !cv || !SL || !spot) return;
@@ -1011,55 +753,4 @@
     const fontsReady = (S.fontsReady && S.fontsReady.then) ? S.fontsReady : Promise.resolve();
     fontsReady.then(start);
   })();
-
-  /* ---------- pricing: plan switch and Whop checkout stub ---------- */
-  // Swap in the three Whop plan IDs (prefixed plan_) when Jesus has them. One line per plan.
-  const PLANS = {
-    founding: { name: 'Founding monthly', price: '$49', unit: '/mo', note: 'Forever, while you stay subscribed. Cancel whenever. 50 seats only.', sub: 'Cancel and rejoin after prices go up, and you pay the price at that time.', chip: 'Founding seat', gold: true, whopPlanId: null },
-    standard: { name: 'Standard monthly', price: '$99', unit: '/mo', note: 'The price once the founding seats are gone.', sub: '', chip: 'Renews monthly', gold: false, whopPlanId: null },
-    yearly:   { name: 'Yearly', price: '$990', unit: '/yr', note: '2 months free.', sub: '', chip: 'Billed yearly', gold: false, whopPlanId: null }
-  };
-  window.SWARM_PLANS = PLANS;
-  let currentPlan = 'founding', mounted = null, opened = false;
-
-  // Production: load Whop Elements (see RESEARCH-NOTES.md), destroy the previous mount, then
-  //   mounted = window.WhopElements().checkout.create({ plan: plan.whopPlanId, returnUrl, onComplete });
-  //   mounted.create('checkout').mount('#whop-checkout');
-  // Each mount mints a checkout session, so only mount on an explicit Join click or a plan change after it.
-  function mountCheckout(planKey) {
-    const plan = PLANS[planKey], slot = $('#whop-checkout');
-    if (!plan || !slot) return false;
-    slot.querySelector('[data-slot-plan]').textContent = plan.name;
-    if (!plan.whopPlanId) {
-      slot.dataset.state = 'placeholder';
-      $('#whop-status').textContent = 'Checkout for the ' + plan.name.toLowerCase() + ' plan opens here soon.';
-      return false;
-    }
-    if (mounted && mounted.destroy) mounted.destroy();
-    slot.dataset.state = 'mounted';
-    return true;
-  }
-  function showPlan(key) {
-    const p = PLANS[key]; if (!p) return;
-    currentPlan = key;
-    $('#pc-name').textContent = p.name;
-    $('#pc-amt').textContent = p.price;
-    $('#pc-unit').textContent = p.unit;
-    $('#pc-note').textContent = p.note;
-    $('#pc-sub').textContent = p.sub;
-    $('#pc-chip').textContent = p.chip;
-    $('#pcard').classList.toggle('is-gold', p.gold);
-    const slot = $('#whop-checkout'); if (slot) slot.querySelector('[data-slot-plan]').textContent = p.name;
-    if (opened) mountCheckout(key);
-  }
-  $('#pc-chip') && ($('#pc-chip').textContent = PLANS.founding.chip);
-  $$('.seg-switch input').forEach(inp => inp.addEventListener('change', () => { if (inp.checked) showPlan(inp.value); }));
-  const joinBtn = $('#join-btn');
-  if (joinBtn) joinBtn.addEventListener('click', () => {
-    opened = true;
-    mountCheckout(currentPlan);
-    const slot = $('#whop-checkout');
-    slot.scrollIntoView({ behavior: S.reduce ? 'auto' : 'smooth', block: 'center' });
-    slot.focus({ preventScroll: true });
-  });
 })();
