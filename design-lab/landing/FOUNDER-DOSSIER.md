@@ -238,11 +238,13 @@ All verbatim. Launch-video lines are the first choice on Swarm. Each card carrie
 
 | Platform | Figure | Date read | Source |
 |---|---|---|---|
-| X @JesusMartinez | 323,452 followers (604 following, 45,613 posts) | 2026-10-16 | X profile |
+| X @JesusMartinez | 325,244 followers (648 following, 46,073 posts) | 2026-11-20 | X profile (ScrapeCreators) |
+| | 323,452 followers (604 following, 45,613 posts) | 2026-10-16 | X profile |
 | | 323K | 2026-10-14 | HOUSE baseline |
 | | 322,735 | 2026-09-23 | `lib/site.ts` |
 | | 317K | about 2026-08-07 | canon `SKILL.md` line 20 |
-| YouTube JM Crypto (@jm_crypto) | 41.1K subscribers (YouTube's public count), 1,177 videos, 4,057,367 views | 2026-10-16 | YT-JM channel data |
+| YouTube JM Crypto (@jm_crypto) | 41.6K subscribers (YouTube's public count), 1,373 videos, 4,304,093 views | 2026-11-20 | YouTube channel data (ScrapeCreators) |
+| | 41.1K subscribers (YouTube's public count), 1,177 videos, 4,057,367 views | 2026-10-16 | YT-JM channel data |
 | | 40,000 subscribers (YouTube's rounded count); 3,817,819 lifetime views | 2026-09-23 | `lib/site.ts`; `lib/media-kit.json` |
 | | 39.5K subscribers | 2026-09-04 | HOUSE |
 | YouTube @JesusMartinezTrades ("More Jesus Martinez") | 37K subscribers, 53 videos, 94,570 views | 2026-10-16 | YT-2 |
@@ -251,7 +253,7 @@ All verbatim. Launch-video lines are the first choice on Swarm. Each card carrie
 | X Article "THE ATTENTION CYCLE" | 71,965 views | 2026-10-16 | X |
 | "Why I Sold My Axies" | 72,951 views (most-viewed on the channel) | 2026-10-16 | YouTube popular sort |
 
-Rules: never add platforms together ("360K+ followers" is a new number). Never call his audience the "community" or imply they are Swarm members (Swarm has no members, results or testimonials yet). If an audience line is used at all, the safe form is "323,452 followers on X and 41.1K subscribers on JM Crypto, as of October 16, 2026" in a small mono source line, not as the view's highlighted number.
+Rules: never add platforms together ("360K+ followers" is a new number). Never call his audience the "community" or imply they are Swarm members (Swarm has no members, results or testimonials yet). If an audience line is used at all, the safe form is "325,244 followers on X and 41.6K subscribers on JM Crypto, as of November 20, 2026" (the latest row of each platform, with its date read) in a small mono source line, not as the view's highlighted number.
 
 ### C. Personal outcomes and claims
 
