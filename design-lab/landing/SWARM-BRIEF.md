@@ -13,7 +13,7 @@
   - **No martinezaccess.com anywhere on the Swarm page or its legal pages** (Jesus, October 17): not in the footer, links, emails or meta. Contact address: JMCrypto@wealthgardenent.com (Jesus, October 26; it replaced the planned support@joinswarm.ai) (Jesus still needs to create this inbox).
   - **Weekly live calls: no day or time.** People just need to know the calls are weekly.
   - **Swarm lives on Discord.** After checkout through Whop, members get access to the Swarm Discord.
-  - **Founding price policy:** a founding member keeps $49 a month for as long as they stay subscribed. If they cancel and rejoin after prices have gone up, they pay the price at that time.
+  - **Founding price policy:** a founding member keeps $49 a month for as long as they stay subscribed. If they cancel and rejoin after prices have gone up, they pay the price at that time. *(Superseded by the Black Friday decision, November 2026: the same rule now applies to $49.99 for anyone who joins Nov 24 to Dec 1; see "Pricing" below.)*
   - **The intro video caption is "Why I built Swarm"** (his words at 3:14), not "Watch the intro".
   - **FAQ:** Jesus approved the Q&A copy; keep it to at most six questions with no near-duplicates.
   - **Terms, Privacy and Refund policy pages are generated drafts** (terms.html, privacy.html, refunds.html), linked from the footer, to be reviewed before launch.
@@ -26,7 +26,16 @@
 - **Taste reference from Jesus:** https://www.joinasymmetric.xyz/ (a paid trading community page). Reference only, never copy its layout, copy, assets or code. See "Taste notes" below.
 - **The graphics:** original 2D and 3D motion that amplifies the agentic feel: many independent agents sensing, deciding and converging on one signal, which is also the Hive Core logo's meaning.
 
-## Pricing (from Jesus's pre-launch checkout screenshot, October 16, 2026)
+## Pricing: the Black Friday launch (Jesus, October to November 2026, final)
+
+This replaces the founding pricing below, which is kept for the record only.
+
+- **$49.99 a month** for anyone who joins from Nov 24, 2026, 12:00 AM ET (2026-11-24T05:00:00Z) to Dec 1, 2026, 11:59 PM ET (the page treats 2026-12-02T05:00:00Z as the first moment after it). They keep $49.99 a month for as long as they stay subscribed; cancel and rejoin later and they pay the price at that time.
+- **No seat limit.** The 50 founding seats are dropped; the deadline is the only limit. Never show a seat count.
+- **After the sale:** Standard $99 a month, Yearly $990 a year. Yearly's tag is "2 months free vs Standard".
+- Checkout: three Whop plans (Black Friday Monthly $49.99/mo, Standard $99/mo, Yearly $990/yr), pasted into `CHECKOUT` in the head script of `a-core-glow/index.html`. The build spec is `BLACK-FRIDAY-PLAN.md`.
+
+## Pricing (superseded by the Black Friday decision above; from Jesus's pre-launch checkout screenshot, October 16, 2026)
 
 - Eyebrow: `// PRE-LAUNCH · JOIN THE SWARM`. Headline: **Early on purpose.**
 - "The first 50 founding seats lock in $49/month forever. After that it goes to $99/month. Cancel anytime."

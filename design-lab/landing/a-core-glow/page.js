@@ -1,7 +1,8 @@
 /* Swarm A, Core Glow: page controller.
    Nav state, the revolving light on the gold Join Swarm buttons, the four product mocks (each plays once and settles
    inside 5s), the Custom AI tools scout field (a 2D model rendered by tools3d.js in Three.js, or drawn flat as a
-   still), the why-now band, the pricing lock moment, the final field, and the pricing switch with the Whop checkout stub.
+   still), the why-now band, the pricing lock moment, the final field, the pricing card (plan switch and checkout links)
+   and the Black Friday clock (state flips, the bar's countdown and its Hide button).
    Every motion piece plays once when it comes into view and settles within 5 seconds; nothing loops, so there is no
    pause control. Everything pauses offscreen and while the tab is hidden.
    Every agent here uses the same language as the hero: hexagonal nodes hopping along the honeycomb's edges. */
@@ -736,13 +737,15 @@
      The card sits on the honeycomb. When its price row comes into view, agents on the field around the card scan,
      decide and route along the honeycomb's channels to three sockets on the card's edge (left, right and top on
      desktop; three along the top on phones) and dock under the card, one by one. Each socket lights as agents dock.
-     Once most have docked the card locks: the founding $49 turns gold (the view's one gold number), one ring wave
-     runs out across the field, and the routes stay as quiet traces. Plays once, settles about 3.4s after it starts,
+     Once most have docked the card locks: $49.99 turns gold in TEASER and SALE (the view's one gold number; ENDED has
+     no gold number, so nothing turns), one ring wave runs out across the field, and the routes stay as quiet traces.
+     When the two-column card leaves less than three cells of honeycomb on its sides (about 1024 to 1110px wide), the
+     sockets go along the card's top edge as on phones, so the field never collapses to a sliver. Plays once, settles about 3.4s after it starts,
      then stops; it pauses offscreen and while the tab is hidden. No lit cell here: the final CTA carries the core.
      Under ?reduce=1, ?t, or without JS or canvas, the card shows its settled state. ?lock=<ms> freezes the moment at
      that time and window.__lockSeek(ms) steps it, for frame-accurate captures. No text is drawn on canvas. */
   (function lockMoment() {
-    const stage = $('#lock-stage'), fc = $('#join-field'), ac = $('#join-agents'), card = $('#pcard');
+    const stage = $('#lock-stage'), fc = $('#join-field'), ac = $('#join-agents'), card = $('#join');
     const row = $('.price-row'), joinBtnEl = $('#join-btn');
     const q = new URLSearchParams(location.search);
     const FREEZE = q.has('lock') && !S.reduce ? Math.max(0, parseFloat(q.get('lock')) || 0) : null;
@@ -754,7 +757,7 @@
     if (!fx || !ax) { settleDom(); return; }
     const { COL, sm, drawField, drawAgents } = SL;
 
-    let W, Hf, d, phone, R, P, box, yP, Dm, L, V, walk, dist, ports, docks, dockOf, traces;
+    let W, Hf, d, phone, topPorts, R, P, box, yP, yF0, yF1, Dm, L, V, walk, dist, ports, docks, dockOf, traces;
     let Sx, rnd, simT, locked, lockT, END, absorbed, routed, hits, pinged;
     let started = false, done = false, raf = 0, clock = 0, last = null, onScreen = true, lastW = 0;
 
@@ -767,18 +770,23 @@
       phone = W <= 640;
       R = parseFloat(getComputedStyle(stage).getPropertyValue('--lockR')) || (phone ? 16 : 20);
       P = 1.95 * R;
-      Dm = phone ? 0 : Math.min(5.5 * P, box.x0 - 8);
-      Hf = Math.min(stage.clientHeight, Math.ceil(phone ? box.y0 + 4 : yP + 9 * P));
+      topPorts = phone || box.x0 < 3 * P;
+      Dm = topPorts ? 0 : Math.min(5.5 * P, box.x0 - 8);
+      // the field fades out down the card's side and is gone by its bottom edge, so "How joining works" right under the
+      // card never sits on the honeycomb (the ENDED card is shorter than the SALE one)
+      yF1 = Math.min(yP + 8.6 * P, box.y1);
+      yF0 = Math.min(yP + 3 * P, yF1 - 4 * P);
+      Hf = Math.min(stage.clientHeight, Math.ceil(topPorts ? box.y0 + 4 : Math.min(yP + 9 * P, box.y1 + 4)));
       const cx = (box.x0 + box.x1) / 2, cw = box.x1 - box.x0;
-      ports = phone ? [[cx - 0.3 * cw, box.y0, 0, 1], [cx, box.y0, 0, 1], [cx + 0.3 * cw, box.y0, 0, 1]]
+      ports = topPorts ? [[cx - 0.3 * cw, box.y0, 0, 1], [cx, box.y0, 0, 1], [cx + 0.3 * cw, box.y0, 0, 1]]
                     : [[box.x0, yP, 1, 0], [cx, box.y0, 0, 1], [box.x1, yP, -1, 0]];     // x, y, inward normal
     }
     const dBox = (x, y) => { const dx = Math.max(box.x0 - x, 0, x - box.x1), dy = Math.max(box.y0 - y, 0, y - box.y1); return Math.hypot(dx, dy); };
     const outside = (x, y, m) => x < box.x0 - m || x > box.x1 + m || y < box.y0 - m || y > box.y1 + m;
     // the field: strongest beside the card's top half, fading with distance from the card and down the page
-    const outA = (x, y) => phone
+    const outA = (x, y) => topPorts
       ? sm(4, 36, y) * (1 - sm(box.y0 - 12, box.y0 + 2, y)) * Math.min(sm(0, 40, x), 1 - sm(W - 40, W, x))
-      : (1 - sm(0.3 * Dm, Dm, dBox(x, y))) * (1 - sm(yP + 3 * P, yP + 8.6 * P, y)) * sm(4, 64, y);
+      : (1 - sm(0.3 * Dm, Dm, dBox(x, y))) * (1 - sm(yF0, yF1, y)) * sm(4, 64, y);
 
     /* ---------- lattice, sockets and routes ---------- */
     function setup() {
@@ -804,14 +812,14 @@
       for (let h = 0; h < qq.length; h++) for (const j of V[qq[h]].nb) if (dist[j] < 0 && walk[j]) { dist[j] = dist[qq[h]] + 1; qq.push(j); }
     }
 
-    /* ---------- the swarm: 36 agents on desktop, 12 on phones ---------- */
+    /* ---------- the swarm: 36 agents on desktop, 20 with the sockets on top, 12 on phones ---------- */
     const hopD = () => 170 + rnd() * 80;
     const pick = arr => arr[(rnd() * arr.length) | 0];
     function spawn() {
       for (const c of L.cells) { c.ping = -1e9; }
       rnd = SL.rng(29);
       Sx = SL.sim(L, 31, 600);
-      const N = phone ? 12 : 36;
+      const N = phone ? 12 : topPorts ? 20 : 36;
       const pool = [];
       V.forEach((v, i) => { if (walk[i] && dist[i] > 2) pool.push(i); });
       const used = new Set();
@@ -971,7 +979,7 @@
       new IntersectionObserver(es => { for (const e of es) { onScreen = e.isIntersecting; resume(); } }).observe(stage);
       document.addEventListener('visibilitychange', () => { last = null; resume(); });
     }
-    window.__lockDebug = () => ({ started, done, locked, lockT: Math.round(lockT), end: Math.round(END), clock: Math.round(clock), raf: !!raf, onScreen, n: Sx.agents.length, routed, absorbed, docks: docks.length, traces: traces.size, Dm, Hf });
+    window.__lockDebug = () => ({ started, done, locked, lockT: Math.round(lockT), end: Math.round(END), clock: Math.round(clock), raf: !!raf, onScreen, n: Sx.agents.length, routed, absorbed, docks: docks.length, traces: traces.size, Dm, Hf, topPorts, x0: Math.round(box.x0), P });
     window.__lockSeek = t => {
       started = true;
       seek(t);
@@ -1012,54 +1020,114 @@
     fontsReady.then(start);
   })();
 
-  /* ---------- pricing: plan switch and Whop checkout stub ---------- */
-  // Swap in the three Whop plan IDs (prefixed plan_) when Jesus has them. One line per plan.
+  /* ---------- pricing: the plan switch and the card ----------
+     The head script (index.html) owns the Black Friday state (window.SWARM.bf), the checkout links (CHECKOUT, the one
+     place to paste them) and SWARM.bfCard, which sets the card's button or status row; this fills the card for the
+     selected plan. The HTML carries the first tab's words for first paint (data-bf-* on the card), so keep them equal
+     to PLANS below; a mismatch is reported in the console. Words only, no colour: is-gold is Black Friday's $49.99. */
+  const BF = S.bf, NB = '\u00a0';
+  // name: the card's label (the second part steps out on phones and from 1024 to 1299px). Only the Black Friday plan
+  // carries the Black Friday label, so $990/yr never reads as a Black Friday price
   const PLANS = {
-    founding: { name: 'Founding monthly', price: '$49', unit: '/mo', note: 'Forever, while you stay subscribed. Cancel whenever. 50 seats only.', sub: 'Cancel and rejoin after prices go up, and you pay the price at that time.', chip: 'Founding seat', gold: true, whopPlanId: null },
-    standard: { name: 'Standard monthly', price: '$99', unit: '/mo', note: 'The price once the founding seats are gone.', sub: '', chip: 'Renews monthly', gold: false, whopPlanId: null },
-    yearly:   { name: 'Yearly', price: '$990', unit: '/yr', note: '2 months free.', sub: '', chip: 'Billed yearly', gold: false, whopPlanId: null }
+    blackfriday: { name: ['Black Friday', ' launch'], price: '$49.99', unit: '/mo', was: true, chip: { teaser: 'Opens Nov' + NB + '24', sale: 'Ends Dec' + NB + '1' }, note: 'Locked in while you stay subscribed.', sub: 'Cancel and rejoin later, and you pay the price at that time.' },
+    standard:    { name: ['Swarm', ' membership'], price: '$99', unit: '/mo', was: false, chip: 'Standard', note: 'Renews monthly until you cancel.', sub: '' },
+    yearly:      { name: ['Swarm', ' membership'], price: '$990', unit: '/yr', was: false, chip: '2 months free vs Standard', note: 'Paid once a year: twelve months of Standard for the price of ten.', sub: 'Renews yearly until you cancel.' }
   };
-  window.SWARM_PLANS = PLANS;
-  let currentPlan = 'founding', mounted = null, opened = false;
-
-  // Production: load Whop Elements (see RESEARCH-NOTES.md), destroy the previous mount, then
-  //   mounted = window.WhopElements().checkout.create({ plan: plan.whopPlanId, returnUrl, onComplete });
-  //   mounted.create('checkout').mount('#whop-checkout');
-  // Each mount mints a checkout session, so only mount on an explicit Join click or a plan change after it.
-  function mountCheckout(planKey) {
-    const plan = PLANS[planKey], slot = $('#whop-checkout');
-    if (!plan || !slot) return false;
-    slot.querySelector('[data-slot-plan]').textContent = plan.name;
-    if (!plan.whopPlanId) {
-      slot.dataset.state = 'placeholder';
-      $('#whop-status').textContent = 'Checkout for the ' + plan.name.toLowerCase() + ' plan opens here soon.';
-      return false;
+  // the deadline line: the Black Friday window is always stated as static text here. With another plan selected it
+  // names the monthly price, so the window never reads as Yearly's
+  const ET = (t) => t.replace(/ (AM|PM) ET/g, NB + '$1' + NB + 'ET').replace(/(Nov|Dec|November|December) (\d)/g, '$1' + NB + '$2');
+  const DEADLINE = {
+    teaser: ET('Runs Nov 24, 12:00 AM ET to Dec 1, 11:59 PM ET.'),
+    teaserOther: ET('The Black Friday monthly price runs Nov 24, 12:00 AM ET to Dec 1, 11:59 PM ET.'),
+    sale: ET('Ends December 1 at 11:59 PM ET.'),
+    saleOther: ET('The Black Friday monthly price ends December 1 at 11:59 PM ET.'),
+    ended: ET('The Black Friday price ended December 1.')
+  };
+  const card = $('#join');
+  const slotNow = () => { const c = $('.seg-switch input:checked'); return c ? c.value : 'month'; };
+  function showPlan(slot, check) {
+    if (!BF || !card || !S.bfPlan) return;
+    const key = S.bfPlan(slot), p = PLANS[key], st = BF.state;
+    const own = key === 'blackfriday';
+    const want = {
+      'pc-name-a': p.name[0], 'pc-name-b': p.name[1],
+      'pc-amt': p.price, 'pc-unit': p.unit, 'pc-chip': typeof p.chip === 'string' ? p.chip : p.chip[st] || p.chip.sale,
+      'pc-note': p.note, 'pc-sub': p.sub,
+      'pc-dl': st === 'ended' ? DEADLINE.ended : st === 'teaser' ? (own ? DEADLINE.teaser : DEADLINE.teaserOther) : own ? DEADLINE.sale : DEADLINE.saleOther
+    };
+    for (const id in want) {
+      const el = document.getElementById(id); if (!el) continue;
+      if (el.textContent !== want[id]) { if (check && window.console) console.warn('Swarm pricing: #' + id + ' in index.html says "' + el.textContent + '", PLANS says "' + want[id] + '"'); el.textContent = want[id]; }
     }
-    if (mounted && mounted.destroy) mounted.destroy();
-    slot.dataset.state = 'mounted';
-    return true;
+    const was = $('#pc-was'); if (was) was.hidden = !p.was || st === 'ended';
+    S.bfCard(key);
   }
-  function showPlan(key) {
-    const p = PLANS[key]; if (!p) return;
-    currentPlan = key;
-    $('#pc-name').textContent = p.name;
-    $('#pc-amt').textContent = p.price;
-    $('#pc-unit').textContent = p.unit;
-    $('#pc-note').textContent = p.note;
-    $('#pc-sub').textContent = p.sub;
-    $('#pc-chip').textContent = p.chip;
-    $('#pcard').classList.toggle('is-gold', p.gold);
-    const slot = $('#whop-checkout'); if (slot) slot.querySelector('[data-slot-plan]').textContent = p.name;
-    if (opened) mountCheckout(key);
-  }
-  $('#pc-chip') && ($('#pc-chip').textContent = PLANS.founding.chip);
   $$('.seg-switch input').forEach(inp => inp.addEventListener('change', () => { if (inp.checked) showPlan(inp.value); }));
-  const joinBtn = $('#join-btn');
-  if (joinBtn) joinBtn.addEventListener('click', () => {
-    opened = true;
-    mountCheckout(currentPlan);
-    const slot = $('#whop-checkout');
-    slot.scrollIntoView({ behavior: S.reduce ? 'auto' : 'smooth', block: 'center' });
-    slot.focus({ preventScroll: true });
-  });
+  showPlan(slotNow(), true);
+
+  /* ---------- the Black Friday clock: state flips, the bar's countdown, Hide ----------
+     The state flips in place at BF_START and BF_END: one timer aims at the next boundary, and the state is checked again
+     whenever the tab comes back (visibilitychange), the window gets focus, or the page is shown again (pageshow, which
+     includes a back/forward cache restore), because a timer can fire late after sleep and a restored page keeps its old
+     state. A flip sets data-bf, swaps the words (bfApply), refills the card and starts or stops the countdown.
+     The countdown is the bar's chip in SALE: whole minutes left, rounded down so it never overstates ("4d 23h 41m",
+     "6h 05m", "41m", "under 1m"), updated on the minute and never faster, stopped while the tab is hidden, and at
+     zero the page flips to ENDED. It is aria-hidden: the bar's static deadline is what screen readers read. Under ?t=
+     it shows the frozen moment and holds. ?bf= forces a state (no flips); ?bfnow= sets the clock. */
+  (function bfClock() {
+    if (!BF) return;
+    const cd = $('#bf-cd'), cdT = $('#bf-cd-t'), hideBtn = $('.bf-x');
+    const FROZEN = S.freeze != null;
+    let flipTimer = 0, tickTimer = 0;
+    const p2 = n => String(n).padStart(2, '0');
+    function left(ms) {
+      const m = Math.floor(ms / 60000);
+      if (m < 1) return 'under 1m';
+      const dd = Math.floor(m / 1440), h = Math.floor(m / 60) % 24, mm = m % 60;
+      return dd ? dd + 'd ' + p2(h) + 'h ' + p2(mm) + 'm' : h ? h + 'h ' + p2(mm) + 'm' : mm + 'm';
+    }
+    function countdown() {
+      clearTimeout(tickTimer); tickTimer = 0;
+      if (!cd || !cdT) return;
+      // no countdown to a price nobody can buy yet: the sale's checkout link is missing (BF.noLink, head script)
+      const on = BF.state === 'sale' && !BF.noLink && !root.classList.contains('bf-bar-off');
+      const rem = BF.end - Math.max(BF.now(), BF.start);
+      if (!on || rem <= 0) { cd.hidden = true; cdT.textContent = ''; if (on && !BF.forced && !FROZEN) check(); return; }
+      cdT.textContent = left(rem); cd.hidden = false;
+      if (FROZEN || document.hidden) return;
+      tickTimer = setTimeout(countdown, (rem % 60000 || 60000) + 40);
+    }
+    function apply(st) {
+      BF.state = st;
+      root.setAttribute('data-bf', st);
+      let off = false;
+      try { off = sessionStorage.getItem('swarm-bf-bar-' + st) === 'off'; } catch (e) { off = false; }
+      root.classList.toggle('bf-bar-off', off);
+      S.bfApply(document);
+      showPlan(slotNow());
+      document.dispatchEvent(new CustomEvent('swarm:bf-state', { detail: st }));
+    }
+    function schedule() {
+      clearTimeout(flipTimer); flipTimer = 0;
+      if (BF.forced || FROZEN) return;
+      const next = BF.state === 'teaser' ? BF.start : BF.state === 'sale' ? BF.end : 0;
+      if (next) flipTimer = setTimeout(check, Math.min(2147483000, Math.max(0, next - BF.now()) + 50));
+    }
+    function check() {
+      if (!BF.forced && !FROZEN) { const st = BF.stateAt(BF.now()); if (st !== BF.state) apply(st); }
+      schedule();
+      countdown();
+    }
+    if (hideBtn) hideBtn.addEventListener('click', () => {
+      root.classList.add('bf-bar-off');
+      try { sessionStorage.setItem('swarm-bf-bar-' + BF.state, 'off'); } catch (e) { /* the bar stays hidden for this view only */ }
+      countdown();
+      const logo = $('.nav-logo'); if (logo) logo.focus();
+    });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { clearTimeout(tickTimer); tickTimer = 0; } else check(); });
+    window.addEventListener('focus', check);
+    window.addEventListener('pageshow', check);
+    window.__bfDebug = () => ({ state: BF.state, forced: BF.forced, preview: BF.preview, now: new Date(BF.now()).toISOString(), countdown: cd && !cd.hidden ? cdT.textContent : null, flipTimer: !!flipTimer, tickTimer: !!tickTimer });
+    check();
+  })();
 })();

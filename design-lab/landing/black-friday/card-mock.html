@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swarm Black Friday card mock</title>
+<!-- Layout mock for BLACK-FRIDAY-PLAN.md: the top bar and the rebuilt pricing card in the three states (?bf=teaser|sale|ended).
+     Static, no motion, no checkout. Used only to measure heights at 1440x900, 1024x768 and 390x844. -->
+<link rel="stylesheet" href="../brand/swarm/swarm-tokens.css">
+<style>
+  @font-face { font-family: "Unbounded"; font-weight: 600; src: url("../../../public/swarm-site/fonts/unbounded-latin.woff2") format("woff2"); }
+  @font-face { font-family: "JetBrains Mono"; font-weight: 500; src: url("../../../public/swarm-site/fonts/jetbrains-mono-latin.woff2") format("woff2"); }
+  @font-face { font-family: "Hanken Grotesk"; font-weight: 400 600; src: url("../../../public/swarm-site/fonts/hanken-grotesk-latin.woff2") format("woff2"); }
+  :root { --gl: 56px; --gr: 56px; }
+  @media (max-width: 1023px) { :root { --gl: 32px; --gr: 32px; } }
+  @media (max-width: 640px) { :root { --gl: 16px; --gr: 16px; } }
+  html, body { margin: 0; background: #0B0B0D; }
+  html { scroll-padding-top: 76px; }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font: 400 18px/1.55 var(--swarm-font-body); color: var(--swarm-text); -webkit-font-smoothing: antialiased; }
+  p { margin: 0; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .wrap { max-width: calc(1328px + var(--gl) + var(--gr)); margin: 0 auto; padding: 0 var(--gr) 0 var(--gl); }
+  .hx::before { content: ""; width: 9px; height: 10px; flex: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20'%3E%3Cpath d='M9 1.2 16.4 5.5v9L9 18.8 1.6 14.5v-9Z' fill='none' stroke='%2355555B' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat; }
+
+  /* ---- the top bar ---- */
+  .bf-bar { position: relative; z-index: 60; background: var(--swarm-surface); border-bottom: 1px solid var(--swarm-line); }
+  .bf-in { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 16px; min-height: 40px; padding: 6px 56px; }
+  .bf-t { display: flex; align-items: center; white-space: nowrap; font: 500 12px/1.3 var(--swarm-font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--swarm-text); }
+  .bf-a { display: inline-flex; align-items: center; gap: 10px; }
+  .bf-sep { color: var(--swarm-text-muted); padding: 0 .7em; }
+  .bf-br { display: none; }
+  .bf-cd { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--swarm-text); font-variant-numeric: tabular-nums; border: 1px solid var(--swarm-line); border-radius: 10px; padding: 6px 8px; white-space: nowrap; }
+  .bf-go { font: 600 14px/1 var(--swarm-font-body); color: var(--swarm-text); text-underline-offset: 3px; text-decoration-color: var(--swarm-text-muted); white-space: nowrap; }
+  .bf-x { position: absolute; right: max(4px, calc(var(--gr) - 18px)); top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border: 0; border-radius: 10px; background: transparent; color: var(--swarm-text-muted); cursor: pointer; }
+  .bf-x::before, .bf-x::after { content: ""; position: absolute; left: 15px; right: 15px; top: 50%; height: 1.5px; background: currentColor; transform: rotate(45deg); }
+  .bf-x::after { transform: rotate(-45deg); }
+  .bf-x:hover { color: var(--swarm-text); }
+  @media (max-width: 1239px) { .bf-long { display: none; } .bf-t { letter-spacing: .12em; } }
+  @media (max-width: 640px) {
+    .bf-in { justify-content: flex-start; gap: 4px 10px; padding: 7px 48px 7px 16px; }
+    .bf-t { display: contents; font-size: 11px; letter-spacing: .1em; }
+    .bf-a, .bf-b, .bf-c, .bf-sep { font: 500 11px/1.35 var(--swarm-font-mono); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+    .bf-sep { padding: 0; }
+    .bf-sep2, .bf-go, .bf-wd { display: none; }
+    .bf-br { display: block; flex-basis: 100%; height: 0; }
+    .bf-c { color: var(--swarm-text-muted); }
+    .bf-cd { padding: 3px 6px; font-size: 11px; }
+  }
+  html[data-bf="ended"] .bf-bar { display: none; }
+  html[data-bf="teaser"] .bf-cd { display: none; }
+
+  /* ---- nav (as on the page) ---- */
+  .nav { position: sticky; top: 0; z-index: 50; height: 68px; margin-bottom: -68px; background: var(--swarm-ground); border-bottom: 1px solid var(--swarm-line); }
+  .nav-in { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .nav img { width: 136px; }
+  .btn-line { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border: 1px solid var(--swarm-line); border-radius: 18px; color: var(--swarm-text); text-decoration: none; font: 600 15px/1 var(--swarm-font-body); }
+  @media (max-width: 640px) { .nav { height: 60px; margin-bottom: -60px; } .nav img { width: 118px; } }
+  .spacer { height: 1400px; }
+
+  /* ---- pricing section ---- */
+  .pricing { padding: 40px 0 48px; text-align: center; }
+  .pill { display: inline-flex; align-items: center; gap: 10px; font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .24em; text-transform: uppercase; color: var(--swarm-text-muted); border: 1px solid var(--swarm-line); border-radius: 10px; padding: 8px 9px 8px 12px; }
+  .h2 { font: 600 clamp(28px, 3.05vw, 44px)/1.12 var(--swarm-font-display); letter-spacing: -.025em; max-width: 1100px; margin: 22px auto 0; text-wrap: balance; }
+  .h2 .m, .h2 .b { display: block; } .h2 .m { color: var(--swarm-text-muted); }
+  .lede { max-width: 62ch; margin: 22px auto 0; font-size: 18px; line-height: 1.6; color: var(--swarm-text); text-wrap: pretty; }
+  .band { height: 64px; }
+
+  .pcard { max-width: 480px; margin: 0 auto; padding: 22px 20px 20px; text-align: left; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 28px; scroll-margin-top: 8px; }
+  .pc-a, .pc-b { min-width: 0; }
+  .pc-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 500 12px/1.3 var(--swarm-font-mono); letter-spacing: .24em; text-transform: uppercase; }
+  .chip { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--swarm-text-muted); border: 1px solid var(--swarm-line); border-radius: 10px; padding: 6px 7px 6px 9px; white-space: nowrap; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 14px 0 0; padding: 4px; border: 1px solid var(--swarm-line); border-radius: 18px; background: var(--swarm-ground); }
+  .seg span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 56px; border: 1px solid transparent; border-radius: 10px; color: var(--swarm-text-muted); }
+  .seg .on { background: var(--swarm-surface-raised); border-color: var(--swarm-hive); color: var(--swarm-text); }
+  .seg b { font: 600 15px/1 var(--swarm-font-body); } .seg i { font: 500 12px/1 var(--swarm-font-mono); font-style: normal; letter-spacing: .04em; }
+  .price-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 18px; }
+  .price { display: flex; align-items: baseline; gap: 8px; }
+  .amt { font: 500 60px/1 var(--swarm-font-mono); letter-spacing: -.03em; font-variant-numeric: tabular-nums; color: var(--swarm-text); }
+  .gold .amt { color: var(--swarm-gold); }
+  .unit { font: 500 18px/1 var(--swarm-font-mono); color: var(--swarm-text-muted); }
+  .was { display: grid; justify-items: end; gap: 6px; padding-bottom: 4px; text-align: right; }
+  .was s { font: 500 20px/1 var(--swarm-font-mono); color: var(--swarm-text-muted); text-decoration-thickness: 1.5px; text-decoration-color: var(--swarm-text-muted); }
+  .was span { font: 500 11px/1 var(--swarm-font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--swarm-text-muted); }
+  .note { margin-top: 12px; font-size: 16px; line-height: 1.45; }
+  .dl { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 11px 14px; border: 1px solid var(--swarm-line); border-radius: 18px; background: var(--swarm-ground); font: 600 15px/1.35 var(--swarm-font-body); }
+  .dl::before { content: ""; width: 9px; height: 10px; flex: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20'%3E%3Cpath d='M9 1.2 16.4 5.5v9L9 18.8 1.6 14.5v-9Z' fill='%23EEEBE4'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .sub { margin-top: 10px; font-size: 14.5px; line-height: 1.5; color: var(--swarm-text-muted); }
+  .lab { font: 500 12px/1.3 var(--swarm-font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--swarm-text-muted); }
+  .ladder { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--swarm-line); }
+  .ladder li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--swarm-line); font-size: 14.5px; line-height: 1.35; color: var(--swarm-text-muted); }
+  .ladder .k { font: 500 11.5px/1.45 var(--swarm-font-mono); letter-spacing: .14em; text-transform: uppercase; }
+  .ladder .on { color: var(--swarm-text); }
+  .ladder .past { text-decoration: none; }
+  .pc-b { margin-top: 18px; }
+  .checks { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .checks li { display: flex; gap: 9px; font-size: 14.5px; line-height: 1.35; }
+  .checks li::before { content: ""; width: 9px; height: 10px; flex: none; margin-top: 4px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20'%3E%3Cpath d='M9 1.2 16.4 5.5v9L9 18.8 1.6 14.5v-9Z' fill='none' stroke='%238E8A80' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .checks .long { display: none; }
+  .btn-gold { display: flex; align-items: center; justify-content: center; width: 100%; height: 54px; margin-top: 18px; border-radius: 18px; background: var(--swarm-gold); color: var(--swarm-on-gold); font: 600 17px/1 var(--swarm-font-body); text-decoration: none; outline: 1px solid rgba(245,197,66,.55); outline-offset: 5px; }
+  .opens { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 54px; margin-top: 18px; padding: 10px 16px; border: 1px dashed var(--swarm-hive); border-radius: 18px; font: 600 15px/1.35 var(--swarm-font-body); color: var(--swarm-text); }
+  .cancel { margin-top: 10px; text-align: center; font-size: 14px; line-height: 1.4; color: var(--swarm-text-muted); }
+  .how { max-width: 480px; margin: 18px auto 0; text-align: left; }
+  .steps { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 10px 0 0; padding: 0; }
+  .steps li { display: grid; gap: 4px; font-size: 14px; line-height: 1.4; }
+  .steps .n { font: 500 12px/1 var(--swarm-font-mono); letter-spacing: .16em; color: var(--swarm-text-muted); }
+  .how-note { margin-top: 10px; font-size: 14px; line-height: 1.5; color: var(--swarm-text-muted); }
+
+  @media (max-width: 1023px) {
+    .dl { padding: 0; border: 0; background: none; margin-top: 8px; }
+    .was span { white-space: nowrap; letter-spacing: .1em; }
+  }
+  @media (max-width: 640px) {
+    .amt { font-size: 50px; }
+    .unit { font-size: 16px; }
+    .was s { font-size: 16px; }
+    .ladder li { padding: 7px 0; grid-template-columns: 112px minmax(0, 1fr); }
+    .opens { font-size: 14px; min-height: 52px; }
+    .pc-long { display: none; }
+    .ladder li { grid-template-columns: 124px minmax(0, 1fr); }
+    .btn-gold { height: 52px; }
+  }
+  @media (min-width: 1024px) {
+    .pc-a { display: flex; flex-direction: column; }
+    .pc-a .dl { margin-top: auto; min-height: 54px; }
+    .pc-a .note { margin-bottom: 18px; }
+    .pcard { max-width: 960px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 36px; padding: 28px; scroll-margin-top: 16px; }
+    .pc-b { margin-top: 0; padding-left: 36px; border-left: 1px solid var(--swarm-line); }
+    .amt { font-size: 76px; }
+    .checks { grid-template-columns: 1fr; gap: 9px; }
+    .checks .short { display: none; } .checks .long { display: inline; }
+    .checks li { font-size: 15.5px; }
+    .how { max-width: 960px; display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.2fr); gap: 28px; align-items: start; }
+    .how .steps { margin: 0; }
+    .how-note { margin: 0; }
+  }
+</style>
+<script>
+  (function () {
+    var q = new URLSearchParams(location.search), o = q.get('bf');
+    document.documentElement.dataset.bf = /^(teaser|sale|ended)$/.test(o) ? o : 'sale';
+  })();
+</script>
+</head>
+<body class="swarm">
+<div class="bf-bar" role="region" aria-label="Black Friday launch">
+  <div class="bf-in">
+    <p class="bf-t"><span class="bf-a hx">Black Friday<span class="bf-long"> launch</span></span><span class="bf-sep">·</span><span class="bf-b">$49.99/mo locked in</span><span class="bf-sep bf-sep2">·</span><span class="bf-br"></span><span class="bf-c" id="bf-c">Ends Dec 1, 11:59 PM ET</span></p>
+    <span class="bf-cd" aria-hidden="true">4d 23h 41m left</span>
+    <a class="bf-go" href="#join">See the price</a>
+    <button class="bf-x" type="button" aria-label="Hide the Black Friday bar"></button>
+  </div>
+</div>
+<header class="nav"><div class="wrap nav-in"><img src="../brand/swarm/logo/swarm-wordmark-for-dark-bg.svg" alt="Swarm"><a class="btn-line" href="#join">Join Swarm</a></div></header>
+<div class="spacer"></div>
+
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <p class="pill hx">Black Friday launch · Nov 24 to Dec 1</p>
+    <h2 class="h2"><span class="m">Join by December 1, keep $49.99 a month.</span> <span class="b">Early on purpose.</span></h2>
+    <p class="lede">Join by December 1 at 11:59 PM ET and you keep $49.99 a month for as long as you stay subscribed. After that it's $99 a month, and prices rise as the tools are completed.</p>
+    <div class="band"></div>
+    <div class="pcard gold" id="join">
+      <div class="pc-a">
+        <div class="pc-top"><span>Black Friday<span class="pc-long"> launch</span></span><span class="chip" id="chip">Ends Dec 1</span></div>
+        <div class="seg"><span class="on"><b>Black Friday</b><i>$49.99/mo</i></span><span><b>Yearly</b><i>$990/yr</i></span></div>
+        <div class="price-row">
+          <p class="price"><span class="amt">$49.99</span><span class="unit">/mo</span></p>
+          <p class="was"><s><span class="sr-only">Standard price after December 1: </span>$99/mo</s><span>After Dec 1</span></p>
+        </div>
+        <p class="note">Locked in while you stay subscribed.</p>
+        <p class="dl" id="dl">Ends December 1 at 11:59 PM ET.</p>
+        <p class="sub">Cancel and rejoin later, and you pay the price at that time.</p>
+      </div>
+      <div class="pc-b">
+        <p class="lab">How the price moves</p>
+        <ol class="ladder" id="ladder">
+          <li class="on"><span class="k">Now through Dec 1</span><span>$49.99/mo, locked in</span></li>
+          <li><span class="k">After Dec 1</span><span>$99/mo or $990/yr</span></li>
+          <li><span class="k">Then</span><span>Prices rise as the tools are completed</span></li>
+        </ol>
+        <p class="lab" style="margin-top:16px">Everything inside Swarm</p>
+        <ul class="checks">
+          <li><span class="short">Custom AI tools</span><span class="long">Custom AI tools I build and maintain</span></li>
+          <li><span class="short">My watch list</span><span class="long">My watch list</span></li>
+          <li><span class="short">Weekly live calls</span><span class="long">Weekly live calls with live portfolio reviews</span></li>
+          <li><span class="short">Multi-cycle traders</span><span class="long">Multi-cycle traders sharing how they see the market</span></li>
+        </ul>
+        <a class="btn-gold" id="cta" href="#">Join Swarm</a>
+        <p class="cancel" id="cancel">Card or ACH through Whop. Cancel anytime.</p>
+      </div>
+    </div>
+    <div class="how">
+      <p class="lab">How joining works</p>
+      <ol class="steps"><li><span class="n">01</span>Pick your plan</li><li><span class="n">02</span>Check out through Whop, by card or ACH</li><li><span class="n">03</span>Get access to the Swarm Discord</li></ol>
+      <p class="how-note">Discord access comes right after checkout. The AI tools arrive one by one as I finish them, and you get each one as it's completed.</p>
+    </div>
+  </div>
+</section>
+<div class="spacer"></div>
+<script>
+  // swap the mock to the requested state (the plan's text, verbatim)
+  const st = document.documentElement.dataset.bf, $ = s => document.querySelector(s);
+  if (st === 'teaser') {
+    $('#bf-c').textContent = 'Checkout opens Nov 24, 12:00 AM ET';
+    $('#chip').textContent = 'Opens Nov 24';
+    $('#dl').textContent = 'Runs Nov 24, 12:00 AM ET to Dec 1, 11:59 PM ET.';
+    $('#ladder').children[0].innerHTML = '<span class="k">Nov 24 to Dec 1</span><span>$49.99/mo, locked in</span>';
+    $('#ladder').children[0].classList.remove('on');
+    const o = document.createElement('p'); o.className = 'opens'; o.textContent = 'Checkout opens Nov 24, 12:00 AM ET'; $('#cta').replaceWith(o);
+    $('#cancel').textContent = 'Card or ACH through Whop. Cancel anytime.';
+  }
+  if (st === 'ended') {
+    $('.pcard').classList.remove('gold');
+    $('.pc-top > span').textContent = 'Swarm membership'; $('#chip').textContent = 'Renews monthly';
+    $('.seg').innerHTML = '<span class="on"><b>Standard</b><i>$99/mo</i></span><span><b>Yearly</b><i>$990/yr</i></span>';
+    $('.amt').textContent = '$99'; $('.was').remove();
+    $('.note').textContent = 'Cancel anytime.';
+    $('#dl').remove();
+    $('.sub').textContent = 'The Black Friday price ended December 1.';
+    $('#ladder').innerHTML = '<li class="on"><span class="k">Now</span><span>$99/mo or $990/yr</span></li><li><span class="k">Then</span><span>Prices rise as the tools are completed</span></li>';
+    $('.pill').textContent = 'Join the swarm';
+    $('.h2 .m').textContent = 'The AI tools are still being built.';
+    $('.lede').textContent = "Swarm is $99 a month, or $990 a year. Prices rise as the tools are completed.";
+  }
+</script>
+</body>
+</html>
