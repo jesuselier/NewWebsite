@@ -620,6 +620,8 @@ html:not([data-bf="ended"]) .hero .cancel { color: var(--swarm-text); }
 @keyframes spk { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
 .spk i { transform-origin: 50% 100%; }
 .tile { position: relative; display: grid; place-items: center; min-height: 0; overflow: hidden; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 18px; }
+/* the seat tiles keep their avatar at the top (the .t-seat rule above loses to .tile on order), clear of the label */
+.tile.t-seat { place-items: start center; }
 
 .t-host { border-color: var(--swarm-hive); }
 .t-host img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; filter: saturate(.45) brightness(.92); }

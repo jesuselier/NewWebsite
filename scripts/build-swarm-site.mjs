@@ -261,7 +261,9 @@ function blackFridayChecks() {
       if (url || (key === "blackfriday" && ended)) continue;
       launchBlockers.push(`CHECKOUT.${key} in a-core-glow/index.html has no Whop checkout link (${needBy[key]})`);
     }
-    launchNote = started
+    launchNote = ended
+      ? "the sale has ended; Standard and Yearly show \"Coming soon\" instead of a Join button until their links are in, so nothing can be bought yet."
+      : started
       ? "the sale is on; a plan without its link shows \"Coming soon\" instead of a Join button, so it cannot sell yet."
       : `the page flips to the sale by itself at ${ET_TEXT.start}; a plan without its link shows "Coming soon" instead of a Join button.`;
   }
