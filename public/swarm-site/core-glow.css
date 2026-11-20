@@ -30,6 +30,14 @@ h1, h2, h3 { margin: 0; font-weight: 600; }
 .skip:focus { top: 12px; }
 /* the hidden attribute always wins over a component's own display (the card's button and status row use it) */
 .swarm [hidden] { display: none !important; }
+/* the early bird states (November 20, 2026). The head script sets html[data-eb] once, before first paint, from one clock:
+   "waitlist" before Mon Nov 23, 12:00 AM ET, "open" through Tue Dec 1, 11:59 PM ET, "ended" after. Every line that
+   changes is a set of sibling spans, each marked with the states it belongs to (data-eb-show="waitlist", "open ended"...),
+   and only the current state's span is displayed, so screen readers, hero.js's glyph boxes and the ring read the visible
+   words only. With no data-eb (no JavaScript) the page reads "open", the state for most of the offer. */
+html:not([data-eb="waitlist"]):not([data-eb="ended"]) [data-eb-show]:not([data-eb-show~="open"]),
+html[data-eb="waitlist"] [data-eb-show]:not([data-eb-show~="waitlist"]),
+html[data-eb="ended"] [data-eb-show]:not([data-eb-show~="ended"]) { display: none !important; }
 
 html.reduce *, html.reduce *::before, html.reduce *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) {
@@ -682,16 +690,19 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
 .honest-2 blockquote { margin-top: 0; }
 .honest-2 blockquote p { font-size: clamp(18px, 1.6vw, 22px); line-height: 1.45; color: var(--swarm-text); }
 
-/* ---------- 8. get Swarm updates (November 20) ----------
-   Swarm isn't open and its pricing is not decided, so the pricing card is now one short card that links out to Jesus's
-   Keychain sign-up page. The section is still #pricing and the card #join, so old links land on the card (scroll-padding
-   76px plus the card's scroll margin). The card sits on the quiet honeycomb (.field-bg, static): the line, the gold
-   button and "Opens keychain.club." on the left; what's inside on the right from 1024px, under a rule on phones. The
-   button is the view's one gold. The right column hugs its four short items and the card is 760px, so the card's
-   right inset matches its left (at 880px with a 1fr column it left a 172px empty strip on the right). */
+/* ---------- 8. the early bird (November 20, 2026) ----------
+   One short card for the Whop early bird. The section is still #pricing and the card #join, so old links land on the card
+   (scroll-padding 76px plus the card's scroll margin). The card sits on the quiet honeycomb (.field-bg, static): the
+   price, the line, the gold button and "Opens whop.com." on the left; what's inside on the right from 1024px, under a
+   rule on phones. $49.99 is the view's one gold number (JetBrains Mono, the kit's face for prices) and the button its one
+   gold button; ENDED drops the price line. The right column hugs its five short items and the card is 760px, so the
+   card's right inset matches its left. */
 .pricing { padding-top: 40px; }
 .ucard { position: relative; max-width: 480px; margin: 56px auto 0; padding: 26px 22px 22px; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 28px; text-align: left; scroll-margin-top: 16px; }
 .uc-a { display: flex; flex-direction: column; min-width: 0; }
+.uc-price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
+.uc-amt { font: 500 56px/1 var(--swarm-font-mono); letter-spacing: -.03em; font-variant-numeric: tabular-nums; color: var(--swarm-gold); }
+.uc-unit { font: 500 18px/1 var(--swarm-font-mono); color: var(--swarm-text-muted); }
 .uc-lede { font-size: 18px; line-height: 1.55; color: var(--swarm-text); text-wrap: pretty; }
 .ucard .btn-gold { width: 100%; min-width: 0; margin-top: 24px; }
 .ucard .cancel { margin-top: 12px; text-align: center; }
@@ -916,6 +927,8 @@ html.reduce #final-mark, html.frozen #final-mark { opacity: 1; }
   .pricing { padding-top: 24px; }
   .ucard { margin-top: 40px; padding: 22px 18px 18px; scroll-margin-top: 8px; }
   .uc-lede { font-size: 16.5px; }
+  .uc-amt { font-size: 48px; }
+  .uc-unit { font-size: 16px; }
   .ucard .btn-gold { margin-top: 20px; }
   .checks { gap: 7px 12px; }
   .checks li { font-size: 14.5px; gap: 8px; }
@@ -935,6 +948,8 @@ html.reduce #final-mark, html.frozen #final-mark { opacity: 1; }
 
 /* the narrowest phones: what's inside goes to one column, so "Multi-cycle traders" never wraps */
 @media (max-width: 389px) { .checks { grid-template-columns: 1fr; } }
+/* under 360px the card's button is 250px wide (320 screens): less side padding keeps "Join the early bird waitlist" on one line */
+@media (max-width: 359px) { .btn-gold { padding: 0 20px; } }
 
 /* short phones: keep the first gold button in the first screen */
 @media (max-width: 640px) and (max-height: 720px) {

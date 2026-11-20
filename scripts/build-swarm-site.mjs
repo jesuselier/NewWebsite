@@ -275,13 +275,14 @@ for (const entry of readdirSync(out, { recursive: true })) {
     if (!existsSync(`${root}public${decodeURIComponent(ref)}`)) problems.push(`${entry}: share image ${ref} is missing`);
   }
 }
-// No pricing yet (Jesus, November 20, 2026: "Pricing is to be decided"): Swarm isn't open and the page sends people to
-// the Swarm updates sign-up on Keychain. No built page may show a dollar price, the dropped Black Friday sale, a
-// "locked in" price or a "Coming soon" checkout, and every gold button and the nav button on the home page link to
-// the Keychain page in a new tab.
-const UPDATES_URL = "https://keychain.club/jesusmartinez/GETSWARMUPDATES";
+// The Whop early bird (Jesus, November 20, 2026): "https://whop.com/swarmai/earlybirdvip/ is the link for the sale product
+// page. it has a wait list and will start on monday". One plan, $49.99 every 30 days, from Mon Nov 23, 12:00 AM ET through
+// Tue Dec 1, 11:59 PM ET. Nothing is known about what comes after Dec 1, so $49.99 is the only price any built page,
+// script or stylesheet may show: any other "$" and digit fails (the old $99/$990 ladder and the $49 founding offer were
+// never true for this sale), and so do the dropped Black Friday sale, a "locked in" price and a "Coming soon" checkout.
+const EARLY_BIRD_URL = "https://whop.com/swarmai/earlybirdvip/";
+const EARLY_BIRD_PRICE = "$49.99";
 const NO_PRICE = [
-  ["a dollar price", /\$\s?\d/],
   ['"Black Friday"', /black\s+friday/i],
   ['"locked in"', /locked\s+in/i],
   ['"Coming soon"', /coming\s+soon/i],
@@ -290,25 +291,59 @@ const NO_PRICE = [
 // mention the dropped sale, so they are stripped first.
 const stripComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 const noPriceFiles = [...Object.keys(PAGES), NOT_FOUND, ...readdirSync(out).filter((f) => /\.(js|css)$/.test(f))];
+const near = (text, index) => text.slice(Math.max(0, index - 40), index + 40).replace(/\s+/g, " ");
 for (const name of noPriceFiles) {
   const raw = readFileSync(`${out}${name}`, "utf8");
   const text = name.endsWith(".html") ? raw : stripComments(raw);
+  for (const hit of text.matchAll(/\$\s?\d/g)) {
+    if (!text.startsWith(EARLY_BIRD_PRICE, hit.index) || /\d/.test(text[hit.index + EARLY_BIRD_PRICE.length] || "")) {
+      problems.push(`${name}: shows a dollar price other than ${EARLY_BIRD_PRICE} ("${near(text, hit.index)}"); the early bird is the only price known`);
+    }
+  }
   for (const [label, re] of NO_PRICE) {
     const hit = text.match(re);
-    if (hit) problems.push(`${name}: shows ${label} ("${text.slice(Math.max(0, hit.index - 40), hit.index + 40).replace(/\s+/g, " ")}"); Swarm has no pricing yet`);
+    if (hit) problems.push(`${name}: shows ${label} ("${near(text, hit.index)}")`);
   }
 }
+// Every gold button and the nav button go to the early bird on Whop, in the same tab: it is the checkout, and the Whop
+// Pixel tags whop.com links on click to credit the sale. The Keychain updates sign-up it replaced is gone from the page.
 {
   const home = readFileSync(`${out}index.html`, "utf8");
-  if (!home.includes(`href="${UPDATES_URL}"`)) problems.push(`index.html: no link to the Swarm updates page ${UPDATES_URL}`);
+  if (!home.includes(`href="${EARLY_BIRD_URL}"`)) problems.push(`index.html: no link to the early bird on Whop ${EARLY_BIRD_URL}`);
   const buttons = [...home.matchAll(/<a\b[^>]*\bclass="[^"]*\bbtn-(?:gold|line)\b[^"]*"[^>]*>/g)].map((m) => m[0]);
   if (!buttons.length) problems.push("index.html: no gold or nav button found");
   for (const tag of buttons) {
-    if (!tag.includes(`href="${UPDATES_URL}"`) || !tag.includes('target="_blank"') || !tag.includes('rel="noopener"')) {
-      problems.push(`index.html: a gold or nav button does not open ${UPDATES_URL} in a new tab: ${tag.slice(0, 120)}`);
+    if (!tag.includes(` href="${EARLY_BIRD_URL}"`) || /\btarget=/.test(tag)) {
+      problems.push(`index.html: a gold or nav button does not open ${EARLY_BIRD_URL} in the same tab: ${tag.slice(0, 120)}`);
     }
   }
+  if (/keychain\.club/i.test(home)) problems.push("index.html: still mentions keychain.club (the buttons go to Whop now)");
   if (existsSync(`${out}img/swarm-og-black-friday-1200x630.png`)) problems.push("img/swarm-og-black-friday-1200x630.png is still published");
+}
+// The early bird clock: index.html's first script sets html[data-eb] before any stylesheet, from exactly two instants,
+// OPEN (Mon Nov 23, 12:00 AM ET) and END (Wed Dec 2, 12:00 AM ET, so all of Tue Dec 1 is still open). A typo in either
+// would flip every label on the wrong day, so they are checked here as instants, not as text.
+const EARLY_BIRD = { OPEN: "2026-11-23T05:00:00.000Z", END: "2026-12-02T05:00:00.000Z" };
+{
+  const home = readFileSync(`${out}index.html`, "utf8");
+  const head = home.slice(0, home.indexOf("</head>"));
+  const first = head.match(/<script\b[^>]*>([\s\S]*?)<\/script>/);
+  const sheet = head.indexOf('<link rel="stylesheet"');
+  if (!first || !/dataset\.eb\s*=/.test(first[1])) problems.push("index.html: the first script in <head> must be the early bird clock (it sets html[data-eb])");
+  else {
+    if (sheet !== -1 && first.index > sheet) problems.push("index.html: the early bird clock must run before the first stylesheet");
+    const calls = [...first[1].matchAll(/\b(\w+)\s*=\s*Date\.UTC\(([^)]*)\)/g)];
+    const found = Object.fromEntries(calls.map(([, k, a]) => [k, new Date(Date.UTC(...a.split(",").map(Number))).toISOString()]));
+    if (calls.length !== 2 || /Date\.(?:parse|now\(\)\s*[+-])|new Date\(/.test(first[1])) {
+      problems.push("index.html: the early bird clock must hold exactly two Date.UTC instants, OPEN and END, and nothing else that sets a time");
+    }
+    for (const [k, iso] of Object.entries(EARLY_BIRD)) {
+      if (found[k] !== iso) problems.push(`index.html: the early bird clock's ${k} is ${found[k] || "missing"}, expected ${iso}`);
+    }
+  }
+  for (const [, v] of home.matchAll(/\bdata-eb-show="([^"]*)"/g)) {
+    if (!v.split(/\s+/).every((s) => ["waitlist", "open", "ended"].includes(s))) problems.push(`index.html: unknown early bird state in data-eb-show="${v}"`);
+  }
 }
 for (const name of Object.keys(PAGES)) {
   for (const [chip] of readFileSync(`${src}${name}`, "utf8").matchAll(/\[(?:CONFIRM|DATA NEEDED)[^\]]*\]/gi)) {
@@ -368,4 +403,10 @@ writeSitemapDates();
 console.log(`Built ${out}`);
 if (blockers.length) {
   console.log(`\nOpen items, hidden on the live site until resolved (${blockers.length}):\n  ${blockers.join("\n  ")}`);
+}
+// After the early bird the page reads ENDED by itself ("Join Swarm", no price), but it still needs its after-sale update
+// (what Swarm offers after Dec 1, the legal pages' plan section, these guards). Loud, never a failure: a fix must still ship.
+if (Date.now() >= Date.parse(EARLY_BIRD.END)) {
+  const bar = "!".repeat(96);
+  console.warn(`\n${bar}\n  THE EARLY BIRD HAS ENDED (${EARLY_BIRD.END}). The page shows its ENDED state and needs its after-sale update:\n  what Swarm offers after Dec 1, the Terms plan section and these build guards (see a-core-glow/NOTES.md, "Early bird on Whop").\n${bar}\n`);
 }

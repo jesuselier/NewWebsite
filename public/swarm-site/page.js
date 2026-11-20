@@ -1,8 +1,9 @@
 /* Swarm A, Core Glow: page controller.
    Nav state, the revolving light on the gold buttons, the four product mocks (each plays once and settles inside 5s),
    the Custom AI tools scout field (a 2D model rendered by tools3d.js in Three.js, or drawn flat as a still), the why-now
-   band and the final field. The Black Friday clock, the pricing card and its lock moment were removed on November 20
-   (no pricing yet: the gold buttons link to the Swarm updates sign-up on Keychain).
+   band and the final field. The Black Friday clock, the pricing card and its lock moment were removed on November 20.
+   The early bird states (waitlist, open, ended) are set by the head script in index.html and drawn by CSS only; nothing
+   here reads the clock or writes the buttons' words.
    Every motion piece plays once when it comes into view and settles within 5 seconds; nothing loops, so there is no
    pause control. Everything pauses offscreen and while the tab is hidden.
    Every agent here uses the same language as the hero: hexagonal nodes hopping along the honeycomb's edges. */
