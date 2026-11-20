@@ -95,6 +95,12 @@ const ANALYTICS = `<!-- This standalone page bypasses the Next.js layout and nee
 <script defer src="/swarm-analytics.js"></script>
 <script defer src="${BASE}/swarm-site.js"></script>`;
 
+// The Whop Pixel (Jesus, November 20, 2026), pasted exactly as Whop's dashboard gives it for account biz_qENtbnvHPGkjkS.
+// Whop's guide (docs.whop.com/developer/ads/pixel) puts it inside the <head> of every page, so every built page gets
+// it, the 404 page included. It goes on the production build only: the lab copy is a design preview and must not
+// send page views to Whop. Don't reformat it; the check at the end of this script compares it character for character.
+const WHOP_PIXEL = "<script>!function(w,d,s,u,n,a,b){if(w[n])return;a=w[n]={q:[],t:+new Date,s:[],o:u,track:function(){a.q.push([+new Date].concat([].slice.call(arguments)))},setScope:function(){a.s=[].slice.call(arguments).filter(function(x){return typeof x===\"string\"});a.q.push([+new Date,\"setScope\"].concat(a.s))},scope:function(){var c=[].slice.call(arguments);return{track:function(){a.q.push([+new Date].concat([].slice.call(arguments)).concat([{__scope:c}]))}}}};b=d.createElement(s);b.async=1;b.src=u+\"/s.js\";d.getElementsByTagName(s)[0].parentNode.insertBefore(b,d.getElementsByTagName(s)[0])}(window,document,\"script\",\"https://t.whop.tw\",\"whop\");whop.setScope(\"biz_qENtbnvHPGkjkS\");whop.track(\"page\");</script>";
+
 function transformPage(name, html) {
   const path = PAGES[name];
   html = html.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n/, "");
@@ -135,6 +141,7 @@ function transformPage(name, html) {
   }
   html = html.replace(/ ?<span class="(?:cf|dn)">\[(?:CONFIRM|DATA NEEDED)[^\]]*\]<\/span>/gi, "");
   html = html.replace(/\s*<span class="lg-draft">[^<]*<\/span>/g, "");
+  html = replaceOnce(html, "</head>", `${WHOP_PIXEL}\n</head>`, `${name} head (Whop Pixel)`);
   return replaceOnce(html, "</body>", `${ANALYTICS}\n</body>`, `${name} body`);
 }
 
@@ -348,6 +355,13 @@ for (const name of [...Object.keys(PAGES), NOT_FOUND]) {
   if (!notFound.includes('<meta name="robots" content="noindex">') || notFound.includes('rel="canonical"')) {
     problems.push(`${NOT_FOUND}: must be noindex with no canonical`);
   }
+}
+// Every built page carries the Whop Pixel exactly once, unaltered, inside its <head>.
+for (const name of [...Object.keys(PAGES), NOT_FOUND]) {
+  const html = readFileSync(`${out}${name}`, "utf8");
+  const count = html.split(WHOP_PIXEL).length - 1;
+  if (count !== 1) problems.push(`${name}: has the Whop Pixel ${count} times; it needs it exactly once`);
+  else if (html.indexOf(WHOP_PIXEL) > html.indexOf("</head>")) problems.push(`${name}: the Whop Pixel is outside <head>`);
 }
 if (problems.length) fail(`\n  ${problems.join("\n  ")}`);
 writeSitemapDates();

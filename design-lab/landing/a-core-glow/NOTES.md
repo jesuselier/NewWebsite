@@ -601,3 +601,14 @@ Three reviewers (behaviour, visual, honesty) sent eight findings. All eight were
 ### Approved and shipped (November 20, 2026)
 
 Jesus approved the no-pricing page and all ten condense cuts ("all good ship it") after reviewing the preview of the live site next to this build. The branch went to main through a pull request; Vercel deploys main to www.joinswarm.ai. The open items carried forward are the old "$49/mo, 50 founding seats" offer (what anyone promised it elsewhere gets when prices are set) and the `[CONFIRM]` points in terms, privacy and refunds, which the build lists and strips from the public pages.
+
+## Whop Pixel (November 20, 2026)
+
+Jesus asked for the Whop Pixel on the site, with the exact snippet from his Whop dashboard (account `biz_qENtbnvHPGkjkS`). Whop's guide (docs.whop.com/developer/ads/pixel) puts it inside the `<head>` of every page.
+
+- **Where:** `scripts/build-swarm-site.mjs` holds the snippet, unaltered, as `WHOP_PIXEL` and puts it just before `</head>` on all five built pages (home, terms, privacy, refunds and the 404 page). It is not in the lab copy, so design previews never send page views to Whop. A build check fails unless every built page has the snippet exactly once, character for character, inside `<head>`.
+- **No extra events:** the Swarm updates sign-up happens on Keychain, off the site, so there is no lead form to tag, and Whop records its own checkout by itself (the guide says not to track it). The snippet's `whop.track("page")` is the only event.
+- **What it does** (read from `https://t.whop.tw/s.js`): it sends a `page` event to `t.whop.tw/conversions`, loads Whop's `fingerprint.js` and `sc.js`, and sets the `_wuid` and `_wuid_link` cookies (random visitor IDs, kept up to two years) plus a few `localStorage` keys. On a click it adds a `_swuid` parameter only to links that go to whop.com, which is how a visit gets tied to a purchase later. The Keychain links are untouched.
+- **Privacy page:** it said the site counts visits "without cookies" and has no "ad tracking pixels". Both are now corrected. The short version, section 02 (a new "The Whop Pixel" part), 06, 07, 08 and 09 describe the pixel, its cookies and how to block them.
+- **Checked** on `next start` served as www.joinswarm.ai: the snippet is in the `<head>` of all five pages; `s.js` loads; `window.whop` is scoped to `biz_qENtbnvHPGkjkS`; one `page` event fires per page; there are no page errors. The test held the events back, so none reached Jesus's dashboard. Lint, tests (23/23) and `next build` pass.
+- **Open:** the pixel runs for every visitor without a consent prompt. In the EU and UK, cookie rules generally ask for consent before ad-tracking cookies, so Jesus should decide whether he wants a cookie banner.
