@@ -276,12 +276,16 @@ for (const entry of readdirSync(out, { recursive: true })) {
   }
 }
 // The Whop early bird (Jesus, November 20, 2026): "https://whop.com/swarmai/earlybirdvip/ is the link for the sale product
-// page. it has a wait list and will start on monday". One plan, $49.99 every 30 days, from Mon Nov 23, 12:00 AM ET through
-// Tue Dec 1, 11:59 PM ET. Nothing is known about what comes after Dec 1, so $49.99 is the only price any built page,
-// script or stylesheet may show: any other "$" and digit fails (the old $99/$990 ladder and the $49 founding offer were
-// never true for this sale), and so do the dropped Black Friday sale, a "locked in" price and a "Coming soon" checkout.
+// page. it has a wait list and will start on monday". The early bird is $49.99 every 30 days, from Mon Nov 23, 12:00 AM ET
+// through Tue Dec 1, 11:59 PM ET. After that, in his words: "price goes to 99.99 after". He chose: early birds keep $49.99
+// as long as they stay subscribed, the page shows $99.99 now ("After that, new members pay $99.99/mo") and by itself from
+// Dec 2, and the link stays the same (on Dec 2 he adds a $99.99 plan to earlybirdvip on Whop and hides the $49.99 one).
+// So $49.99 and $99.99 are the only prices any built page, script or stylesheet may show: any other "$" amount fails
+// (a near miss such as $99.98, Whop's struck-through display price, $99.9, $9.99, $199.99 or $49.990 included; the old
+// $99/$990 ladder and the $49 founding offer were never true), and so do the dropped Black Friday sale, a "locked in"
+// price and a "Coming soon" checkout.
 const EARLY_BIRD_URL = "https://whop.com/swarmai/earlybirdvip/";
-const EARLY_BIRD_PRICE = "$49.99";
+const PRICES = ["$49.99", "$99.99"];
 const NO_PRICE = [
   ['"Black Friday"', /black\s+friday/i],
   ['"locked in"', /locked\s+in/i],
@@ -295,9 +299,10 @@ const near = (text, index) => text.slice(Math.max(0, index - 40), index + 40).re
 for (const name of noPriceFiles) {
   const raw = readFileSync(`${out}${name}`, "utf8");
   const text = name.endsWith(".html") ? raw : stripComments(raw);
-  for (const hit of text.matchAll(/\$\s?\d/g)) {
-    if (!text.startsWith(EARLY_BIRD_PRICE, hit.index) || /\d/.test(text[hit.index + EARLY_BIRD_PRICE.length] || "")) {
-      problems.push(`${name}: shows a dollar price other than ${EARLY_BIRD_PRICE} ("${near(text, hit.index)}"); the early bird is the only price known`);
+  // The whole amount is compared, so "$49.990" or "$199.99" can't pass on a prefix or suffix of an allowed price.
+  for (const hit of text.matchAll(/\$\s?\d(?:[\d.,]*\d)?/g)) {
+    if (!PRICES.includes(hit[0])) {
+      problems.push(`${name}: shows the dollar amount ${hit[0]} ("${near(text, hit.index)}"); the only prices are ${PRICES.join(" and ")}`);
     }
   }
   for (const [label, re] of NO_PRICE) {
@@ -404,9 +409,16 @@ console.log(`Built ${out}`);
 if (blockers.length) {
   console.log(`\nOpen items, hidden on the live site until resolved (${blockers.length}):\n  ${blockers.join("\n  ")}`);
 }
-// After the early bird the page reads ENDED by itself ("Join Swarm", no price), but it still needs its after-sale update
-// (what Swarm offers after Dec 1, the legal pages' plan section, these guards). Loud, never a failure: a fix must still ship.
+// After the early bird the page reads ENDED by itself ($99.99/mo, "Join Swarm", the same Whop link), so nothing has to
+// ship that day. The warning is a reminder: the WAITLIST and OPEN spans can go at the next edit, and Whop must be selling
+// the $99.99 plan. Loud, never a failure: a fix must still ship.
 if (Date.now() >= Date.parse(EARLY_BIRD.END)) {
   const bar = "!".repeat(96);
-  console.warn(`\n${bar}\n  THE EARLY BIRD HAS ENDED (${EARLY_BIRD.END}). The page shows its ENDED state and needs its after-sale update:\n  what Swarm offers after Dec 1, the Terms plan section and these build guards (see a-core-glow/NOTES.md, "Early bird on Whop").\n${bar}\n`);
+  console.warn(
+    `\n${bar}\n  THE EARLY BIRD HAS ENDED (${EARLY_BIRD.END}). The page shows its ENDED state by itself: $99.99/mo, "Join Swarm",\n` +
+      `  the same Whop link. At the next edit, the WAITLIST and OPEN spans and the $49.99 copy only they use can be retired\n` +
+      `  (keep the ENDED FAQ line and the Terms: early bird members keep $49.99/mo).\n` +
+      `  Check that ${EARLY_BIRD_URL} sells the $99.99/mo plan and no longer sells the $49.99 one\n` +
+      `  (see a-core-glow/NOTES.md, "After December 1: $99.99").\n${bar}\n`,
+  );
 }

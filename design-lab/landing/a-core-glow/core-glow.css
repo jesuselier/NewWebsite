@@ -694,9 +694,11 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
    One short card for the Whop early bird. The section is still #pricing and the card #join, so old links land on the card
    (scroll-padding 76px plus the card's scroll margin). The card sits on the quiet honeycomb (.field-bg, static): the
    price, the line, the gold button and "Opens whop.com." on the left; what's inside on the right from 1024px, under a
-   rule on phones. $49.99 is the view's one gold number (JetBrains Mono, the kit's face for prices) and the button its one
-   gold button; ENDED drops the price line. The right column hugs its five short items and the card is 760px, so the
-   card's right inset matches its left. */
+   rule on phones. The current state's price is the view's one gold number (JetBrains Mono, the kit's face for prices)
+   and the button its one gold button: $49.99 in WAITLIST and OPEN, $99.99 in ENDED (each state has its own .uc-price
+   block). Before Dec 2, $99.99 is plain text in the line under the price (the price new members pay after Dec 1), never
+   gold and never struck. The right column hugs its five short items and the card is 760px, so the card's right inset
+   matches its left. */
 .pricing { padding-top: 40px; }
 .ucard { position: relative; max-width: 480px; margin: 56px auto 0; padding: 26px 22px 22px; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 28px; text-align: left; scroll-margin-top: 16px; }
 .uc-a { display: flex; flex-direction: column; min-width: 0; }
@@ -1034,6 +1036,10 @@ html .scard[data-state] .sc-steps li .ss-bar { position: relative; overflow: hid
 @media (min-width: 1240px) and (min-height: 780px) {
   .hero .cta { margin-top: calc(64px + var(--vs) * .07); }
 }
+/* OPEN's longer line under the button ("Early bird: join by Dec 1 and keep $49.99/mo.", November 20) closed the last leg
+   into the ring at 1280 wide, 700 to 760px tall; 2px more above the button reopens it with the rail where it was. OPEN
+   only: WAITLIST already fell back at 1280x720 and this does not change that, and ENDED's line is short. */
+@media (min-width: 1260px) and (max-height: 779px) { html[data-eb="open"] .hero .cta { margin-top: 26px; } }
 .qcard.qvid { width: auto; padding: 0; background: none; border: 0; }
 .qvid .watch { margin-top: 0; gap: 14px; padding: 7px 20px 7px 7px; background: var(--swarm-surface); border-radius: 18px; }
 .qvid .w-thumb { width: 56px; height: 56px; }
