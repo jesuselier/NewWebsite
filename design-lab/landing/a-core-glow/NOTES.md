@@ -517,3 +517,32 @@ Fixed from the reviews (visual, honesty, QA):
 - **Docs:** `../LAUNCH-CHECKLIST.md` item 1, the repo `README.md` pricing paragraph, a superseded note in `../SWARM-BRIEF.md`, plan rows X5, section 6 and section 10 item 2 (CHECKOUT is in `index.html`), plan question 9.
 
 Kept as is, on purpose: the bar's Hide is stored per state (`swarm-bf-bar-teaser`, `swarm-bf-bar-sale`), so a visitor who hid the TEASER bar sees it come back once when the sale opens. The plan chose this (section 3): the sale opening is new information, and the SALE bar then stays hidden once hidden.
+
+## Condensed (November 20, 2026)
+
+Jesus: "I think there's WAY too much text all over this website. We need to condense certain cards & give more space for the website to breathe". Built exactly from `../CONDENSE-PLAN.md` (its section 3 copy, its section 4 CSS block appended to the end of `core-glow.css`). No script was edited; `<head>`, the H1, the section ids, the footer disclosure and the legal pages are unchanged. Nothing is committed or deployed; section 7 of the plan lists what Jesus still has to approve.
+
+**Copy now** (SALE; TEASER and ENDED variants as in the plan):
+- Hero: sub "I'm Jesus Martinez of JM Crypto. Swarm is my AI crypto trading community on Discord."; the chip row, the hero note and Q09 are gone; the left card is the intro video chip ("Why I built Swarm", 4:05); Scout 03 without its definition line; the rail is titles only. The line under the button is unchanged in SALE and TEASER; ENDED now reads "$99/mo or $990/yr. Cancel anytime." (it carries the price the removed chip carried). On phones (640px and under) both hero cards are hidden by CSS.
+- Curve: "Buys because everyone is buying." / "Got burned. Sells too early." / "Knows what it's buying, why, and when to get out."; the "You: first cycle to right curve" caption and the curve's gold button are gone.
+- Founder: pill "The founder"; one transcript row, 3:02, Q05 as a pull quote; the follower line (323,452 on X, 41.1K on JM Crypto, as of October 16, 2026) is the card's footer; "On YouTube since August 2021. Full time in finance for five years.", the 2:33 and 2:48 rows, the source line and "My story, not a typical result..." are gone.
+- Why: the lede is its first sentence. Members: each card is its mock, a title and one line (tools: "Built and maintained by me. Join early and you get each one as it's finished. Prices for new members go up as they're completed."; watch list: "So you always know what I'm looking at. Not buy or sell calls."; calls unchanged; traders: "Traders who have made it through several cycles, sharing how they see the market now."); chips (except "In active development"), the twelve bullets, the scout definition, "AI tools can be wrong..." (still word for word in the footer) and "Scout field" are gone. The mocks hide, by CSS only, the console's event log, the watch list's public "why" column and the focus line on every portfolio row but the live one (`page.js` still writes them). The Discord mock keeps only the pinned note.
+- Who: titles only, no transcript card. Before you join: Q15 only. Pricing: no lede, the checklist uses its short labels, step 2 "Check out through Whop" (TEASER "...from November 24"), the joining note is gone; the card and the risk line are unchanged. FAQ: five questions ("Is this for me?" gone), all closed, answers unchanged. Final and footer unchanged.
+- Rhythm: section padding 112px (96 from 641 to 1023px, 64 on phones; was 80 and 48).
+
+**Numbers** (production on `next start` as www.joinswarm.ai, `?t=99`, visible words of `body.innerText`, page height, deviceScaleFactor 1):
+
+| | Before | After |
+| --- | --- | --- |
+| SALE 1440x900 | 1,841 words, 9,980px | 988 words, 9,031px |
+| SALE 390x844 | 1,744 words, 14,378px | 924 words, 10,864px |
+| TEASER 1440x900 | 1,875 words, 10,078px | 1,007 words, 9,099px |
+| TEASER 390x844 | 1,781 words, 14,507px | 946 words, 10,915px |
+| ENDED 1440x900 | 1,726 words, 9,915px | 898 words, 8,994px |
+| ENDED 390x844 | 1,633 words, 14,141px | 839 words, 10,685px |
+
+Words fall 46 to 49%, phone height 24%, desktop height about 10% (the extra section padding is the "breathe" half). Heights equal the plan's targets exactly; words are 4 to 6 under its lab targets (production rewrites some screen-reader link text). The pricing card is 7.83 screens down on desktop (was 8.73) and 9.64 on a phone (was 13.55).
+
+**Checked** (TEASER, SALE and ENDED clocks at 1440x900, 1024x768, 390x844 and 360x640): no page or console errors (the only failed request is Vercel's `/_vercel/insights/script.js`, which exists only on Vercel); no horizontal overflow (also 320, 768, 1280 and 1920 wide); no text overlapping text or a card; every Join and See-the-price link (bar, nav, hero, founder, members, final) lands with the price and the button or status row in view, and $49.99 turns gold in TEASER and SALE; both plan tabs; nothing still moving 5.5s after any scroll stop at 1440 and 390; reduced motion has no errors and a settled card; without JavaScript the page reads in SALE with "Turn on JavaScript to check out." on the card. All 25 state-word elements are leaves (16 ENDED, 15 TEASER, 5 nolink attributes, down from 19, 20 and 6). `ship-ended.mjs --early` on a throwaway copy: 16 words swapped, 3 sale-only elements removed, and the build passes there with the clock at Dec 5. `node scripts/build-swarm-site.mjs`, `npm run lint`, `npm test` and `npm run build` pass; no guard string changed.
+
+Still open, not part of this change: in ENDED with no Standard checkout link the gold buttons and the nav read "Join Swarm" while the card shows "Coming soon" (`../CONDENSE-PLAN.md` section 8; it touches the head script).
