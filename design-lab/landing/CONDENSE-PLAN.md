@@ -524,3 +524,7 @@ An independent review of the whole branch against main (three lenses, each findi
 ## After the condense: no pricing (November 20, 2026)
 
 Later the same day Jesus dropped pricing and the Black Friday sale ("Pricing is to be decided so leave it blank for now, put the newsletter there instead ur email"). The condensed page stays as built here, with these changes: the bar, every price and every `data-bf-*` state word are gone (so the SALE, TEASER and ENDED rows above no longer apply); the pricing section is a short "Get Swarm updates" card; the gold buttons and the nav button go to Jesus's Keychain sign-up page; the tools line drops its price sentence; the FAQ has four questions ("When does Swarm open?" replaces the payment question, the "locked in" question is gone). The page got shorter, not longer: 876 words and 8,695px at 1440x900, 812 words and 10,119px at 390x844 (measured as above). Details and checks: `a-core-glow/NOTES.md`, "No pricing, Keychain updates".
+
+## Approved (November 20, 2026)
+
+Jesus approved all ten cuts as listed on the preview page ("all good ship it"), with nothing put back, and the go-ahead to ship the condensed, no-pricing page to main.
