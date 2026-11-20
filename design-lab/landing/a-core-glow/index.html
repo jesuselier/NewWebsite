@@ -1,28 +1,28 @@
 <!doctype html>
-<html lang="en" data-bf-default="sale">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Swarm: AI Crypto Trading Community by JM Crypto</title>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'">
-<meta name="description" content="Swarm is an AI crypto trading community on Discord by Jesus Martinez of JM Crypto: custom AI tools, his watch list, weekly live calls. $49.99/mo to Dec 1.">
+<meta name="description" content="Swarm is an AI crypto trading community on Discord by Jesus Martinez of JM Crypto: custom AI tools, his watch list, weekly live calls. Get updates before it opens.">
 <meta name="robots" content="max-image-preview:large">
 <meta name="theme-color" content="#0B0B0D">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Swarm">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Swarm: AI Crypto Trading Community">
-<meta property="og:description" content="Swarm Black Friday launch: $49.99/mo locked in, Nov 24 to Dec 1. Custom AI tools, Jesus Martinez's watch list and weekly live calls, on Discord.">
+<meta property="og:description" content="Swarm is Jesus Martinez's AI crypto trading community on Discord: custom AI tools, his watch list and weekly live calls. Get updates before it opens.">
 <meta property="og:url" content="https://www.joinswarm.ai/">
-<meta property="og:image" content="https://www.joinswarm.ai/swarm-site/img/swarm-og-black-friday-1200x630.png">
+<meta property="og:image" content="https://www.joinswarm.ai/brand/swarm/social/swarm-og-1200x630.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Swarm Black Friday launch: $49.99 a month, locked in for as long as you stay subscribed, November 24 to December 1. One glowing gold hexagon in a dark honeycomb.">
+<meta property="og:image:alt" content="The Swarm wordmark and the words AI crypto trading beside one glowing gold hexagon in a dark honeycomb">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:creator" content="@JesusMartinez">
-<meta name="twitter:image" content="https://www.joinswarm.ai/swarm-site/img/swarm-og-black-friday-1200x630.png">
-<meta name="twitter:image:alt" content="Swarm Black Friday launch: $49.99 a month, locked in for as long as you stay subscribed, November 24 to December 1. One glowing gold hexagon in a dark honeycomb.">
+<meta name="twitter:image" content="https://www.joinswarm.ai/brand/swarm/social/swarm-og-1200x630.png">
+<meta name="twitter:image:alt" content="The Swarm wordmark and the words AI crypto trading beside one glowing gold hexagon in a dark honeycomb">
 <link rel="icon" type="image/png" sizes="32x32" href="../brand/swarm/icons/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../brand/swarm/icons/apple-touch-icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,115 +43,16 @@
 var f=document.fonts,ok=function(){d.classList.add('fonts-ok')},ready=new Promise(function(res){var go=function(){ok();res()};setTimeout(go,800);if(!f||!f.load){go();return}Promise.all([f.load('600 40px Unbounded'),f.load('400 18px "Hanken Grotesk"'),f.load('600 18px "Hanken Grotesk"'),f.load('500 12px "JetBrains Mono"')]).then(go,go)});
 window.SWARM={reduce:r,freeze:t,fontsReady:ready};})();
 </script>
-<script>
-/* ---------- Black Friday launch ----------
-   The state comes from the visitor's clock against two fixed instants: TEASER before BF_START, SALE from BF_START
-   until BF_END (exclusive, so all of Dec 1 11:59 PM ET is still the sale), ENDED from BF_END. ET is UTC-5 for the whole
-   window. The HTML holds the SALE words (crawlers and visitors without JavaScript); a word that differs by state sits
-   on a leaf element as data-bf-teaser / data-bf-ended, and SWARM.bfApply swaps it in inline calls placed after the nav,
-   the hero copy, the pricing section, the FAQ and at the end of main, so each part paints in its state. If the sale is
-   on but its Black Friday checkout link is not pasted yet, the gold buttons use data-bf-nolink ("See the price"), the
-   card shows "Coming soon" and the bar shows no countdown, because nothing can be bought yet. page.js flips
-   the page in place at a boundary, after sleep and on a back/forward restore. scripts/build-swarm-site.mjs reads
-   BF_END and CHECKOUT from this script.
-   Review only, never linked anywhere: ?bf=teaser|sale|ended forces a state, ?bfnow=<ISO time> sets the clock. Either
-   one makes the page a preview: noindex, and the card never links to a checkout. */
-(function(){
-var BF_START=Date.parse('2026-11-24T05:00:00Z'), BF_END=Date.parse('2026-12-02T05:00:00Z');
-
-/* ---------- Whop checkout: the ONE place to paste the plans ----------
-   For each plan paste its own direct purchase link from Whop (Dashboard > Checkout links, the link's copy button; in
-   Whop's API it is the plan's purchase_url), never a link that carries ?session=, and its plan ID (plan_...). A plan's
-   gold Join Swarm on the card goes live when its link is an https://whop.com/ URL; until then the card shows a
-   "Coming soon" row in its place, never a dead button. The Black Friday link is used only during SALE. Then run
-   node scripts/build-swarm-site.mjs, which checks these values. Whop's docs show more than one URL shape for a plan
-   (https://whop.com/<store>/checkout/plan_... and https://whop.com/checkout/plan_...), so the site never builds a
-   link from a plan ID: https://docs.whop.com/api-reference/plans/retrieve-plan */
-var CHECKOUT = {
-  blackfriday: { whopPlanId: null, checkoutUrl: null }, // $49.99/mo, for joins Nov 24 12:00 AM ET to Dec 1 11:59 PM ET only
-  standard:    { whopPlanId: null, checkoutUrl: null }, // $99/mo
-  yearly:      { whopPlanId: null, checkoutUrl: null }  // $990/yr
-};
-
-var S=window.SWARM, d=document.documentElement, q=new URLSearchParams(location.search), NB='\u00a0';
-var forced=/^(teaser|sale|ended)$/.test(q.get('bf')||'')?q.get('bf'):null;
-var fake=q.has('bfnow')?Date.parse(q.get('bfnow')):NaN, offset=isNaN(fake)?0:fake-Date.now();
-var bf={start:BF_START, end:BF_END, forced:forced, preview:!!forced||!isNaN(fake),
-  now:function(){return Date.now()+offset}, stateAt:function(t){return t<BF_START?'teaser':t<BF_END?'sale':'ended'}};
-bf.state=forced||bf.stateAt(bf.now());
-d.setAttribute('data-bf',bf.state);
-try{if(sessionStorage.getItem('swarm-bf-bar-'+bf.state)==='off')d.classList.add('bf-bar-off')}catch(e){}
-if(bf.preview){var m=document.createElement('meta');m.name='robots';m.content='noindex';document.head.appendChild(m)}
-S.bf=bf;
-var linkOk=function(c){return !!(c&&typeof c.checkoutUrl==='string'&&/^https:\/\/(www\.)?whop\.com\/\S+$/.test(c.checkoutUrl))};
-/* the sale without its checkout link. A preview shows the same, so it matches what visitors see */
-bf.noLink=!linkOk(CHECKOUT.blackfriday);
-/* the state's words: only on leaf elements, so a swap never deletes a link, an icon or a ring */
-S.bfApply=function(root){
-  root=root||document;
-  var sel='[data-bf-teaser],[data-bf-ended],[data-bf-nolink]';
-  var els=Array.prototype.slice.call(root.querySelectorAll(sel));
-  if(root.matches&&root.matches(sel))els.unshift(root);
-  for(var i=0;i<els.length;i++){
-    var el=els[i];
-    if(el.children.length){if(window.console)console.warn('SWARM.bfApply: not a leaf element, left as is',el);continue}
-    if(!el.hasAttribute('data-bf-sale'))el.setAttribute('data-bf-sale',el.textContent);
-    var a=bf.state==='sale'&&bf.noLink&&el.hasAttribute('data-bf-nolink')?'data-bf-nolink':'data-bf-'+bf.state;
-    var txt=el.hasAttribute(a)?el.getAttribute(a):el.getAttribute('data-bf-sale');
-    if(el.textContent!==txt)el.textContent=txt;
-  }
-};
-/* the plan behind a tab: the first tab is Black Friday (TEASER, SALE) or Standard (ENDED), the second is Yearly */
-S.bfPlan=function(slot){return slot==='year'?'yearly':bf.state==='ended'?'standard':'blackfriday'};
-S.bfLink=function(key){
-  if(bf.state==='teaser'||(key==='blackfriday'&&bf.state!=='sale'))return null;
-  return linkOk(CHECKOUT[key])?CHECKOUT[key].checkoutUrl:null;
-};
-/* the card's action for a plan: a link to that plan's Whop checkout, or a status row ("Coming soon" while the plan has
-   no link). A preview never sells */
-var lockInit=false;
-S.bfCard=function(key){
-  var card=document.getElementById('join'), btn=document.getElementById('join-btn'), row=document.getElementById('pc-open'),
-      rowT=document.getElementById('pc-open-t'), line=document.getElementById('pc-cancel');
-  if(!card||!btn||!row||!rowT)return;
-  if(!key){var c=card.querySelector('.seg-switch input:checked');key=S.bfPlan(c?c.value:'month')}
-  var url=S.bfLink(key), closed=bf.state==='teaser'||!url;
-  card.classList.toggle('is-gold',key==='blackfriday');
-  if(!lockInit){lockInit=true;if(!S.reduce&&S.freeze==null&&'IntersectionObserver' in window){card.classList.add('lock-pending');
-    /* page.js turns the price gold when the swarm docks; if it never loads, the price still turns gold */
-    setTimeout(function(){if(!window.__lockDebug)card.classList.remove('lock-pending')},6000)}}
-  btn.hidden=closed; row.hidden=!closed;
-  btn.setAttribute('href',url&&!bf.preview?url:'#join');
-  if(bf.state==='teaser')rowT.textContent='Checkout opens Nov'+NB+'24, 12:00'+NB+'AM'+NB+'ET';
-  else if(closed)rowT.textContent='Coming soon';
-  if(line)line.textContent=bf.preview&&!closed?'Preview: checkout is off.':'Card or ACH through Whop. Cancel anytime.';
-};
-})();
-</script>
 </head>
 <body class="swarm">
 <a class="skip" href="#main">Skip to content</a>
 
-<!-- Black Friday bar: the page's one live countdown (SALE only, once a minute, and only once the sale's checkout link
-     is in). It is not essential (every deadline on the page is also static text) and Hide removes it for the visit,
-     which meets WCAG 2.2.2 for auto-updating content. In flow, not fixed: it scrolls away, so it never covers the card.
-     No gold here. data-bf-sale-only: black-friday/ship-ended.mjs removes the element when the ENDED text ships. -->
-<aside class="bf-bar" id="bf-bar" aria-label="Black Friday launch" data-bf-sale-only>
-  <div class="bf-in">
-    <p class="bf-t"><span class="bf-a hx">Black Friday<span class="bf-long"> launch</span></span><span class="bf-sep" aria-hidden="true">·</span><span class="bf-b">$49.99/mo locked in</span><span class="bf-sep bf-sep2" aria-hidden="true">·</span><span class="bf-br"></span><span class="bf-c" data-bf-teaser="Checkout opens Nov 24, 12:00 AM ET">Ends Dec 1, 11:59 PM ET</span></p>
-    <span class="bf-cd" id="bf-cd" aria-hidden="true" hidden><span id="bf-cd-t"></span><span class="bf-cd-l"> left</span></span>
-    <a class="bf-go" href="#join">See the price</a>
-    <button class="bf-x" type="button" aria-label="Hide the Black Friday bar"></button>
-  </div>
-</aside>
-
 <header class="nav" id="nav">
   <div class="wrap nav-in">
     <a class="nav-logo" href="#top"><img src="../brand/swarm/logo/swarm-wordmark-for-dark-bg.svg" alt="Swarm" width="136" height="37"></a>
-    <a class="btn-line" href="#join" data-bf-teaser="See the price" data-bf-nolink="See the price">Join Swarm</a>
+    <a class="btn-line" href="https://keychain.club/jesusmartinez/GETSWARMUPDATES" target="_blank" rel="noopener">Get updates<span class="sr-only"> (opens in a new tab)</span></a>
   </div>
 </header>
-<script>SWARM.bfApply()</script>
 
 <main id="main">
 
@@ -168,11 +69,10 @@ S.bfCard=function(key){
     <h1 id="hero-h" data-avoid="lines"><span class="m">Most people need three cycles.</span> <span class="b">I want to get you there in one.</span></h1>
     <p class="hero-sub" data-avoid="lines">I'm Jesus Martinez of JM Crypto. Swarm is my AI crypto trading community on Discord.</p>
     <div class="cta">
-      <a class="btn-gold btn-hero" href="#join" data-avoid><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl" data-bf-teaser="See the Black Friday price" data-bf-nolink="See the Black Friday price">Join Swarm</span></a>
-      <p class="cancel" data-avoid="lines" data-bf-teaser="$49.99 a month, locked in. Checkout opens November&nbsp;24 at 12:00&nbsp;AM&nbsp;ET, and the price ends December&nbsp;1 at 11:59&nbsp;PM&nbsp;ET." data-bf-ended="$99/mo or $990/yr. Cancel anytime.">$49.99 a month, locked in. Black Friday price ends December&nbsp;1 at 11:59&nbsp;PM&nbsp;ET.</p>
+      <a class="btn-gold btn-hero" href="https://keychain.club/jesusmartinez/GETSWARMUPDATES" target="_blank" rel="noopener" data-avoid><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl">Get Swarm updates</span><span class="sr-only"> (opens in a new tab)</span></a>
+      <p class="cancel" data-avoid="lines">Swarm isn't open yet. Leave your email to hear when it opens.</p>
     </div>
   </div>
-  <script>SWARM.bfApply()</script>
 
   <div class="qcards">
     <figure class="qcard q1 qvid">
@@ -275,7 +175,7 @@ S.bfCard=function(key){
       </article>
     </div>
     <div class="cta">
-      <a class="btn-gold" href="#join"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl" data-bf-teaser="See the Black Friday price" data-bf-nolink="See the Black Friday price">Join Swarm</span></a>
+      <a class="btn-gold" href="https://keychain.club/jesusmartinez/GETSWARMUPDATES" target="_blank" rel="noopener"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl">Get Swarm updates</span><span class="sr-only"> (opens in a new tab)</span></a>
     </div>
   </div>
 </section>
@@ -352,7 +252,7 @@ S.bfCard=function(key){
         <div class="mtext">
           <span class="mchip mchip-dev">In active development</span>
           <h3>Custom AI tools</h3>
-          <p>I build and maintain them myself. Join early and you get each one as it's finished. Prices for new members go up as the tools are completed.</p>
+          <p>I build and maintain them myself. Join early and you get each one as it's finished.</p>
         </div>
       </article>
 
@@ -462,7 +362,7 @@ S.bfCard=function(key){
     </div>
 
     <div class="cta">
-      <a class="btn-gold" href="#join"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl" data-bf-teaser="See the Black Friday price" data-bf-nolink="See the Black Friday price">Join Swarm</span></a>
+      <a class="btn-gold" href="https://keychain.club/jesusmartinez/GETSWARMUPDATES" target="_blank" rel="noopener"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl">Get Swarm updates</span><span class="sr-only"> (opens in a new tab)</span></a>
     </div>
   </div>
 </section>
@@ -509,80 +409,35 @@ S.bfCard=function(key){
   </div>
 </section>
 
-<!-- 8. PRICING: the section is #pricing and the card itself is #join, so every Join link lands on the card with its price
-     and its button in view. One card, two columns from 1024px: the offer on the left (the plan switch, $49.99, the struck
-     $99 that applies after Dec 1, the deadline), the price ladder, the checklist and the button on the right. The card
-     sits on the honeycomb; when the price row comes into view the swarm routes along the honeycomb to three sockets on the
-     card's edge and docks under it, the sockets light, and $49.99 turns gold (TEASER and SALE; ENDED has no gold
-     number). Plays once, settles by about 3.4s. No lit cell here: the final CTA carries the core.
-     Without JavaScript the card shows the SALE words with a status row instead of a button that could not check out. -->
+<!-- 8. GET SWARM UPDATES (November 20): Swarm isn't open and its pricing is not decided, so there is no price, plan or
+     checkout on the page. This short card sends people to Jesus's Keychain sign-up page instead (a third-party page with
+     its own email box; the site links to it and never fakes one). The section keeps #pricing and the card keeps #join,
+     so old links still land here. Static: no canvas and no motion except the gold button's one ring lap. -->
 <section class="sec pricing" id="pricing" aria-labelledby="join-h">
+  <div class="field-bg" aria-hidden="true"></div>
   <div class="wrap">
     <div class="sec-head">
-      <p class="pill" data-bf-ended="Join the swarm">Black Friday · Nov&nbsp;24 to Dec&nbsp;1</p>
-      <h2 class="h2" id="join-h"><span class="m" data-bf-teaser="Join from November&nbsp;24, keep $49.99 a month." data-bf-ended="The AI tools are still being built.">Join by December&nbsp;1, keep $49.99 a month.</span> <span class="b">Early on purpose.</span></h2>
+      <p class="pill">Get Swarm updates</p>
+      <h2 class="h2" id="join-h"><span class="m">Swarm isn't open yet.</span> <span class="b">Hear when it opens.</span></h2>
     </div>
-  </div>
-
-  <div class="lock-stage" id="lock-stage">
-    <canvas id="join-field" aria-hidden="true"></canvas>
-    <canvas id="join-agents" aria-hidden="true"></canvas>
-    <div class="wrap">
-      <div class="join">
-        <div class="lock-band" aria-hidden="true"></div>
-        <div class="pcard is-gold" id="join">
-          <div class="pc-a">
-            <div class="pc-top"><span class="pc-name"><span id="pc-name-a" data-bf-ended="Swarm">Black Friday</span><span class="pc-long" id="pc-name-b" data-bf-ended=" membership"> launch</span></span><span class="pc-chip" id="pc-chip" data-bf-teaser="Opens Nov&nbsp;24" data-bf-ended="Standard">Ends Dec&nbsp;1</span></div>
-            <fieldset class="seg-switch">
-              <legend class="sr-only">Choose a plan</legend>
-              <label><input type="radio" name="plan" value="month" autocomplete="off" checked><span><b data-bf-ended="Standard">Black Friday</b><i data-bf-ended="$99/mo">$49.99/mo</i></span></label>
-              <label><input type="radio" name="plan" value="year" autocomplete="off"><span><b>Yearly</b><i>$990/yr</i></span></label>
-            </fieldset>
-            <div class="pc-live" aria-live="polite">
-              <div class="price-row">
-                <p class="price"><span class="amt" id="pc-amt" data-bf-ended="$99">$49.99</span><span class="unit" id="pc-unit">/mo</span></p>
-                <p class="was" id="pc-was" data-bf-sale-only><s><span class="sr-only">Standard price after December 1: </span>$99/mo</s><span aria-hidden="true">After Dec&nbsp;1</span></p>
-              </div>
-              <p class="pc-note" id="pc-note" data-bf-ended="Renews monthly until you cancel.">Locked in while you stay subscribed.</p>
-              <p class="pc-sub" id="pc-sub" data-bf-ended="">Cancel and rejoin later, and you pay the price at that time.</p>
-              <p class="pc-dl" id="pc-dl" data-bf-teaser="Runs Nov&nbsp;24, 12:00&nbsp;AM&nbsp;ET to Dec&nbsp;1, 11:59&nbsp;PM&nbsp;ET." data-bf-ended="The Black Friday price ended December&nbsp;1.">Ends December&nbsp;1 at 11:59&nbsp;PM&nbsp;ET.</p>
-            </div>
-          </div>
-          <div class="pc-b">
-            <p class="pc-label" id="ladder-h">How the price moves</p>
-            <ol class="ladder" aria-labelledby="ladder-h">
-              <li class="lr-1 on" data-bf-sale-only><span class="lk" data-bf-sale="Now through Dec&nbsp;1" data-bf-teaser="Nov&nbsp;24 to Dec&nbsp;1">Nov&nbsp;24 to Dec&nbsp;1</span><span class="lv">$49.99/mo, locked in</span></li>
-              <li class="lr-2"><span class="lk" data-bf-ended="Now">After Dec&nbsp;1</span><span class="lv">$99/mo or $990/yr</span></li>
-              <li class="lr-3"><span class="lk">Then</span><span class="lv">Prices rise as the tools are completed</span></li>
-            </ol>
-            <p class="pc-label pc-label-2">Everything inside Swarm</p>
-            <ul class="checks">
-              <li>Custom AI tools</li>
-              <li>My watch list</li>
-              <li>Weekly live calls</li>
-              <li>Multi-cycle traders</li>
-            </ul>
-            <a class="btn-gold" id="join-btn" href="#join" hidden><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl">Join Swarm</span></a>
-            <p class="pc-open" id="pc-open"><span id="pc-open-t">Checkout runs on Whop and needs JavaScript.</span></p>
-            <p class="cancel" id="pc-cancel">Card or ACH through Whop. Cancel anytime.</p>
-          </div>
-        </div>
-        <div class="how">
-          <p class="how-lab" id="how-lab">How joining works</p>
-          <ol class="steps" aria-labelledby="how-lab">
-            <li><span class="st-n">01</span><span class="st-t">Pick your plan</span></li>
-            <li><span class="st-n">02</span><span class="st-t" data-bf-teaser="Check out through Whop from November&nbsp;24" data-bf-nolink="Check out through Whop (coming soon)">Check out through Whop</span></li>
-            <li><span class="st-n">03</span><span class="st-t">Get access to the Swarm Discord</span></li>
-          </ol>
-        </div>
+    <div class="ucard" id="join">
+      <div class="uc-a">
+        <p class="uc-lede">Leave your email on my Keychain page to get updates on what I'm building and hear when Swarm opens.</p>
+        <a class="btn-gold" href="https://keychain.club/jesusmartinez/GETSWARMUPDATES" target="_blank" rel="noopener"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl">Get Swarm updates</span><span class="sr-only"> (opens in a new tab)</span></a>
+        <p class="cancel">Opens keychain.club.</p>
+      </div>
+      <div class="uc-b">
+        <p class="uc-label" id="inside-h">What's inside</p>
+        <ul class="checks" aria-labelledby="inside-h">
+          <li>Custom AI tools</li>
+          <li>My watch list</li>
+          <li>Weekly live calls</li>
+          <li>Multi-cycle traders</li>
+        </ul>
       </div>
     </div>
+    <p class="risk">Swarm is education and research, not financial advice.</p>
   </div>
-
-  <div class="wrap">
-    <p class="risk">Swarm is education and research, not financial advice. Crypto is volatile and you can lose money, including all of it.</p>
-  </div>
-  <script>SWARM.bfApply();SWARM.bfCard()</script>
 </section>
 
 <!-- 9. FAQ -->
@@ -599,23 +454,18 @@ S.bfCard=function(key){
       </details>
       <details>
         <summary>Where does Swarm happen, and what do I get?<span class="pm" aria-hidden="true"></span></summary>
-        <div class="ans"><p>On Discord. After checkout through Whop, you get access to the Swarm Discord: weekly live calls with live portfolio reviews, my watch list, the AI tools as they're completed, and the multi-cycle traders.</p></div>
+        <div class="ans"><p>On Discord. Members get the Swarm Discord: weekly live calls with live portfolio reviews, my watch list, the AI tools as they're completed, and the multi-cycle traders.</p></div>
       </details>
       <details>
         <summary>Are the AI tools ready?<span class="pm" aria-hidden="true"></span></summary>
-        <div class="ans"><p>They're actively being built, and I'm not putting dates on them. That's the perk of being early: you get each tool as it's completed. The price for new members goes up as they're completed.</p></div>
+        <div class="ans"><p>They're actively being built, and I'm not putting dates on them. That's the perk of being early: you get each tool as it's completed.</p></div>
       </details>
       <details>
-        <summary><span data-bf-ended="What happened to the Black Friday price?">What does "locked in" mean?</span><span class="pm" aria-hidden="true"></span></summary>
-        <div class="ans"><p data-bf-teaser="Join between November&nbsp;24 at 12:00&nbsp;AM&nbsp;ET and December&nbsp;1 at 11:59&nbsp;PM&nbsp;ET and you keep $49.99 a month for as long as you stay subscribed, even as the price for new members goes up. If you cancel and rejoin later, you pay the price at that time." data-bf-ended="It ended December&nbsp;1. Anyone who joined during it keeps $49.99 a month while they stay subscribed. New members pay $99 a month or $990 a year, and prices rise as the tools are completed.">Join by December&nbsp;1 at 11:59&nbsp;PM&nbsp;ET and you keep $49.99 a month for as long as you stay subscribed, even as the price for new members goes up. If you cancel and rejoin later, you pay the price at that time.</p></div>
-      </details>
-      <details>
-        <summary>How do I pay, and can I cancel?<span class="pm" aria-hidden="true"></span></summary>
-        <div class="ans"><p><span data-bf-teaser="Checkout opens November&nbsp;24 at 12:00&nbsp;AM&nbsp;ET. Then pick" data-bf-nolink="Checkout is coming soon. Then pick">Pick</span> a plan above and check out through Whop, by card or bank transfer (ACH). Every plan includes everything inside Swarm, and you can cancel anytime. The details are in the <a href="refunds.html">refund policy</a>.</p></div>
+        <summary>When does Swarm open?<span class="pm" aria-hidden="true"></span></summary>
+        <div class="ans"><p>It isn't open yet. Leave your email on <a href="https://keychain.club/jesusmartinez/GETSWARMUPDATES" target="_blank" rel="noopener">my Keychain page<span class="sr-only"> (opens in a new tab)</span></a> and you'll get the updates on what I'm building and hear when Swarm opens.</p></div>
       </details>
     </div>
   </div>
-  <script>SWARM.bfApply()</script>
 </section>
 
 <!-- 10. FINAL CTA -->
@@ -628,12 +478,11 @@ S.bfCard=function(key){
     <div class="final-core" id="final-core" aria-hidden="true"></div>
     <h2 class="h2" id="final-h"><span class="m">Be on the right side of this cycle.</span> <span class="b">I'll see you inside.</span></h2>
     <div class="cta">
-      <a class="btn-gold" href="#join"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl" data-bf-teaser="See the Black Friday price" data-bf-nolink="See the Black Friday price">Join Swarm</span></a>
-      <p class="cancel" data-bf-teaser="Checkout opens November&nbsp;24 at 12:00&nbsp;AM&nbsp;ET." data-bf-ended="Cancel anytime.">Black Friday price ends December&nbsp;1 at 11:59&nbsp;PM&nbsp;ET. Cancel anytime.</p>
+      <a class="btn-gold" href="https://keychain.club/jesusmartinez/GETSWARMUPDATES" target="_blank" rel="noopener"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl">Get Swarm updates</span><span class="sr-only"> (opens in a new tab)</span></a>
+      <p class="cancel">Leave your email on Keychain to hear when Swarm opens.</p>
     </div>
   </div>
 </section>
-<script>SWARM.bfApply()</script>
 
 </main>
 
@@ -648,7 +497,7 @@ S.bfCard=function(key){
       </ul>
     </div>
     <div class="disclose">
-      <p>Swarm is an educational community. Nothing here is financial, investment, tax or legal advice, or a recommendation to buy or sell anything. Crypto assets are volatile and can lose most or all of their value. Only use money you can afford to lose. Past results, including Jesus's, do not predict future results. AI tools can be wrong. Treat what they show as information to check, not instructions. Payments are processed by Whop.</p>
+      <p>Swarm is an educational community. Nothing here is financial, investment, tax or legal advice, or a recommendation to buy or sell anything. Crypto assets are volatile and can lose most or all of their value. Only use money you can afford to lose. Past results, including Jesus's, do not predict future results. AI tools can be wrong. Treat what they show as information to check, not instructions.</p>
     </div>
     <ul class="legal" aria-label="Policies and contact">
       <li><a href="terms.html">Terms</a></li>

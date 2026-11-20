@@ -149,6 +149,7 @@ function fixPrivacy(html) {
     "<p>The site serves its fonts and its 3D graphics library from its own host, so no font or code service learns about your visit.</p>",
     "privacy fonts paragraph",
   );
+  html = replaceOnce(html, "\n        <li><strong>jsDelivr</strong> for a code library the website loads.</li>", "", "privacy jsDelivr list item");
   return replaceOnce(
     html,
     "<li><strong>Google</strong> for fonts, and YouTube for the intro video after you press play.</li>",
@@ -208,96 +209,6 @@ function writeSitemapDates() {
   writeFileSync(SITEMAP_DATES, `${JSON.stringify(pages, null, 2)}\n`);
 }
 
-// The Black Friday launch (design-lab/landing/BLACK-FRIDAY-PLAN.md). The lab page's head script holds the two instants
-// and the Whop checkout links (CHECKOUT, the one place to paste them); read them from there so the build and the page
-// never disagree. <html data-bf-default> says which state the static HTML (what crawlers, link previews and visitors
-// without JavaScript read) is written in: "sale" until the window ends, then "ended", shipped by
-// design-lab/landing/black-friday/ship-ended.mjs. The page flips by the visitor's clock without any build. Jesus chose
-// (Nov 20) to ship without the Whop links: a plan without its link shows "Coming soon" on the card in place of its
-// Join button, and the build prints which plans are still waiting for a link.
-const ET_TEXT = { start: "Nov 24, 12:00 AM ET", end: "Dec 2, 12:00 AM ET" };
-function blackFridayChecks() {
-  const lab = readFileSync(`${src}index.html`, "utf8");
-  const shownDefault = (lab.match(/<html[^>]* data-bf-default="(\w+)"/) || [])[1] || null;
-  const instant = (name) => {
-    const m = lab.match(new RegExp(`\\b${name}\\s*=\\s*Date\\.parse\\('(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z)'\\)`));
-    return m ? Date.parse(m[1]) : NaN;
-  };
-  const start = instant("BF_START");
-  const end = instant("BF_END");
-  if (Number.isNaN(start) || Number.isNaN(end)) {
-    problems.push("index.html: no BF_START=Date.parse('...Z') and BF_END=Date.parse('...Z') in the head script");
-    return;
-  }
-  const now = Date.now();
-  const started = now >= start;
-  const ended = now >= end;
-  if (shownDefault !== "sale" && shownDefault !== "ended") problems.push('index.html: <html> needs data-bf-default="sale" or "ended"');
-  if (shownDefault === "sale" && ended) {
-    problems.push(`index.html: the Black Friday window ended ${new Date(end).toISOString()}; ship the ENDED text: node design-lab/landing/black-friday/ship-ended.mjs`);
-  }
-  if (shownDefault === "ended" && !ended) problems.push(`index.html: data-bf-default="ended" before the window ends (${new Date(end).toISOString()}); the ENDED text ships after it`);
-
-  // Checkout links: a set link must be a whop.com https URL with no whitespace and no checkout session; a set plan ID
-  // must look like plan_.... The card shows "Coming soon" for a missing link, never a dead button.
-  const block = lab.match(/\bvar CHECKOUT = \{([\s\S]*?)\n\};/);
-  if (!block) problems.push("index.html: no `var CHECKOUT = { ... };` block in the head script");
-  else {
-    const value = (v) => (v === "null" ? null : v.slice(1, -1));
-    const needBy = { blackfriday: `for the sale, before ${ET_TEXT.start}`, yearly: `offered from ${ET_TEXT.start}`, standard: `the offer from ${ET_TEXT.end}` };
-    for (const key of ["blackfriday", "standard", "yearly"]) {
-      const lines = [...block[1].matchAll(new RegExp(`^\\s*${key}:\\s*\\{\\s*whopPlanId:\\s*(null|"[^"\\n]*"|'[^'\\n]*'),\\s*checkoutUrl:\\s*(null|"[^"\\n]*"|'[^'\\n]*')\\s*\\},?`, "gm"))];
-      if (lines.length !== 1) {
-        problems.push(`index.html CHECKOUT: expected one line "${key}: { whopPlanId: ..., checkoutUrl: ... }", found ${lines.length}`);
-        continue;
-      }
-      const id = value(lines[0][1]), url = value(lines[0][2]);
-      if (id !== null && !/^plan_\w+$/.test(id)) problems.push(`index.html CHECKOUT.${key}.whopPlanId "${id}" is not a Whop plan ID (plan_...)`);
-      if (url !== null && !/^https:\/\/(www\.)?whop\.com\/\S+$/.test(url)) problems.push(`index.html CHECKOUT.${key}.checkoutUrl must be an https://whop.com/ link with no spaces`);
-      if (url && /[?&]session=/.test(url)) problems.push(`index.html CHECKOUT.${key}.checkoutUrl carries a checkout session (?session=); paste the plan's own link`);
-      if (url && id && !url.includes(id)) warnings.push(`index.html CHECKOUT.${key}: the link does not contain its plan ID ${id}; check it is the right plan`);
-      if (url && !id) warnings.push(`index.html CHECKOUT.${key}: link set without its plan ID`);
-      if (key === "blackfriday" && url && ended) problems.push("index.html CHECKOUT.blackfriday: the sale has ended; remove its link (and archive the plan in Whop)");
-      if (url || (key === "blackfriday" && ended)) continue;
-      launchBlockers.push(`CHECKOUT.${key} in a-core-glow/index.html has no Whop checkout link (${needBy[key]})`);
-    }
-    launchNote = ended
-      ? "the sale has ended; Standard and Yearly show \"Coming soon\" instead of a Join button until their links are in, so nothing can be bought yet."
-      : started
-      ? "the sale is on; a plan without its link shows \"Coming soon\" instead of a Join button, so it cannot sell yet."
-      : `the page flips to the sale by itself at ${ET_TEXT.start}; a plan without its link shows "Coming soon" instead of a Join button.`;
-  }
-
-  // What a visitor without JavaScript (and a crawler) reads: the built page's text, without scripts, comments or tags.
-  const built = readFileSync(`${out}index.html`, "utf8");
-  const shown = built
-    .slice(built.indexOf("<body"))
-    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<!--[\s\S]*?-->/g, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;|\u00a0/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ");
-  const words = {
-    sale: {
-      need: ["Ends Dec 1, 11:59 PM ET", "Ends December 1 at 11:59 PM ET.", "$49.99 a month, locked in. Black Friday price ends December 1 at 11:59 PM ET.", "$49.99"],
-      never: ["Checkout opens", "Opens Nov", "ended December", "The Black Friday price ended", "What happened to the Black Friday price"],
-    },
-    ended: {
-      need: ["The Black Friday price ended December 1.", "$99/mo or $990/yr", "What happened to the Black Friday price?"],
-      never: ["locked in", "Ends Dec", "Ends December", "price ends December", "Join by December", "Checkout opens", "Nov 24", "$49.99/mo", "After Dec 1"],
-    },
-  }[shownDefault];
-  if (!words) return;
-  for (const need of words.need) {
-    if (!shown.includes(need)) problems.push(`index.html: the page without JavaScript must show "${need}" (data-bf-default="${shownDefault}")`);
-  }
-  for (const other of words.never) {
-    if (shown.includes(other)) problems.push(`index.html: "${other}" shows without JavaScript (data-bf-default="${shownDefault}"); other states' words belong in data-bf-* attributes`);
-  }
-}
-
 function stripCssComments(css) {
   return `${css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\n\s*\n+/g, "\n").trim()}\n`;
 }
@@ -332,9 +243,6 @@ for (const file of used) cpSync(`${photos}${file}`, `${out}img/${file}`);
 // Checks: nothing points back at the lab, the old site or a CDN, no internal note shows, and every local file exists.
 const problems = [];
 const blockers = [];
-const warnings = [];
-const launchBlockers = [];
-let launchNote = "";
 for (const entry of readdirSync(out, { recursive: true })) {
   if (!/\.(html|css|js)$/.test(entry) || entry.startsWith("vendor")) continue;
   const text = readFileSync(`${out}${entry}`, "utf8");
@@ -348,8 +256,8 @@ for (const entry of readdirSync(out, { recursive: true })) {
     if (!existsSync(file)) problems.push(`${entry}: missing ${ref}`);
   }
   if (!entry.endsWith(".css") && /\[(?:CONFIRM|DATA NEEDED)|review before launch/i.test(text)) problems.push(`${entry}: shows an internal [CONFIRM] or [Data needed] note`);
-  // The founding offer (50 seats at $49) was replaced by the Black Friday launch ($49.99): no page or script may still
-  // carry it, and no page shows an em or en dash.
+  // The founding offer (50 seats at $49) is gone (later the Black Friday launch, dropped too): no page or script may
+  // still carry it, and no page shows an em or en dash.
   if (!entry.endsWith(".css") && /\b50 (?:founding )?seats\b|founding (?:seats?|members?|price|monthly)|\$49(?!\.99)\b/i.test(text)) {
     problems.push(`${entry}: still mentions the old founding offer (50 seats, founding members or $49 without .99)`);
   }
@@ -360,7 +268,41 @@ for (const entry of readdirSync(out, { recursive: true })) {
     if (!existsSync(`${root}public${decodeURIComponent(ref)}`)) problems.push(`${entry}: share image ${ref} is missing`);
   }
 }
-blackFridayChecks();
+// No pricing yet (Jesus, November 20, 2026: "Pricing is to be decided"): Swarm isn't open and the page sends people to
+// the Swarm updates sign-up on Keychain. No built page may show a dollar price, the dropped Black Friday sale, a
+// "locked in" price or a "Coming soon" checkout, and every gold button and the nav button on the home page link to
+// the Keychain page in a new tab.
+const UPDATES_URL = "https://keychain.club/jesusmartinez/GETSWARMUPDATES";
+const NO_PRICE = [
+  ["a dollar price", /\$\s?\d/],
+  ['"Black Friday"', /black\s+friday/i],
+  ['"locked in"', /locked\s+in/i],
+  ['"Coming soon"', /coming\s+soon/i],
+];
+// The scripts and styles count too, since page.js once wrote the prices into the card. Their comments may still
+// mention the dropped sale, so they are stripped first.
+const stripComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+const noPriceFiles = [...Object.keys(PAGES), NOT_FOUND, ...readdirSync(out).filter((f) => /\.(js|css)$/.test(f))];
+for (const name of noPriceFiles) {
+  const raw = readFileSync(`${out}${name}`, "utf8");
+  const text = name.endsWith(".html") ? raw : stripComments(raw);
+  for (const [label, re] of NO_PRICE) {
+    const hit = text.match(re);
+    if (hit) problems.push(`${name}: shows ${label} ("${text.slice(Math.max(0, hit.index - 40), hit.index + 40).replace(/\s+/g, " ")}"); Swarm has no pricing yet`);
+  }
+}
+{
+  const home = readFileSync(`${out}index.html`, "utf8");
+  if (!home.includes(`href="${UPDATES_URL}"`)) problems.push(`index.html: no link to the Swarm updates page ${UPDATES_URL}`);
+  const buttons = [...home.matchAll(/<a\b[^>]*\bclass="[^"]*\bbtn-(?:gold|line)\b[^"]*"[^>]*>/g)].map((m) => m[0]);
+  if (!buttons.length) problems.push("index.html: no gold or nav button found");
+  for (const tag of buttons) {
+    if (!tag.includes(`href="${UPDATES_URL}"`) || !tag.includes('target="_blank"') || !tag.includes('rel="noopener"')) {
+      problems.push(`index.html: a gold or nav button does not open ${UPDATES_URL} in a new tab: ${tag.slice(0, 120)}`);
+    }
+  }
+  if (existsSync(`${out}img/swarm-og-black-friday-1200x630.png`)) problems.push("img/swarm-og-black-friday-1200x630.png is still published");
+}
 for (const name of Object.keys(PAGES)) {
   for (const [chip] of readFileSync(`${src}${name}`, "utf8").matchAll(/\[(?:CONFIRM|DATA NEEDED)[^\]]*\]/gi)) {
     if (!chip.includes("youtube-nocookie")) blockers.push(`${name}: ${chip}`); // resolved by swarm-site.js
@@ -409,14 +351,7 @@ for (const name of [...Object.keys(PAGES), NOT_FOUND]) {
 }
 if (problems.length) fail(`\n  ${problems.join("\n  ")}`);
 writeSitemapDates();
-if (launchBlockers.length) {
-  // Not an open item and not a failure (Jesus chose "Coming soon" until the links exist), but until these links are
-  // in, a Join on the page cannot sell.
-  console.log(`CHECKOUT COMING SOON (${launchBlockers.length}): ${launchNote}`);
-  console.log(`Paste each plan's whopPlanId and checkoutUrl (LAUNCH-CHECKLIST.md item 1), rebuild and redeploy:\n  ${launchBlockers.join("\n  ")}\n`);
-}
 console.log(`Built ${out}`);
-if (warnings.length) console.log(`\nWarnings (${warnings.length}):\n  ${warnings.join("\n  ")}`);
 if (blockers.length) {
   console.log(`\nOpen items, hidden on the live site until resolved (${blockers.length}):\n  ${blockers.join("\n  ")}`);
 }

@@ -1,8 +1,8 @@
 /* Swarm A, Core Glow: page controller.
-   Nav state, the revolving light on the gold Join Swarm buttons, the four product mocks (each plays once and settles
-   inside 5s), the Custom AI tools scout field (a 2D model rendered by tools3d.js in Three.js, or drawn flat as a
-   still), the why-now band, the pricing lock moment, the final field, the pricing card (plan switch and checkout links)
-   and the Black Friday clock (state flips, the bar's countdown and its Hide button).
+   Nav state, the revolving light on the gold buttons, the four product mocks (each plays once and settles inside 5s),
+   the Custom AI tools scout field (a 2D model rendered by tools3d.js in Three.js, or drawn flat as a still), the why-now
+   band and the final field. The Black Friday clock, the pricing card and its lock moment were removed on November 20
+   (no pricing yet: the gold buttons link to the Swarm updates sign-up on Keychain).
    Every motion piece plays once when it comes into view and settles within 5 seconds; nothing loops, so there is no
    pause control. Everything pauses offscreen and while the tab is hidden.
    Every agent here uses the same language as the hero: hexagonal nodes hopping along the honeycomb's edges. */
@@ -10,7 +10,6 @@
   'use strict';
   const S = window.SWARM || { reduce: false, freeze: null };
   const SL = window.SwarmLattice;
-  const root = document.documentElement;
   const STATIC = S.reduce || S.freeze != null;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -40,7 +39,7 @@
   const onScroll = () => { if (nav) nav.classList.toggle('scrolled', window.scrollY > 8); };
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
-  /* ---------- the revolving light on the gold Join Swarm buttons ----------
+  /* ---------- the revolving light on the gold buttons ----------
      CSS draws it (core-glow.css): at rest a quiet 1px track in the kit's line colour; each time a button comes into
      view a gold comet runs one lap (2.4s) and goes out. It plays again on hover or keyboard focus once the last run has
      finished. The hero's own light waits for the swarm's signal (hero.js publishes window.SWARM.heroSignal: when and
@@ -49,7 +48,7 @@
      the contact point for one 1.4s lap (Web Animations, seekable for ?t=). If hero.js failed, the hero ring plays the
      same 1.4s lap from the top at 2.2s, so everything still settles inside 5s. */
   const golds = $$('.btn-gold'), heroBtn = $('.btn-hero');
-  const RING_MS = 2400, HERO_RING_AT = 2200, SIG_EASE = 'cubic-bezier(.33,.7,.3,1)', SIG_LAP = 1400;
+  const HERO_RING_AT = 2200, SIG_EASE = 'cubic-bezier(.33,.7,.3,1)', SIG_LAP = 1400;
   const GOLD = '#F5C542', GOLD_LIFT = 'color-mix(in srgb, #F5C542 62%, #FFF7CF)';
   const heroSig = () => (window.SWARM && window.SWARM.heroSignal) || null;
   const ringPlay = b => { b.classList.remove('ring-run', 'ring-done'); void b.offsetWidth; b.classList.add('ring-run'); b.dataset.ring = 'run'; };
@@ -673,7 +672,7 @@
     window.__attnInfo = () => ({ end: END });
   })();
 
-  /* ---------- a small converge piece around an official mark: the pricing core and the final CTA ----------
+  /* ---------- a small converge piece around an official mark: the final CTA ----------
      The agents route in along the honeycomb's channels, each neighbour lights as its first agent reaches it, the
      core's gold outline charges, and the official mark lands with its warm light. Plays once, settled under 3.2s. */
   function converge(cfg) {
@@ -733,271 +732,6 @@
     });
   }
 
-  /* ---------- pricing: "Lock in your seat" ----------
-     The card sits on the honeycomb. When its price row comes into view, agents on the field around the card scan,
-     decide and route along the honeycomb's channels to three sockets on the card's edge (left, right and top on
-     desktop; three along the top on phones) and dock under the card, one by one. Each socket lights as agents dock.
-     Once most have docked the card locks: $49.99 turns gold in TEASER and SALE (the view's one gold number; ENDED has
-     no gold number, so nothing turns), one ring wave runs out across the field, and the routes stay as quiet traces.
-     When the two-column card leaves less than three cells of honeycomb on its sides (about 1024 to 1110px wide), the
-     sockets go along the card's top edge as on phones, so the field never collapses to a sliver. Plays once, settles about 3.4s after it starts,
-     then stops; it pauses offscreen and while the tab is hidden. No lit cell here: the final CTA carries the core.
-     Under ?reduce=1, ?t, or without JS or canvas, the card shows its settled state. ?lock=<ms> freezes the moment at
-     that time and window.__lockSeek(ms) steps it, for frame-accurate captures. No text is drawn on canvas. */
-  (function lockMoment() {
-    const stage = $('#lock-stage'), fc = $('#join-field'), ac = $('#join-agents'), card = $('#join');
-    const row = $('.price-row'), joinBtnEl = $('#join-btn');
-    const q = new URLSearchParams(location.search);
-    const FREEZE = q.has('lock') && !S.reduce ? Math.max(0, parseFloat(q.get('lock')) || 0) : null;
-    const T = { born: 280, commit0: 360, commit1: 900, arrive: 1900, lockMin: 1850, lockMax: 2450, wave: 1100, tail: 1000 };
-    const DT = 1000 / 60;
-    const settleDom = () => { if (card) card.classList.remove('lock-pending'); };
-    if (!stage || !fc || !ac || !card || !SL || !fc.getContext) { settleDom(); return; }
-    const fx = fc.getContext('2d'), ax = ac.getContext('2d');
-    if (!fx || !ax) { settleDom(); return; }
-    const { COL, sm, drawField, drawAgents } = SL;
-
-    let W, Hf, d, phone, topPorts, R, P, box, yP, yF0, yF1, Dm, L, V, walk, dist, ports, docks, dockOf, traces;
-    let Sx, rnd, simT, locked, lockT, END, absorbed, routed, hits, pinged;
-    let started = false, done = false, raf = 0, clock = 0, last = null, onScreen = true, lastW = 0;
-
-    /* ---------- geometry: the card and its sockets, in stage pixels ---------- */
-    function geometry() {
-      d = DPR(); W = stage.clientWidth;
-      const sr = stage.getBoundingClientRect(), cr = card.getBoundingClientRect(), rr = (row || card).getBoundingClientRect();
-      box = { x0: cr.left - sr.left, y0: cr.top - sr.top, x1: cr.right - sr.left, y1: cr.bottom - sr.top };
-      yP = (rr.top + rr.bottom) / 2 - sr.top;
-      phone = W <= 640;
-      R = parseFloat(getComputedStyle(stage).getPropertyValue('--lockR')) || (phone ? 16 : 20);
-      P = 1.95 * R;
-      topPorts = phone || box.x0 < 3 * P;
-      Dm = topPorts ? 0 : Math.min(5.5 * P, box.x0 - 8);
-      // the field fades out down the card's side and is gone by its bottom edge, so "How joining works" right under the
-      // card never sits on the honeycomb (the ENDED card is shorter than the SALE one)
-      yF1 = Math.min(yP + 8.6 * P, box.y1);
-      yF0 = Math.min(yP + 3 * P, yF1 - 4 * P);
-      Hf = Math.min(stage.clientHeight, Math.ceil(topPorts ? box.y0 + 4 : Math.min(yP + 9 * P, box.y1 + 4)));
-      const cx = (box.x0 + box.x1) / 2, cw = box.x1 - box.x0;
-      ports = topPorts ? [[cx - 0.3 * cw, box.y0, 0, 1], [cx, box.y0, 0, 1], [cx + 0.3 * cw, box.y0, 0, 1]]
-                    : [[box.x0, yP, 1, 0], [cx, box.y0, 0, 1], [box.x1, yP, -1, 0]];     // x, y, inward normal
-    }
-    const dBox = (x, y) => { const dx = Math.max(box.x0 - x, 0, x - box.x1), dy = Math.max(box.y0 - y, 0, y - box.y1); return Math.hypot(dx, dy); };
-    const outside = (x, y, m) => x < box.x0 - m || x > box.x1 + m || y < box.y0 - m || y > box.y1 + m;
-    // the field: strongest beside the card's top half, fading with distance from the card and down the page
-    const outA = (x, y) => topPorts
-      ? sm(4, 36, y) * (1 - sm(box.y0 - 12, box.y0 + 2, y)) * Math.min(sm(0, 40, x), 1 - sm(W - 40, W, x))
-      : (1 - sm(0.3 * Dm, Dm, dBox(x, y))) * (1 - sm(yF0, yF1, y)) * sm(4, 64, y);
-
-    /* ---------- lattice, sockets and routes ---------- */
-    function setup() {
-      geometry();
-      L = SL.lattice({ R, ox: (box.x0 + box.x1) / 2, oy: box.y0, x0: -P, y0: -P, x1: W + P, y1: Hf + P });
-      V = L.V;
-      walk = V.map(v => v.y > 8 && v.y < Hf - 6 && v.x > 6 && v.x < W - 6 && outside(v.x, v.y, 5) && outA(v.x, v.y) > 0.16);
-      // each socket: the open corner nearest the socket point, then one last hop under the card's edge
-      docks = []; dockOf = new Map();
-      ports.forEach((pt, k) => {
-        let best = -1, bd = 1e9;
-        V.forEach((v, i) => { if (!walk[i]) return; const dd = Math.hypot(v.x - pt[0], v.y - pt[1]); if (dd < bd) { bd = dd; best = i; } });
-        if (best < 0 || bd > 2.2 * P) return;
-        // the socket sits square to the card's edge, straight across from that corner
-        if (pt[2]) pt[1] = V[best].y; else pt[0] = V[best].x;
-        const dv = { i: V.length, x: pt[0] + pt[2] * 14, y: pt[1] + pt[3] * 14, nb: [best], cells: [], dock: k };
-        V.push(dv); V[best].nb.push(dv.i); walk.push(false);
-        docks.push(dv); dockOf.set(dv.i, k);
-      });
-      dist = new Int32Array(V.length).fill(-1);
-      const qq = [];
-      for (const dv of docks) { dist[dv.i] = 0; qq.push(dv.i); }
-      for (let h = 0; h < qq.length; h++) for (const j of V[qq[h]].nb) if (dist[j] < 0 && walk[j]) { dist[j] = dist[qq[h]] + 1; qq.push(j); }
-    }
-
-    /* ---------- the swarm: 36 agents on desktop, 20 with the sockets on top, 12 on phones ---------- */
-    const hopD = () => 170 + rnd() * 80;
-    const pick = arr => arr[(rnd() * arr.length) | 0];
-    function spawn() {
-      for (const c of L.cells) { c.ping = -1e9; }
-      rnd = SL.rng(29);
-      Sx = SL.sim(L, 31, 600);
-      const N = phone ? 12 : topPorts ? 20 : 36;
-      const pool = [];
-      V.forEach((v, i) => { if (walk[i] && dist[i] > 2) pool.push(i); });
-      const used = new Set();
-      let maxH = 1; for (const i of pool) maxH = Math.max(maxH, dist[i]);
-      for (let n = 0; n < N && pool.length; n++) {
-        let id = -1;
-        for (let tries = 0; tries < 60; tries++) { const c = pick(pool); if (used.has(c) || V[c].nb.some(j => used.has(j))) continue; if (rnd() < 0.25 + 0.75 * outA(V[c].x, V[c].y)) { id = c; break; } }
-        if (id < 0) continue;
-        used.add(id);
-        const far = dist[id] / maxH;
-        const a = Sx.add(id, { kind: 0, will: rnd() < 0.78, born: 30 + rnd() * T.born, ct: T.commit0 + rnd() * (T.commit1 - T.commit0) * (1 - 0.5 * far), jit: rnd() * 240 });
-        const nx = V[id].nb.filter(j => walk[j]);
-        if (nx.length) Sx.hop(a, pick(nx), a.born + 40 + rnd() * 200, hopD());
-      }
-      pinged = []; locked = false; lockT = Infinity; END = Infinity; absorbed = 0; routed = 0; hits = ports.map(() => -1e9); traces = new Map();
-      simT = 0;
-    }
-
-    function policy(a, at) {
-      const v = V[a.from];
-      if (v.dock !== undefined) { a.dead = true; absorbed++; hits[v.dock] = at; return; }
-      if (a.mode === 'scan') {
-        if (!locked && rnd() < 0.4) {
-          let live = 0; for (const c of pinged) if (at - c.ping < 800) live++;
-          if (live < (phone ? 3 : 7)) { const cs = v.cells; if (cs.length) { const c = pick(cs); if (at - c.ping > 800) { c.ping = at; pinged.push(c); if (pinged.length > 40) pinged.splice(0, pinged.length - 40); } } }
-        }
-        // the decision: a scout that commits turns bright and sets off for the nearest socket
-        if (a.will && !locked && at >= a.ct && dist[a.from] > 0) {
-          a.mode = 'route'; a.kind = 1; routed++;
-          a.hd = Math.min(200, Math.max(60, Math.max(200, T.arrive + a.jit - at) / dist[a.from]));
-          return policy(a, at);
-        }
-        if (locked) { if (a.fadeT < 0) { a.fadeT = at; a.fadeD = 300; } return; }
-        const opts = v.nb.filter(j => j !== a.prev && walk[j]);
-        if (!opts.length) return;
-        Sx.hop(a, pick(opts), at + 30 + rnd() * 160, hopD());
-        return;
-      }
-      if (locked && dist[a.from] > 1) { a.fadeT = at; a.fadeD = 200; return; }
-      const down = v.nb.filter(j => dist[j] >= 0 && dist[j] < dist[a.from]);
-      if (!down.length) { a.mode = 'scan'; a.kind = 0; return; }
-      const nx = pick(down);
-      const k = nx < a.from ? nx * 65536 + a.from : a.from * 65536 + nx;
-      if (V[nx].dock === undefined) traces.set(k, [a.from, nx]);
-      Sx.hop(a, nx, at, V[nx].dock !== undefined ? 150 : a.hd);
-    }
-
-    function step(t) {
-      Sx.advance(t, policy);
-      if (!locked && ((t >= T.lockMin && routed > 0 && absorbed >= 0.62 * routed) || t >= T.lockMax)) {
-        locked = true; lockT = t; END = t + T.tail;
-        for (const a of Sx.agents) {
-          if (a.dead || a.fadeT >= 0) continue;
-          if (a.mode === 'scan') { a.fadeT = t + 60 + rnd() * 380; a.fadeD = 300; }
-        }
-      }
-    }
-    const charge = () => Math.min(1, absorbed / Math.max(1, 0.62 * routed));
-
-    /* ---------- drawing ---------- */
-    function drawStatic() {
-      fc.width = Math.round(W * d); fc.height = Math.round(Hf * d); fc.style.width = W + 'px'; fc.style.height = Hf + 'px';
-      fx.setTransform(d, 0, 0, d, 0, 0); fx.clearRect(0, 0, W, Hf);
-      drawField(fx, L, c => outside(c.x, c.y, -2) ? outA(c.x, c.y) : 0, {});
-      ac.width = Math.round(W * d); ac.height = Math.round(Hf * d); ac.style.width = W + 'px'; ac.style.height = Hf + 'px';
-    }
-    // the sockets: where a route meets the card. Its last edge (into the card's edge) lights as agents dock, and once
-    // the card locks one agent stays on the corner outside each socket, as in the hero's rest frame
-    function drawSockets(g, t, rest) {
-      const list = [];
-      g.lineCap = 'round'; g.strokeStyle = COL.text; g.lineWidth = phone ? 1.25 : 1.5;
-      for (const dv of docks) {
-        const k = dv.dock, tv = V[dv.nb[0]], pt = ports[k];
-        const flash = Math.max(0, 1 - (t - hits[k]) / 300);
-        const al = rest ? 0.75 : (hits[k] > -1e8 ? 0.35 + 0.4 * charge() + 0.25 * flash : 0);
-        if (al > 0.01) { g.globalAlpha = Math.min(1, al); g.beginPath(); g.moveTo(tv.x, tv.y); g.lineTo(pt[0], pt[1]); g.stroke(); }
-        const stay = rest ? 0.9 : (locked ? 0.9 * sm(lockT + 200, lockT + 600, t) : 0);
-        if (stay > 0.01) list.push({ x: tv.x, y: tv.y, a: stay, k: 1 });
-      }
-      g.globalAlpha = 1; g.lineCap = 'butt';
-      if (list.length) SL.drawGlyphs(g, list, { r: phone ? 3.6 : 4.4, lw: 1.1 });
-    }
-    function drawTraces(g, al) {
-      if (!traces.size || al <= 0) return;
-      g.globalAlpha = al; g.strokeStyle = COL.hive; g.lineWidth = phone ? 1.1 : 1.25; g.lineCap = 'round'; g.beginPath();
-      for (const [a, b] of traces.values()) { g.moveTo(V[a].x, V[a].y); g.lineTo(V[b].x, V[b].y); }
-      g.stroke(); g.globalAlpha = 1; g.lineCap = 'butt';
-    }
-    function draw(t) {
-      const g = ax;
-      g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, Hf);
-      if (t < END) {
-        // the lock: one ring wave runs out from the card across the field
-        if (locked && t < lockT + T.wave + 120) {
-          drawField(g, L, c => {
-            if (!outside(c.x, c.y, -2)) return 0;
-            const e = t - (lockT + 40 + (dBox(c.x, c.y) / P) * 70);
-            if (e < 0) return 0;
-            const env = e < 90 ? e / 90 : Math.max(0, 1 - (e - 90) / 520);
-            return env * 0.6 * outA(c.x, c.y);
-          }, { color: COL.hive });
-        }
-        // sensing: a visited cell's outline brightens briefly
-        if (pinged.length) drawField(g, L, c => { const e = t - c.ping; if (e < 0 || e > 800) return 0; return (e < 120 ? e / 120 : e < 280 ? 1 : 1 - (e - 280) / 520) * 0.55; }, { color: COL.hive });
-        drawTraces(g, 0.5 * Math.min(1, t / 900));
-        SL.drawEdges(g, Sx, t, { base: [0.22, 0.75], lw: phone ? 1.25 : 1.5 });
-        drawAgents(g, Sx, t, { glyph: true, r: phone ? 3.6 : 4.4, lw: 1.1, base: [0.55, 1] });
-      }
-      drawSockets(g, t, false);
-      card.classList.toggle('lock-pending', !locked);
-    }
-    function drawRest() {
-      ax.setTransform(d, 0, 0, d, 0, 0); ax.clearRect(0, 0, W, Hf);
-      drawTraces(ax, 0.55); drawSockets(ax, 0, true);
-    }
-
-    /* ---------- time ---------- */
-    function advanceTo(t) { while (simT + DT <= t) { simT += DT; step(simT); } }
-    function render(t) {
-      advanceTo(Math.min(t, END));
-      draw(Math.min(t, END));
-      if (t >= END && !done) finish();
-    }
-    function finish() { done = true; if (raf) cancelAnimationFrame(raf); raf = 0; drawRest(); settleDom(); }
-    // the settled card: run the pass offscreen, so the rest frame keeps the same routes as a live run
-    function settle() { done = true; started = true; spawn(); advanceTo(T.lockMax + T.tail + 200); locked = true; drawRest(); settleDom(); }
-    function seek(t) {
-      if (t < simT || done) { done = false; spawn(); }
-      render(t);
-    }
-    function loop(now) {
-      raf = 0;
-      if (done || !onScreen || document.hidden) return;
-      if (last === null) last = now;
-      clock += Math.min(1000, Math.max(0, now - last)); last = now;
-      render(clock);
-      if (!done) raf = requestAnimationFrame(loop);
-    }
-    function start() {
-      if (started) return;
-      started = true; clock = 0; last = null;
-      raf = requestAnimationFrame(loop);
-    }
-    const resume = () => { if (started && !done && !raf && onScreen && !document.hidden) { last = null; raf = requestAnimationFrame(loop); } };
-
-    /* ---------- wiring ---------- */
-    const FROZEN = FREEZE !== null;
-    const STILL = !FROZEN && (STATIC || !('IntersectionObserver' in window));
-    setup(); spawn(); drawStatic(); lastW = W;
-    if (STILL) settle();
-    else if (FROZEN) { started = true; seek(FREEZE); }
-    else {
-      draw(0);
-      // plays once, when the price row is 75% in view
-      const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); start(); } }, { threshold: 0.75 });
-      io.observe(row || card);
-      new IntersectionObserver(es => { for (const e of es) { onScreen = e.isIntersecting; resume(); } }).observe(stage);
-      document.addEventListener('visibilitychange', () => { last = null; resume(); });
-    }
-    window.__lockDebug = () => ({ started, done, locked, lockT: Math.round(lockT), end: Math.round(END), clock: Math.round(clock), raf: !!raf, onScreen, n: Sx.agents.length, routed, absorbed, docks: docks.length, traces: traces.size, Dm, Hf, topPorts, x0: Math.round(box.x0), P });
-    window.__lockSeek = t => {
-      started = true;
-      seek(t);
-      if (joinBtnEl && joinBtnEl.getAnimations) joinBtnEl.getAnimations({ subtree: true }).forEach(a => { a.pause(); a.currentTime = Math.min(RING_MS, t); });
-      return { t, locked, lockT, absorbed, routed };
-    };
-    // a new width rebuilds the field and shows the settled card (rotation mid-play jumps to the end); a new height only
-    // redraws the field
-    if ('ResizeObserver' in window) new ResizeObserver(() => {
-      const w = stage.clientWidth;
-      if (w === lastW) { if (!started || done) { setup(); spawn(); drawStatic(); if (done) settle(); else draw(0); } return; }
-      lastW = w;
-      if (raf) cancelAnimationFrame(raf); raf = 0;
-      setup(); spawn(); drawStatic();
-      if (FROZEN && !done) seek(FREEZE); else if (started || STILL) settle(); else draw(0);
-    }).observe(stage);
-  })();
-
   /* final CTA: the lit core returns above the last headline, as in the hero, with its warm light */
   (function finalField() {
     const sec = $('#final'), cv = $('#final-field'), mk = $('#final-mark'), spot = $('#final-core'); if (!sec || !cv || !SL || !spot) return;
@@ -1018,116 +752,5 @@
     // the copy's boxes are measured once the real fonts are in
     const fontsReady = (S.fontsReady && S.fontsReady.then) ? S.fontsReady : Promise.resolve();
     fontsReady.then(start);
-  })();
-
-  /* ---------- pricing: the plan switch and the card ----------
-     The head script (index.html) owns the Black Friday state (window.SWARM.bf), the checkout links (CHECKOUT, the one
-     place to paste them) and SWARM.bfCard, which sets the card's button or status row; this fills the card for the
-     selected plan. The HTML carries the first tab's words for first paint (data-bf-* on the card), so keep them equal
-     to PLANS below; a mismatch is reported in the console. Words only, no colour: is-gold is Black Friday's $49.99. */
-  const BF = S.bf, NB = '\u00a0';
-  // name: the card's label (the second part steps out on phones and from 1024 to 1299px). Only the Black Friday plan
-  // carries the Black Friday label, so $990/yr never reads as a Black Friday price
-  const PLANS = {
-    blackfriday: { name: ['Black Friday', ' launch'], price: '$49.99', unit: '/mo', was: true, chip: { teaser: 'Opens Nov' + NB + '24', sale: 'Ends Dec' + NB + '1' }, note: 'Locked in while you stay subscribed.', sub: 'Cancel and rejoin later, and you pay the price at that time.' },
-    standard:    { name: ['Swarm', ' membership'], price: '$99', unit: '/mo', was: false, chip: 'Standard', note: 'Renews monthly until you cancel.', sub: '' },
-    yearly:      { name: ['Swarm', ' membership'], price: '$990', unit: '/yr', was: false, chip: '2 months free vs Standard', note: 'Paid once a year: twelve months of Standard for the price of ten.', sub: 'Renews yearly until you cancel.' }
-  };
-  // the deadline line: the Black Friday window is always stated as static text here. With another plan selected it
-  // names the monthly price, so the window never reads as Yearly's
-  const ET = (t) => t.replace(/ (AM|PM) ET/g, NB + '$1' + NB + 'ET').replace(/(Nov|Dec|November|December) (\d)/g, '$1' + NB + '$2');
-  const DEADLINE = {
-    teaser: ET('Runs Nov 24, 12:00 AM ET to Dec 1, 11:59 PM ET.'),
-    teaserOther: ET('The Black Friday monthly price runs Nov 24, 12:00 AM ET to Dec 1, 11:59 PM ET.'),
-    sale: ET('Ends December 1 at 11:59 PM ET.'),
-    saleOther: ET('The Black Friday monthly price ends December 1 at 11:59 PM ET.'),
-    ended: ET('The Black Friday price ended December 1.')
-  };
-  const card = $('#join');
-  const slotNow = () => { const c = $('.seg-switch input:checked'); return c ? c.value : 'month'; };
-  function showPlan(slot, check) {
-    if (!BF || !card || !S.bfPlan) return;
-    const key = S.bfPlan(slot), p = PLANS[key], st = BF.state;
-    const own = key === 'blackfriday';
-    const want = {
-      'pc-name-a': p.name[0], 'pc-name-b': p.name[1],
-      'pc-amt': p.price, 'pc-unit': p.unit, 'pc-chip': typeof p.chip === 'string' ? p.chip : p.chip[st] || p.chip.sale,
-      'pc-note': p.note, 'pc-sub': p.sub,
-      'pc-dl': st === 'ended' ? DEADLINE.ended : st === 'teaser' ? (own ? DEADLINE.teaser : DEADLINE.teaserOther) : own ? DEADLINE.sale : DEADLINE.saleOther
-    };
-    for (const id in want) {
-      const el = document.getElementById(id); if (!el) continue;
-      if (el.textContent !== want[id]) { if (check && window.console) console.warn('Swarm pricing: #' + id + ' in index.html says "' + el.textContent + '", PLANS says "' + want[id] + '"'); el.textContent = want[id]; }
-    }
-    const was = $('#pc-was'); if (was) was.hidden = !p.was || st === 'ended';
-    S.bfCard(key);
-  }
-  $$('.seg-switch input').forEach(inp => inp.addEventListener('change', () => { if (inp.checked) showPlan(inp.value); }));
-  showPlan(slotNow(), true);
-
-  /* ---------- the Black Friday clock: state flips, the bar's countdown, Hide ----------
-     The state flips in place at BF_START and BF_END: one timer aims at the next boundary, and the state is checked again
-     whenever the tab comes back (visibilitychange), the window gets focus, or the page is shown again (pageshow, which
-     includes a back/forward cache restore), because a timer can fire late after sleep and a restored page keeps its old
-     state. A flip sets data-bf, swaps the words (bfApply), refills the card and starts or stops the countdown.
-     The countdown is the bar's chip in SALE: whole minutes left, rounded down so it never overstates ("4d 23h 41m",
-     "6h 05m", "41m", "under 1m"), updated on the minute and never faster, stopped while the tab is hidden, and at
-     zero the page flips to ENDED. It is aria-hidden: the bar's static deadline is what screen readers read. Under ?t=
-     it shows the frozen moment and holds. ?bf= forces a state (no flips); ?bfnow= sets the clock. */
-  (function bfClock() {
-    if (!BF) return;
-    const cd = $('#bf-cd'), cdT = $('#bf-cd-t'), hideBtn = $('.bf-x');
-    const FROZEN = S.freeze != null;
-    let flipTimer = 0, tickTimer = 0;
-    const p2 = n => String(n).padStart(2, '0');
-    function left(ms) {
-      const m = Math.floor(ms / 60000);
-      if (m < 1) return 'under 1m';
-      const dd = Math.floor(m / 1440), h = Math.floor(m / 60) % 24, mm = m % 60;
-      return dd ? dd + 'd ' + p2(h) + 'h ' + p2(mm) + 'm' : h ? h + 'h ' + p2(mm) + 'm' : mm + 'm';
-    }
-    function countdown() {
-      clearTimeout(tickTimer); tickTimer = 0;
-      if (!cd || !cdT) return;
-      // no countdown to a price nobody can buy yet: the sale's checkout link is missing (BF.noLink, head script)
-      const on = BF.state === 'sale' && !BF.noLink && !root.classList.contains('bf-bar-off');
-      const rem = BF.end - Math.max(BF.now(), BF.start);
-      if (!on || rem <= 0) { cd.hidden = true; cdT.textContent = ''; if (on && !BF.forced && !FROZEN) check(); return; }
-      cdT.textContent = left(rem); cd.hidden = false;
-      if (FROZEN || document.hidden) return;
-      tickTimer = setTimeout(countdown, (rem % 60000 || 60000) + 40);
-    }
-    function apply(st) {
-      BF.state = st;
-      root.setAttribute('data-bf', st);
-      let off = false;
-      try { off = sessionStorage.getItem('swarm-bf-bar-' + st) === 'off'; } catch (e) { off = false; }
-      root.classList.toggle('bf-bar-off', off);
-      S.bfApply(document);
-      showPlan(slotNow());
-      document.dispatchEvent(new CustomEvent('swarm:bf-state', { detail: st }));
-    }
-    function schedule() {
-      clearTimeout(flipTimer); flipTimer = 0;
-      if (BF.forced || FROZEN) return;
-      const next = BF.state === 'teaser' ? BF.start : BF.state === 'sale' ? BF.end : 0;
-      if (next) flipTimer = setTimeout(check, Math.min(2147483000, Math.max(0, next - BF.now()) + 50));
-    }
-    function check() {
-      if (!BF.forced && !FROZEN) { const st = BF.stateAt(BF.now()); if (st !== BF.state) apply(st); }
-      schedule();
-      countdown();
-    }
-    if (hideBtn) hideBtn.addEventListener('click', () => {
-      root.classList.add('bf-bar-off');
-      try { sessionStorage.setItem('swarm-bf-bar-' + BF.state, 'off'); } catch (e) { /* the bar stays hidden for this view only */ }
-      countdown();
-      const logo = $('.nav-logo'); if (logo) logo.focus();
-    });
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { clearTimeout(tickTimer); tickTimer = 0; } else check(); });
-    window.addEventListener('focus', check);
-    window.addEventListener('pageshow', check);
-    window.__bfDebug = () => ({ state: BF.state, forced: BF.forced, preview: BF.preview, now: new Date(BF.now()).toISOString(), countdown: cd && !cd.hidden ? cdT.textContent : null, flipTimer: !!flipTimer, tickTimer: !!tickTimer });
-    check();
   })();
 })();

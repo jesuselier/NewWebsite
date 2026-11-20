@@ -8,19 +8,6 @@ const SITE_HOST = [{ type: "host" as const, value: "(?:www\\.)?martinezaccess\\.
 const nextConfig: NextConfig = {
   // The Swarm 404 route reads the built page; keep it in that route's server bundle.
   outputFileTracingIncludes: { "/swarm/page-not-found": ["./public/swarm-site/404.html"] },
-  // The Swarm page's Black Friday review previews (?bf=teaser|sale|ended, ?bfnow=<time>) are never indexed. The page
-  // adds a robots noindex meta for them in JavaScript; this header also covers crawlers that do not run it. It applies
-  // on joinswarm.ai and preview deployments, never on martinezaccess.com.
-  async headers() {
-    return ["/", "/swarm"].flatMap((source) =>
-      ["bf", "bfnow"].map((key) => ({
-        source,
-        has: [{ type: "query" as const, key }],
-        missing: SITE_HOST,
-        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
-      })),
-    );
-  },
   async redirects() {
     return [
       // Swarm has its own domain.
