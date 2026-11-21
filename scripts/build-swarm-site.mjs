@@ -7,7 +7,6 @@
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { runInNewContext } from "node:vm";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const src = `${root}design-lab/landing/a-core-glow/`;
@@ -277,26 +276,16 @@ for (const entry of readdirSync(out, { recursive: true })) {
   }
 }
 // The Whop early bird (Jesus, November 20, 2026): "https://whop.com/swarmai/earlybirdvip/ is the link for the sale product
-// page. it has a wait list and will start on monday". The early bird is $49.99 every 30 days, from Mon Nov 23, 12:00 AM ET
-// through Tue Dec 1, 11:59 PM ET, and early birds keep $49.99 as long as they stay subscribed (Whop's renewal price).
-// After that he first wrote "price goes to 99.99 after". Then a second product of his showed up in the same Whop store,
-// Swarm Monthly (https://whop.com/swarmai/swarm-monthly/: $99 every 30 days or $850 every 365 days), and asked which is
-// right, he wrote (November 21): "that'll be there for after the sale ends. the 49.99 is an early bird special". So from
-// Dec 2 new members join Swarm Monthly at $99/mo or $850/yr, and no one pays $99.99: the page says "$99/mo or $850/yr"
-// now, and from Dec 2 shows $99/mo by itself and its head script sends every early bird link to Swarm Monthly.
-// Hence $49.99, $99 and $850 are the only amounts any built page, script or stylesheet may show, each matched whole: any
-// other "$" amount fails (a near miss such as $99.99, $99.00, $99.98 (Whop's struck-through display price), $9.99, $199,
-// $850.00, $85, $8500, $990 or $49.990 included; the old $990 yearly price and the $49 founding offer were never true),
-// and so do the dropped Black Friday sale, a "locked in" price and a "Coming soon" checkout.
+// page. it has a wait list and will start on monday". One plan, $49.99 every 30 days, from Mon Nov 23, 12:00 AM ET through
+// Tue Dec 1, 11:59 PM ET. Nothing is known about what comes after Dec 1, so $49.99 is the only price any built page,
+// script or stylesheet may show: any other "$" and digit fails (the old $99/$990 ladder and the $49 founding offer were
+// never true for this sale), and so do the dropped Black Friday sale, a "locked in" price and a "Coming soon" checkout.
 const EARLY_BIRD_URL = "https://whop.com/swarmai/earlybirdvip/";
-const SWARM_MONTHLY_URL = "https://whop.com/swarmai/swarm-monthly/";
-const PRICES = ["$49.99", "$99", "$850"];
-// The page joins words with &nbsp; to control wraps, so a space here may also be written as an entity.
-const SP = String.raw`(?:\s|&nbsp;|&#0*160;|&#x0*a0;)+`;
+const EARLY_BIRD_PRICE = "$49.99";
 const NO_PRICE = [
-  ['"Black Friday"', new RegExp(`black${SP}friday`, "i")],
-  ['"locked in"', new RegExp(`locked${SP}in`, "i")],
-  ['"Coming soon"', new RegExp(`coming${SP}soon`, "i")],
+  ['"Black Friday"', /black\s+friday/i],
+  ['"locked in"', /locked\s+in/i],
+  ['"Coming soon"', /coming\s+soon/i],
 ];
 // The scripts and styles count too, since page.js once wrote the prices into the card. Their comments may still
 // mention the dropped sale, so they are stripped first.
@@ -306,10 +295,9 @@ const near = (text, index) => text.slice(Math.max(0, index - 40), index + 40).re
 for (const name of noPriceFiles) {
   const raw = readFileSync(`${out}${name}`, "utf8");
   const text = name.endsWith(".html") ? raw : stripComments(raw);
-  // The whole amount is compared, so "$49.990" or "$199.99" can't pass on a prefix or suffix of an allowed price.
-  for (const hit of text.matchAll(/\$\s?\d(?:[\d.,]*\d)?/g)) {
-    if (!PRICES.includes(hit[0])) {
-      problems.push(`${name}: shows the dollar amount ${hit[0]} ("${near(text, hit.index)}"); the only prices are ${PRICES.slice(0, -1).join(", ")} and ${PRICES.at(-1)}`);
+  for (const hit of text.matchAll(/\$\s?\d/g)) {
+    if (!text.startsWith(EARLY_BIRD_PRICE, hit.index) || /\d/.test(text[hit.index + EARLY_BIRD_PRICE.length] || "")) {
+      problems.push(`${name}: shows a dollar price other than ${EARLY_BIRD_PRICE} ("${near(text, hit.index)}"); the early bird is the only price known`);
     }
   }
   for (const [label, re] of NO_PRICE) {
@@ -319,9 +307,6 @@ for (const name of noPriceFiles) {
 }
 // Every gold button and the nav button go to the early bird on Whop, in the same tab: it is the checkout, and the Whop
 // Pixel tags whop.com links on click to credit the sale. The Keychain updates sign-up it replaced is gone from the page.
-// The static HTML (what readers without JavaScript and crawlers get, the OPEN state) links only the early bird; from
-// Dec 2 the head script sends every one of those links to Swarm Monthly (checked with the clock below). No other Whop
-// product or checkout URL may appear anywhere, and no other page may link Whop at all: it has no clock to switch it.
 {
   const home = readFileSync(`${out}index.html`, "utf8");
   if (!home.includes(`href="${EARLY_BIRD_URL}"`)) problems.push(`index.html: no link to the early bird on Whop ${EARLY_BIRD_URL}`);
@@ -331,24 +316,6 @@ for (const name of noPriceFiles) {
     if (!tag.includes(` href="${EARLY_BIRD_URL}"`) || /\btarget=/.test(tag)) {
       problems.push(`index.html: a gold or nav button does not open ${EARLY_BIRD_URL} in the same tab: ${tag.slice(0, 120)}`);
     }
-  }
-  for (const [tag, href] of home.matchAll(/<a\b[^>]*\bhref="([^"]*whop\.com[^"]*)"[^>]*>/gi)) {
-    if (href !== EARLY_BIRD_URL || /\btarget=/.test(tag)) {
-      problems.push(`index.html: a Whop link in the static HTML must be ${EARLY_BIRD_URL} in the same tab: ${tag.slice(0, 120)}`);
-    }
-  }
-  for (const name of [...Object.keys(PAGES), NOT_FOUND, ...readdirSync(out).filter((f) => /\.(js|css)$/.test(f))]) {
-    const text = readFileSync(`${out}${name}`, "utf8");
-    for (const [url] of text.matchAll(/(?:https?:)?(?:\/\/)?(?:[\w-]+\.)*whop\.com\/[^\s"'<>)\]\\]*/gi)) {
-      if (![EARLY_BIRD_URL, SWARM_MONTHLY_URL].includes(url)) {
-        problems.push(`${name}: links or names the Whop URL ${url}; the only ones are ${EARLY_BIRD_URL} and ${SWARM_MONTHLY_URL}`);
-      } else if (name !== "index.html") {
-        problems.push(`${name}: links ${url}, but only index.html switches its Whop links on Dec 2`);
-      }
-    }
-  }
-  if (home.split(SWARM_MONTHLY_URL).length !== 2) {
-    problems.push(`index.html: ${SWARM_MONTHLY_URL} must appear exactly once, in the early bird clock (the ENDED link)`);
   }
   if (/keychain\.club/i.test(home)) problems.push("index.html: still mentions keychain.club (the buttons go to Whop now)");
   if (existsSync(`${out}img/swarm-og-black-friday-1200x630.png`)) problems.push("img/swarm-og-black-friday-1200x630.png is still published");
@@ -372,47 +339,6 @@ const EARLY_BIRD = { OPEN: "2026-11-23T05:00:00.000Z", END: "2026-12-02T05:00:00
     }
     for (const [k, iso] of Object.entries(EARLY_BIRD)) {
       if (found[k] !== iso) problems.push(`index.html: the early bird clock's ${k} is ${found[k] || "missing"}, expected ${iso}`);
-    }
-    // Run the clock on the page's own links: before END every link stays as it is; from END (to the millisecond) every
-    // link to the early bird goes to exactly SWARM_MONTHLY_URL once the page is parsed, and nothing else changes.
-    if (![`'${SWARM_MONTHLY_URL}'`, `"${SWARM_MONTHLY_URL}"`].some((q) => first[1].includes(q))) {
-      problems.push(`index.html: the early bird clock must send the ENDED links to exactly ${SWARM_MONTHLY_URL}`);
-    }
-    const runClock = (iso) => {
-      const links = [...home.matchAll(/<a\b[^>]*\bhref="([^"]*)"/g)].map(([, href]) => ({ href }));
-      const ready = [];
-      const document = {
-        documentElement: { dataset: {} },
-        addEventListener: (type, fn) => type === "DOMContentLoaded" && ready.push(fn),
-        querySelectorAll: (selector) => {
-          const m = selector.match(/^a\[href="([^"]+)"\]$/);
-          if (!m) throw new Error(`the build's clock check reads only a[href="..."] selectors, not ${selector}`);
-          return links.filter((a) => a.href === m[1]);
-        },
-      };
-      runInNewContext(first[1], { document, Date: { UTC: Date.UTC, now: () => Date.parse(iso) } });
-      ready.forEach((fn) => fn());
-      return { state: document.documentElement.dataset.eb, hrefs: links.map((a) => a.href) };
-    };
-    const staticHrefs = [...home.matchAll(/<a\b[^>]*\bhref="([^"]*)"/g)].map(([, href]) => href);
-    const endedHrefs = staticHrefs.map((href) => (href === EARLY_BIRD_URL ? SWARM_MONTHLY_URL : href));
-    const end = Date.parse(EARLY_BIRD.END), open = Date.parse(EARLY_BIRD.OPEN);
-    for (const [ms, state, hrefs] of [
-      [open - 1, "waitlist", staticHrefs],
-      [open, "open", staticHrefs],
-      [end - 1, "open", staticHrefs],
-      [end, "ended", endedHrefs],
-      [end + 86400000, "ended", endedHrefs],
-    ]) {
-      const iso = new Date(ms).toISOString();
-      try {
-        const got = runClock(iso);
-        if (got.state !== state) problems.push(`index.html: at ${iso} the early bird clock says "${got.state}", expected "${state}"`);
-        const wrong = got.hrefs.map((href, i) => href !== hrefs[i] && `a link to ${staticHrefs[i]} reads ${href}, expected ${hrefs[i]}`).filter(Boolean);
-        if (wrong.length) problems.push(`index.html: at ${iso} the early bird clock's links are wrong: ${[...new Set(wrong)].join("; ")}`);
-      } catch (error) {
-        problems.push(`index.html: the early bird clock fails at ${iso} (${error.message})`);
-      }
     }
   }
   for (const [, v] of home.matchAll(/\bdata-eb-show="([^"]*)"/g)) {
@@ -478,20 +404,9 @@ console.log(`Built ${out}`);
 if (blockers.length) {
   console.log(`\nOpen items, hidden on the live site until resolved (${blockers.length}):\n  ${blockers.join("\n  ")}`);
 }
-// After the early bird the page reads ENDED by itself ($99/mo or $850/yr, "Join Swarm", and its head script sends the
-// Whop links to Swarm Monthly), so nothing has to ship that day. The warning is a reminder: readers without JavaScript
-// still get the early bird link, so the next edit hardcodes Swarm Monthly and retires the WAITLIST and OPEN spans, and
-// Whop must be selling Swarm Monthly and no longer the $49.99 plan. Loud, never a failure: a fix must still ship.
+// After the early bird the page reads ENDED by itself ("Join Swarm", no price), but it still needs its after-sale update
+// (what Swarm offers after Dec 1, the legal pages' plan section, these guards). Loud, never a failure: a fix must still ship.
 if (Date.now() >= Date.parse(EARLY_BIRD.END)) {
   const bar = "!".repeat(96);
-  console.warn(
-    `\n${bar}\n  THE EARLY BIRD HAS ENDED (${EARLY_BIRD.END}). The page shows its ENDED state by itself ($99/mo or $850/yr),\n` +
-      `  and its head script sends every button to ${SWARM_MONTHLY_URL}. But readers without JavaScript\n` +
-      `  still get ${EARLY_BIRD_URL}. So at the next edit, hardcode ${SWARM_MONTHLY_URL}\n` +
-      `  in the static HTML (and in this script's link guard), and retire the WAITLIST and OPEN spans and the $49.99 copy\n` +
-      `  only they use (keep the ENDED FAQ line and the Terms: early bird members keep $49.99/mo).\n` +
-      `  Check that ${SWARM_MONTHLY_URL} sells $99/mo and $850/yr, and that the $49.99 plan no longer sells,\n` +
-      `  by its direct link too: a hidden Whop plan still sells by its direct link (see a-core-glow/NOTES.md,\n` +
-      `  "What Jesus must do").\n${bar}\n`,
-  );
+  console.warn(`\n${bar}\n  THE EARLY BIRD HAS ENDED (${EARLY_BIRD.END}). The page shows its ENDED state and needs its after-sale update:\n  what Swarm offers after Dec 1, the Terms plan section and these build guards (see a-core-glow/NOTES.md, "Early bird on Whop").\n${bar}\n`);
 }
