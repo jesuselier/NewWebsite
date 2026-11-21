@@ -695,9 +695,9 @@ html.js:not(.fonts-ok) .hero h1 { opacity: 0; }
    (scroll-padding 76px plus the card's scroll margin). The card sits on the quiet honeycomb (.field-bg, static): the
    price, the line, the gold button and "Opens whop.com." on the left; what's inside on the right from 1024px, under a
    rule on phones. The current state's price is the view's one gold number (JetBrains Mono, the kit's face for prices)
-   and the button its one gold button: $49.99 in WAITLIST and OPEN, $99.99 in ENDED (each state has its own .uc-price
-   block). Before Dec 2, $99.99 is plain text in the line under the price (the price new members pay after Dec 1), never
-   gold and never struck. The right column hugs its five short items and the card is 760px, so the card's right inset
+   and the button its one gold button: $49.99 in WAITLIST and OPEN, $99 in ENDED (each state has its own .uc-price
+   block). Before Dec 2, "$99/mo or $850/yr" is plain text in the line under the price (what new members pay after
+   Dec 1, on Swarm Monthly), never gold and never struck; in ENDED $850/yr is plain text in that line. The right column hugs its five short items and the card is 760px, so the card's right inset
    matches its left. */
 .pricing { padding-top: 40px; }
 .ucard { position: relative; max-width: 480px; margin: 56px auto 0; padding: 26px 22px 22px; background: var(--swarm-surface); border: 1px solid var(--swarm-line); border-radius: 28px; text-align: left; scroll-margin-top: 16px; }

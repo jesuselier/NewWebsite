@@ -7,9 +7,12 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'">
 <script>
 /* The early bird clock (Whop, November 20, 2026), read once before first paint: "waitlist" before Mon Nov 23, 12:00 AM ET,
-   "open" through Tue Dec 1, 11:59 PM ET, "ended" after. It only sets html[data-eb]; core-glow.css shows each state's
-   words (data-eb-show). Without JavaScript the page reads "open". scripts/build-swarm-site.mjs checks both instants. */
-(function(){var OPEN=Date.UTC(2026,10,23,5),END=Date.UTC(2026,11,2,5),t=Date.now();document.documentElement.dataset.eb=t<OPEN?'waitlist':t<END?'open':'ended';})();
+   "open" through Tue Dec 1, 11:59 PM ET, "ended" after. It sets html[data-eb]; core-glow.css shows each state's words
+   (data-eb-show). In "ended" it also sends every link to the early bird on Whop to Swarm Monthly, the product new members
+   join after Dec 1 (Jesus, November 21: "that'll be there for after the sale ends"), as soon as the page is parsed.
+   Without JavaScript the page reads "open" and keeps the early bird link. scripts/build-swarm-site.mjs checks both
+   instants and both links. */
+(function(){var OPEN=Date.UTC(2026,10,23,5),END=Date.UTC(2026,11,2,5),t=Date.now(),d=document,s=t<OPEN?'waitlist':t<END?'open':'ended';d.documentElement.dataset.eb=s;if(s==='ended')d.addEventListener('DOMContentLoaded',function(){d.querySelectorAll('a[href="https://whop.com/swarmai/earlybirdvip/"]').forEach(function(a){a.href='https://whop.com/swarmai/swarm-monthly/';});});})();
 </script>
 <meta name="description" content="Swarm is an AI crypto trading community on Discord by Jesus Martinez of JM Crypto: live trade alerts, custom AI tools, his watch list, weekly live calls. Join on Whop.">
 <meta name="robots" content="max-image-preview:large">
@@ -76,7 +79,7 @@ window.SWARM={reduce:r,freeze:t,fontsReady:ready};})();
     <p class="hero-sub" data-avoid="lines">I'm Jesus Martinez of JM Crypto. Swarm is my AI crypto trading community on Discord.</p>
     <div class="cta">
       <a class="btn-gold btn-hero" href="https://whop.com/swarmai/earlybirdvip/" data-avoid><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl"><span data-eb-show="waitlist">Join the early bird waitlist</span><span data-eb-show="open ended">Join Swarm</span></span></a>
-      <p class="cancel" data-avoid="lines"><span data-eb-show="waitlist">Early bird opens Monday, Nov&nbsp;23. Join by Dec&nbsp;1 and keep $49.99/mo.</span><span data-eb-show="open">Early bird: join by Dec&nbsp;1 and keep $49.99/mo.</span><span data-eb-show="ended">$99.99/mo on Whop. Cancel anytime.</span></p>
+      <p class="cancel" data-avoid="lines"><span data-eb-show="waitlist">Early bird opens Monday, Nov&nbsp;23. Join by Dec&nbsp;1 and keep $49.99/mo.</span><span data-eb-show="open">Early bird: join by Dec&nbsp;1 and keep $49.99/mo.</span><span data-eb-show="ended">$99/mo on Whop. Cancel anytime.</span></p>
     </div>
   </div>
 
@@ -415,14 +418,17 @@ window.SWARM={reduce:r,freeze:t,fontsReady:ready};})();
   </div>
 </section>
 
-<!-- 8. THE EARLY BIRD (November 20, 2026): Swarm sells on Whop (whop.com/swarmai/earlybirdvip, $49.99 every 30 days).
-     The card follows the early bird clock in the head script: WAITLIST until Mon Nov 23, 12:00 AM ET, OPEN through
-     Tue Dec 1, 11:59 PM ET, ENDED after. Jesus, November 20: "price goes to 99.99 after". Early birds keep $49.99/mo as
-     long as they stay subscribed; from Dec 2 new members pay $99.99/mo, and ENDED shows that price by itself. Each
-     state's words are sibling spans or blocks with data-eb-show; core-glow.css shows only the current state's. The
-     section keeps #pricing and the card keeps #join, so old links still land here. Static: no canvas and no motion
-     except the gold button's one ring lap. The current state's price is the view's one gold number ($99.99 only ever
-     appears gold in ENDED; before that it is plain text in the line under it), the button its one gold button. -->
+<!-- 8. THE EARLY BIRD (November 20, 2026): Swarm sells on Whop. The early bird is $49.99 every 30 days, and early birds
+     keep it as long as they stay subscribed. The card follows the early bird clock in the head script: WAITLIST until
+     Mon Nov 23, 12:00 AM ET, OPEN through Tue Dec 1, 11:59 PM ET, ENDED after. What new members pay after Dec 1: Jesus
+     first named one higher monthly price (November 20; his words are in NOTES.md), then, asked about the Swarm Monthly
+     product he had made on Whop ($99 every 30 days or $850 every 365 days), wrote on November 21: "that'll be there for
+     after the sale ends. the 49.99 is an early bird special". So before Dec 2 the line under the price says new members
+     then pay $99/mo or $850/yr, and ENDED shows $99/mo by itself, $850/yr in the line under it, and the head script
+     sends every Whop link to Swarm Monthly. Each state's words are sibling spans or blocks with data-eb-show;
+     core-glow.css shows only the current state's. The section keeps #pricing and the card keeps #join, so old links
+     still land here. Static: no canvas and no motion except the gold button's one ring lap. The current state's price
+     is the view's one gold number ($99 is gold only in ENDED, $850 never), the button its one gold button. -->
 <section class="sec pricing" id="pricing" aria-labelledby="join-h">
   <div class="field-bg" aria-hidden="true"></div>
   <div class="wrap">
@@ -433,8 +439,8 @@ window.SWARM={reduce:r,freeze:t,fontsReady:ready};})();
     <div class="ucard" id="join">
       <div class="uc-a">
         <p class="uc-price" data-eb-show="waitlist open"><span class="uc-amt">$49.99</span><span class="uc-unit">/mo</span></p>
-        <p class="uc-price" data-eb-show="ended"><span class="uc-amt">$99.99</span><span class="uc-unit">/mo</span></p>
-        <p class="uc-lede"><span data-eb-show="waitlist open">Join by Dec&nbsp;1 and keep this price as long as you stay subscribed. After that, new members pay&nbsp;$99.99/mo.</span><span data-eb-show="ended">You pay on Whop. Cancel anytime.</span></p>
+        <p class="uc-price" data-eb-show="ended"><span class="uc-amt">$99</span><span class="uc-unit">/mo</span></p>
+        <p class="uc-lede"><span data-eb-show="waitlist open">Join by Dec&nbsp;1 and keep this price as long as you stay subscribed. After that, new members pay&nbsp;$99/mo or&nbsp;$850/yr.</span><span data-eb-show="ended">Or&nbsp;$850/yr. You pay on Whop. Cancel anytime.</span></p>
         <a class="btn-gold" href="https://whop.com/swarmai/earlybirdvip/"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl"><span data-eb-show="waitlist">Join the early bird waitlist</span><span data-eb-show="open ended">Join Swarm</span></span></a>
         <p class="cancel">Opens whop.com.</p>
       </div>
@@ -475,7 +481,7 @@ window.SWARM={reduce:r,freeze:t,fontsReady:ready};})();
       </details>
       <details>
         <summary>How do I join, and what does it cost?<span class="pm" aria-hidden="true"></span></summary>
-        <div class="ans"><p><span data-eb-show="waitlist">The early bird opens on <a href="https://whop.com/swarmai/earlybirdvip/">Whop</a> on Monday, Nov&nbsp;23, at&nbsp;$49.99/mo. Join by Dec&nbsp;1 and you keep&nbsp;$49.99/mo as long as you stay subscribed; after that, new members pay&nbsp;$99.99/mo. Join the waitlist now. Whop saves your payment details when you sign up and starts charging&nbsp;$49.99/mo once you're approved. You can cancel anytime in Whop.</span><span data-eb-show="open">On <a href="https://whop.com/swarmai/earlybirdvip/">Whop</a>. The early bird is&nbsp;$49.99/mo through Dec&nbsp;1, and you keep that price as long as you stay subscribed. After that, new members pay&nbsp;$99.99/mo. You can cancel anytime in Whop.</span><span data-eb-show="ended">On <a href="https://whop.com/swarmai/earlybirdvip/">Whop</a>, at&nbsp;$99.99/mo. Members who joined the early bird keep&nbsp;$49.99/mo. You can cancel anytime in Whop.</span></p></div>
+        <div class="ans"><p><span data-eb-show="waitlist">The early bird opens on <a href="https://whop.com/swarmai/earlybirdvip/">Whop</a> on Monday, Nov&nbsp;23, at&nbsp;$49.99/mo. Join by Dec&nbsp;1 and you keep&nbsp;$49.99/mo as long as you stay subscribed; after that, new members pay&nbsp;$99/mo or&nbsp;$850/yr. Join the waitlist now. Whop saves your payment details when you sign up and starts charging&nbsp;$49.99/mo once you're approved. You can cancel anytime in Whop.</span><span data-eb-show="open">On <a href="https://whop.com/swarmai/earlybirdvip/">Whop</a>. The early bird is&nbsp;$49.99/mo through Dec&nbsp;1, and you keep that price as long as you stay subscribed. After that, new members pay&nbsp;$99/mo or&nbsp;$850/yr. You can cancel anytime in Whop.</span><span data-eb-show="ended">On <a href="https://whop.com/swarmai/earlybirdvip/">Whop</a>, at&nbsp;$99/mo or&nbsp;$850/yr. Members who joined the early bird keep&nbsp;$49.99/mo. You can cancel anytime in Whop.</span></p></div>
       </details>
     </div>
   </div>
@@ -492,7 +498,7 @@ window.SWARM={reduce:r,freeze:t,fontsReady:ready};})();
     <h2 class="h2" id="final-h"><span class="m">Be on the right side of this cycle.</span> <span class="b">I'll see you inside.</span></h2>
     <div class="cta">
       <a class="btn-gold" href="https://whop.com/swarmai/earlybirdvip/"><span class="ring" aria-hidden="true"><svg focusable="false"><rect class="r-track" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-fill" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t5" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t4" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t3" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t2" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-t r-t1" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/><rect class="r-head" x="0" y="0" width="100%" height="100%" rx="24" pathLength="100"/></svg></span><span class="bl"><span data-eb-show="waitlist">Join the early bird waitlist</span><span data-eb-show="open ended">Join Swarm</span></span></a>
-      <p class="cancel"><span data-eb-show="waitlist">Early bird opens Monday, Nov&nbsp;23.</span><span data-eb-show="open">Join by Dec&nbsp;1 and keep $49.99/mo.</span><span data-eb-show="ended">$99.99/mo on Whop. Cancel anytime.</span></p>
+      <p class="cancel"><span data-eb-show="waitlist">Early bird opens Monday, Nov&nbsp;23.</span><span data-eb-show="open">Join by Dec&nbsp;1 and keep $49.99/mo.</span><span data-eb-show="ended">$99/mo on Whop. Cancel anytime.</span></p>
     </div>
   </div>
 </section>
