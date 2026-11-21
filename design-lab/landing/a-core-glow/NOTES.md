@@ -704,3 +704,8 @@ Three reviewers (states, visual, honesty) sent eight findings. Each was reproduc
 | ENDED | 817 words, 8,696px | 753 words, 10,056px | 43 words; 677px / 606px |
 
 Against the Keychain page before the early bird (876 words, 8,668px; 812 words, 10,119px), OPEN has 52 fewer words, is 42px taller on desktop (the price line) and 1px shorter on a phone.
+
+### Two copy changes, and no price change (November 21, 2026)
+- **No $99 or $99.99 on the site.** Jesus, November 21: "theres no $99 site update. I already told you that's just an offer that stands AFTER the early bird deal ends". The work that added "$99.99 after Dec 1" (and then "$99/mo or $850/yr" with Swarm Monthly links) is reverted on the branch and never shipped. The page keeps showing only the early bird ($49.99/mo through Dec 1). After the early bird ends, his offer is the "Swarm Monthly" product on Whop (whop.com/swarmai/swarm-monthly/, $99 every 30 days or $850 every 365 days, per Whop's public API read November 21 at 00:00 UTC); the site does not mention or link it.
+- **"You pay on Whop."** Jesus: "yeah change it to you pay on whop". The card line now reads "You pay on Whop. Cancel anytime." in every state, and the ENDED hero and final lines read "You pay on Whop." (all three were "Checkout runs on Whop"). The legal pages keep "Checkout runs through Whop", which is legal wording.
+- **Founder proof line.** Jesus: "u can update x followers and youtube subscribers on the site". It now reads "325,244 followers on X and 41.6K subscribers on JM Crypto, as of November 20, 2026." (was 323,452 and 41.1K, as of October 16, 2026), from the dated rows in `FOUNDER-DOSSIER.md` section B. The date is joined with no-break spaces so it never splits across lines on phones.
